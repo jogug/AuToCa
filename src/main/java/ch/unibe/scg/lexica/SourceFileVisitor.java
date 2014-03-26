@@ -13,6 +13,7 @@ import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
     private final Graph graph;
     private final PathMatcher pathMatcher;
+    private ArrayList<Integer> cflags;
 
     public SourceFileVisitor(Graph graph) throws SQLException, IOException {
         Objects.requireNonNull(graph);
@@ -50,11 +52,13 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
                 return FileVisitResult.TERMINATE;
             }
 
-            Parser parser = new Parser(graph);
+            DelimiterParser parser = new DelimiterParser(graph);
+            CommentParser commentParser = new CommentParser(Configuration.getInstance().getCommentPattern(),
+            												Configuration.getInstance().getIgnorePattern());
             //Prepare Comments flags
-            parser.prepare(Files.newBufferedReader(file, Charset.defaultCharset()));
+            cflags = commentParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()));
            //Data
-            parser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),"tokens");
+            parser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens");
             
         }
 

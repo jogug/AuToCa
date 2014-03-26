@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public final class AnalyzeMode implements IOperationMode {
 
     private final Path path, actualTokenPath;
     private final Graph graph;
-    private final Parser parser;
+    private final DelimiterParser parser;
     private int n;
 
     public AnalyzeMode(Path path, Path actualTokenPath, int n) throws SQLException, ClassNotFoundException {  	     	
@@ -33,13 +34,13 @@ public final class AnalyzeMode implements IOperationMode {
         this.actualTokenPath = actualTokenPath;
         this.path = path;  
         graph = new Graph(path, false);
-        parser = new Parser(graph);
+        parser = new DelimiterParser(graph);
         graph.analyzeInit();
     }
     
     public void loadStandardData() {
         try {
-			parser.parse(Files.newBufferedReader(actualTokenPath,Charset.defaultCharset()),"actualTokenT");
+			parser.parse(Files.newBufferedReader(actualTokenPath,Charset.defaultCharset()), new ArrayList<Integer>(),"actualTokenT");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
