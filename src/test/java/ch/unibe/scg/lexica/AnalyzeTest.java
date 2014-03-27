@@ -23,16 +23,16 @@ public class AnalyzeTest {
     public Path[] loadPath(int i){    	
     	if(i==1){
         	return new Path[]{	Paths.get("C:\\javaapachetest\\"),
-        						Paths.get("E:\\Benutzer\\Joel\\Bachelorarbeit\\lexica\\src\\test\\java\\ch\\unibe\\scg\\lexica\\java_tokens.txt")};   		
+        						Paths.get("../lexica/resources/java_tokens.txt")};   		
     	}else if(i==2){
            	return new Path[]{	Paths.get("C:\\filezilla3.7.4.1\\"),
-           						Paths.get("E:\\Benutzer\\Joel\\Bachelorarbeit\\lexica\\src\\test\\java\\ch\\unibe\\scg\\lexica\\cpp_tokens.txt")};   		
+           						Paths.get("../lexica/resources/cpp_tokens.txt")};   		
     	}else if(i==3){
            	return new Path[]{	Paths.get("C:\\numpy1.8.0\\"),
-								Paths.get("E:\\Benutzer\\Joel\\Bachelorarbeit\\lexica\\src\\test\\java\\ch\\unibe\\scg\\lexica\\python_tokens.txt")};   		
+								Paths.get("../lexica/resources/python_tokens.txt")};   		
     	}else{
            	return new Path[]{	Paths.get("C:\\wireshark1.10.6\\"),
-           						Paths.get("E:\\Benutzer\\Joel\\Bachelorarbeit\\lexica\\src\\test\\java\\ch\\unibe\\scg\\lexica\\c_tokens.txt")};   		
+           						Paths.get("../lexica/resources/c_tokens.txt")};   		
     	}
     }
 }

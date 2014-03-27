@@ -55,10 +55,12 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             DelimiterParser parser = new DelimiterParser(graph);
             CommentParser commentParser = new CommentParser(Configuration.getInstance().getCommentPattern(),
             												Configuration.getInstance().getIgnorePattern());
-            //Prepare Comments flags
+           //Parse Comments flags
             cflags = commentParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()));
-           //Data
-            parser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens");
+           //Parse Delimiter Data
+            if(cflags.size()%2==0){  
+            	parser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens");
+            }
             
         }
 

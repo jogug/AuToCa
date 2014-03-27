@@ -13,7 +13,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DelimiterParser {
+public class DelimiterParser implements IParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DelimiterParser.class);
     private final Graph graph;
@@ -27,41 +27,39 @@ public class DelimiterParser {
       	int counter = 0;
         String prevName = null;
         String name = "";
-               
-        if(cflags.size()%2==0 ){      	            
-	        int i = 0;
-	        int j = 0;
-	        try {
-	            while ((i = reader.read()) != -1) {           	
-	                char c = (char) i;              
-	                counter++;
-	                //Skip Comment                
-	                if(j<cflags.size()&&counter == cflags.get(j)){            	
-	                	reader.skip(cflags.get(j+1)-cflags.get(j));
-	                	counter = cflags.get(j+1);
-	                	j+=2;
+                        	            
+        int i = 0;
+        int j = 0;
+        try {
+            while ((i = reader.read()) != -1) {           	
+                char c = (char) i;              
+                counter++;
+                //Skip Comment                
+                if(j<cflags.size()&&counter == cflags.get(j)){            	
+                	reader.skip(cflags.get(j+1)-cflags.get(j));
+                	counter = cflags.get(j+1);
+                	j+=2;
+                    prevName = add(name, prevName, table);
+                    name = "";
+                }else{
+	                if (Character.toString(c).matches("[ \\r\\n\\t]")) {
+	                    // Ignore white spaces
 	                    prevName = add(name, prevName, table);
 	                    name = "";
-	                }else{
-		                if (Character.toString(c).matches("[ \\r\\n\\t]")) {
-		                    // Ignore white spaces
-		                    prevName = add(name, prevName, table);
-		                    name = "";
-		                } else if (Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]")) {
-		                    // Ignore delimiters
-		                    prevName = add(name, prevName, table);
-		                    name = "";
-		                } else {
-		                    // Add character to token
-		                    name += c;
-		                }
+	                } else if (Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]")) {
+	                    // Ignore delimiters
+	                    prevName = add(name, prevName, table);
+	                    name = "";
+	                } else {
+	                    // Add character to token
+	                    name += c;
 	                }
-	            }
-	
-	            prevName = add(name, prevName, table);
-	        } catch (UnmappableCharacterException | SQLException e) {
-	            logger.warn("An error occured", e);
-	        }
+                }
+            }
+
+            prevName = add(name, prevName, table);
+        } catch (UnmappableCharacterException | SQLException e) {
+            logger.warn("An error occured", e);
         }
     }
     
