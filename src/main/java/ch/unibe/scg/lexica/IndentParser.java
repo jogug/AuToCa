@@ -2,6 +2,7 @@ package ch.unibe.scg.lexica;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -13,9 +14,13 @@ public class IndentParser implements IParser {
 		this.graph = graph;
 	}
 	
+	/**
+	 * 
+	 */
 	public void parse(BufferedReader reader, ArrayList<Integer> cflags, String table) throws IOException{ 
 		int counter = 0,i = 0, j = 0;	
-         String name = "";
+        String name = "";
+        boolean notNewLine = true, notIndent = true;
 	
         while ((i = reader.read()) != -1) {           	
             char c = (char) i;              
@@ -28,15 +33,48 @@ public class IndentParser implements IParser {
                 add(name, table);
                 name = "";
             }else{
-                if (Character.toString(c).matches("[ \\r\\n\\t]")){
-                	//TODO
-                }
+	            if(notNewLine){
+	            	if(c=='\n'){
+	            		notNewLine = false;
+	            	}
+	           	}else if(notIndent){
+	           		if(!(c==' ')){
+	           			notNewLine = true;
+	           		}else if(c=='\t'){
+	           			notIndent = false;
+	           		}
+	           		           
+	            }else{
+	                if (Character.toString(c).matches("[ \\r\\n\\t]")) {
+	                    // Ignore white spaces
+	                	//TODO
+	                    add(name,table);
+	                    notNewLine = true;
+	                    notIndent = true;
+	                    name = "";
+	                } else if (Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]")) {
+	                    // Ignore delimiters
+	                    add(name,table);
+	                    notNewLine = true;
+	                    notIndent = true;
+	                    name = "";
+	                } else {
+	                    // Add character to token
+	                    name += c;	                    
+	                }
+	            } 
             }
         }
 	}
     
     public void add(String name, String table){
-    	//TODO
+        if (!name.isEmpty()) {
+            try {
+				graph.put(name, table);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+        }
     }
 }
 

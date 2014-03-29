@@ -76,7 +76,8 @@ public class Graph implements Closeable {
         stmt.executeUpdate("UPDATE tokens SET current = 0");
     }
 
-    public void put(String name, String prev, String table) throws SQLException {
+    @SuppressWarnings("resource")
+	public void put(String name, String prev, String table) throws SQLException {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM "+ table + " WHERE token = '" + name + "'");
         rs.next();
@@ -162,9 +163,10 @@ public class Graph implements Closeable {
 	}
     
     public void print() throws SQLException {
+    	
     	Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT top 20 * FROM tokens ORDER BY coverage asc"); 
-        /*
+        
         while (rs.next()) {
             String token = rs.getString("token");
             int global = rs.getInt("global");
@@ -173,9 +175,30 @@ public class Graph implements Closeable {
 
             System.out.println(token + ";"+"global "+global+" average:" + average+ " coverage" +coverage);
             System.out.print(token + ";");
-            System.out.format("%d;%.2f;%d%n", "global "+global," average:" + average, " coverage" +coverage);
+            //System.out.format("%d;%.2f;%d%n", "global "+global," average:" + average, " coverage" +coverage);
         }   	
-        */
+        
     }
+
+	@SuppressWarnings("resource")
+	public void put(String name, String table) throws SQLException {
+    	Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM "+ table + " WHERE token = '" + name + "'");
+        rs.next();
+        if (rs.getInt(1) == 1) {
+            stmt = conn.createStatement();
+            stmt.executeUpdate("UPDATE "+ table + " SET global = global + 1, current = current + 1 WHERE token = '" + name + "'");
+        } else {
+            stmt = conn.createStatement();
+            stmt.executeUpdate("INSERT INTO "+ table + " VALUES('" + name + "', 1, 0, 0, 1)");
+        }
+		
+	}
+	
+	
+	public void mergeFileToGlobal(String fileTable1, String globalTable2){
+		//TODO
+	}
+
 
 }

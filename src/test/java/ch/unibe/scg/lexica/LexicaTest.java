@@ -11,7 +11,8 @@ public class LexicaTest {
 
     @Test
     public void test() {   	
-    	Lexica lexica = new Lexica(loadStrings(0));
+    	@SuppressWarnings("unused")
+		Lexica lexica = new Lexica(loadStrings(0));
     }
     
     public String[] loadStrings(int i){

@@ -24,6 +24,7 @@ public final class Lexica {
     }
 
     public static void main(String[] args) {
+		@SuppressWarnings("unused")
 		Lexica lexica = new Lexica(args);
     }
 }
