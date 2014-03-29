@@ -12,3 +12,7 @@ bin/
 .idea/
 out/
 *.iml
+#Folders
+
+#Endings
+*.db
