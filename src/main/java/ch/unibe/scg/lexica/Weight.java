@@ -1,7 +1,5 @@
 package ch.unibe.scg.lexica;
 
-import java.util.HashSet;
-
 /**
  * Saves the influence and name of a weight 
  * @author Joel
