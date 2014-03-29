@@ -164,6 +164,7 @@ public class Graph implements Closeable {
     public void print() throws SQLException {
     	Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT top 20 * FROM tokens ORDER BY coverage asc"); 
+        /*
         while (rs.next()) {
             String token = rs.getString("token");
             int global = rs.getInt("global");
@@ -174,6 +175,7 @@ public class Graph implements Closeable {
             System.out.print(token + ";");
             System.out.format("%d;%.2f;%d%n", "global "+global," average:" + average, " coverage" +coverage);
         }   	
+        */
     }
 
 }

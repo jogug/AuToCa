@@ -11,7 +11,7 @@ public class LexicaTest {
 
     @Test
     public void test() {   	
-    	Lexica lexica = new Lexica(loadStrings(4));
+    	Lexica lexica = new Lexica(loadStrings(0));
     }
     
     public String[] loadStrings(int i){
@@ -54,7 +54,7 @@ public class LexicaTest {
 									"\"\"\",\n,#,\n",
 									}; 
 			return stringArgs;
-    	}else{
+    	}else if(i == 5){
         	String[] stringArgs = {	"scan",
 									"E:\\Benutzer\\Joel\\Bachelorarbeit\\lexica\\src\\test\\java\\ch\\unibe\\scg\\lexica\\TestClasses",
 									"-f",
@@ -66,6 +66,15 @@ public class LexicaTest {
 									//"://,\"/*,/*\""
 									}; 
     		return stringArgs;
-    	}  		
+    	}else{
+    		String[] stringArgs = {	"scan",
+									"../lexica/resources/TestClasses",
+									"-f",
+									"*.java",
+									"-p",
+									"/*,*/,//,\n",
+									}; 
+return stringArgs;
+    	}
     }
 }

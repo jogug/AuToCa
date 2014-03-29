@@ -30,9 +30,12 @@ public class AnalyzeTest {
     	}else if(i==3){
            	return new Path[]{	Paths.get("C:\\numpy1.8.0\\"),
 								Paths.get("../lexica/resources/python_tokens.txt")};   		
-    	}else{
+    	}else if(i==4){
            	return new Path[]{	Paths.get("C:\\wireshark1.10.6\\"),
            						Paths.get("../lexica/resources/c_tokens.txt")};   		
+    	}else{
+        	return new Path[]{	Paths.get("../lexica/resources/TestClasses"),
+								Paths.get("../lexica/resources/java_tokens.txt")};   
     	}
     }
 }

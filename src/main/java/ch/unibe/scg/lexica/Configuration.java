@@ -4,6 +4,7 @@
 package ch.unibe.scg.lexica;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -92,11 +93,18 @@ public final class Configuration {
         filePattern = filePatternArg.value(options).replaceAll("[\\\"]", "");
                
         // Gets the start and end-patterns !Attention produces an ERROR if comments start with [ or ]
+        // When new Line is passed as argument in the cmd 
         String temp = commentPatternArg.values(options).toString().replaceAll("\\[|\\]", "");
         commentPattern = temp.split(",");
+        for(int i = 0; i<commentPattern.length;i++){
+        	commentPattern[i] = commentPattern[i].replaceAll("\\\\n", "\n");
+        }
         
         temp = ignorePatternArg.values(options).toString().replaceAll("\\[|\\]", "");
         ignorePattern = temp.split(",");
+        for(int i = 0; i<ignorePattern.length;i++){
+        	ignorePattern[i] = ignorePattern[i].replaceAll("\\\\n", "\n");
+        }
     }
 
 	public String[] getCommentPattern() {
