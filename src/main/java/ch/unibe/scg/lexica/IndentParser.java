@@ -1,3 +1,6 @@
+/*
+** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
+*/
 package ch.unibe.scg.lexica;
 
 import java.io.BufferedReader;
@@ -20,6 +23,7 @@ public class IndentParser implements IParser {
 	public void parse(BufferedReader reader, ArrayList<Integer> cflags, String table) throws IOException{ 
 		int counter = 0,i = 0, j = 0;	
         String name = "";
+        char prevC = 'i';
         boolean notNewLine = true, notIndent = true;
 	
         while ((i = reader.read()) != -1) {           	
@@ -38,10 +42,14 @@ public class IndentParser implements IParser {
 	            		notNewLine = false;
 	            	}
 	           	}else if(notIndent){
-	           		if(!(c==' ')){
-	           			notNewLine = true;
-	           		}else if(c=='\t'){
+	           		if(!(Character.isWhitespace(c)||Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]"))){
+	           		  if(counter>1&&Character.toString(prevC).matches("[ \\t]")){
 	           			notIndent = false;
+	                    // Add character to token
+	                    name += c;	  
+	           		  }else{
+	           			  notNewLine = true;
+	           		  }
 	           		}
 	           		           
 	            }else{
@@ -64,6 +72,7 @@ public class IndentParser implements IParser {
 	                }
 	            } 
             }
+            prevC = c;
         }
 	}
     

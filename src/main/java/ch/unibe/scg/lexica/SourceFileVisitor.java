@@ -46,21 +46,34 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
             try {
                 graph.newFile();
+                graph.newFileFoL("tokensInd");
+                graph.newFileFoL("tokensFol");
+                
             } catch (SQLException e) {
                 logger.error("An error occured", e);
 
                 return FileVisitResult.TERMINATE;
             }
 
-            DelimiterParser parser = new DelimiterParser(graph);
+            DelimiterParser delParser = new DelimiterParser(graph);
+            IndentParser indParser = new IndentParser(graph);
+            FoLParser folParser = new FoLParser(graph);
+            
             CommentParser commentParser = new CommentParser(Configuration.getInstance().getCommentPattern(),
             												Configuration.getInstance().getIgnorePattern());
            //Parse Comments flags
             cflags = commentParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()));
-           //Parse Delimiter Data
+            
+            //Incase an Error occured while parsing the comments, cflags%2!= 0
             if(cflags.size()%2==0){  
-            	parser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens");
+            	//Parse Delimiter Data
+            	delParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens");
+            	//Parse FoL
+            	folParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensFol");
+            	//Parse Indents
+            	indParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensInd");
             }
+            
             
         }
 

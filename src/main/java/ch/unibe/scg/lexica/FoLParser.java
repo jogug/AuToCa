@@ -1,3 +1,6 @@
+/*
+** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
+*/
 package ch.unibe.scg.lexica;
 
 import java.io.BufferedReader;
@@ -39,16 +42,15 @@ public class FoLParser implements IParser {
 	            		notNewLine = false;
 	            	}
 	           	}else if(whitespace){
-	           		if(!(c==' ')){
-	           			notNewLine = true;
-	           		}else{
+	           		if(!(Character.isWhitespace(c)||Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]"))){
 	           			whitespace = false;
+		                // Add character to token
+		                 name += c;	                    		                
 	           		}
 	           		           
 	            }else{
 	                if (Character.toString(c).matches("[ \\r\\n\\t]")) {
 	                    // Ignore white spaces
-	                	//TODO
 	                    add(name,table);
 	                    notNewLine = true;
 	                    whitespace = true;

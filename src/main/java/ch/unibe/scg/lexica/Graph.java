@@ -45,6 +45,12 @@ public class Graph implements Closeable {
             stmt.execute("CREATE TABLE IF NOT EXISTS tokens (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, average REAL NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
 
             stmt = conn.createStatement();
+            stmt.execute("CREATE TABLE IF NOT EXISTS tokensFol (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
+            
+            stmt = conn.createStatement();
+            stmt.execute("CREATE TABLE IF NOT EXISTS tokensInd (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
+                       
+            stmt = conn.createStatement();
             stmt.execute("CREATE TABLE IF NOT EXISTS nexts (token VARCHAR NOT NULL, next VARCHAR NOT NULL, CONSTRAINT nextskey PRIMARY KEY (token, next))");
 
             stmt = conn.createStatement();
@@ -190,10 +196,18 @@ public class Graph implements Closeable {
             stmt.executeUpdate("UPDATE "+ table + " SET global = global + 1, current = current + 1 WHERE token = '" + name + "'");
         } else {
             stmt = conn.createStatement();
-            stmt.executeUpdate("INSERT INTO "+ table + " VALUES('" + name + "', 1, 0, 0, 1)");
+            stmt.executeUpdate("INSERT INTO "+ table + " VALUES('" + name + "', 1, 0, 1)");
         }
 		
 	}
+	
+    public void newFileFoL(String table) throws SQLException {
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate("UPDATE "+table+" SET coverage = coverage + 1 WHERE current > 0");
+
+        stmt = conn.createStatement();
+        stmt.executeUpdate("UPDATE "+table+" SET current = 0");
+    }
 	
 	
 	public void mergeFileToGlobal(String fileTable1, String globalTable2){
