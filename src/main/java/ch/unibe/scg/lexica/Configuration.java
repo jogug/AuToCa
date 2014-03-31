@@ -8,14 +8,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import ch.unibe.scg.lexica.mode.AnalyzeMode;
+import ch.unibe.scg.lexica.mode.IOperationMode;
+import ch.unibe.scg.lexica.mode.ScanMode;
+import ch.unibe.scg.lexica.parser.DelimiterParser;
+import ch.unibe.scg.lexica.parser.FoLParser;
+import ch.unibe.scg.lexica.parser.IndentParser;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
 /**
- * Get the Configuration from the cmd
+ * Gets the execution settings from the cmd arguments
  * @author Joel
  *
  */
@@ -34,7 +42,7 @@ public final class Configuration {
     /**
      * Parse the Command Line arguments.
      *
-     * <scan|analyze> [path] [-f <file pattern>] [-p <start pattern>,<end pattern>,<start...] [-i <ignore pattern>, ..]
+     * <scan|analyze> [path] [-f <file pattern>] [-p <start pattern>,<end pattern>,<start...] [-i <ignore pattern>, ..] [-m <int> min, max]
      *
      * @param args the arguments
      * @throws IOException if an I/O error occurs
@@ -80,10 +88,11 @@ public final class Configuration {
 
         // Get the operation mode
         if (nonOptionArgs.get(0).equalsIgnoreCase("scan")) {
-            mode = new ScanMode(path);
+        	//TODO Standard weights list
+            mode = new ScanMode(path, initStandardWeights());
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
         	//TODO Analyze mode not integrated from console yet
-            mode = new AnalyzeMode(path,path,50);
+            mode = new AnalyzeMode(path,initStandardWeights(),initStandardLanguage());
         } else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
@@ -101,6 +110,18 @@ public final class Configuration {
         
         minWL = minMaxFilterArg.values(options).get(0);
         maxWL = minMaxFilterArg.values(options).get(1);
+    }
+    
+    private ArrayList<Weight> initStandardWeights(){
+    	ArrayList<Weight> result = new ArrayList<>();
+    	result.add(new Weight("Occurences", "occW", new DelimiterParser()));
+    	result.add(new Weight("First of Line", "folW", new FoLParser()));
+    	result.add(new Weight("Indent", "indW", new IndentParser()));   	
+    	return result;
+    }
+    
+    private Language initStandardLanguage(){
+    	return new Language("java", Paths.get("../lexica/resources/java_tokens.txt"));
     }
     
     private void resolveNewLineProblem(String arg[]){

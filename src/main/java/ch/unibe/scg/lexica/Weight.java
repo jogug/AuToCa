@@ -3,18 +3,22 @@
 */
 package ch.unibe.scg.lexica;
 
+import ch.unibe.scg.lexica.parser.IParser;
+
 /**
- * Saves the influence and name of a weight 
+ * Holds Information on parsing and table name
  * @author Joel
  *
  */
 
 public class Weight {
 	private String tableName, name;
+	private IParser parser;
 	
-	public Weight(String name, String tableName){
-		this.name = name;
+	public Weight(String name, String tableName, IParser parser){
+		this.name = name;	//TODO will be used when Results extracted
 		this.tableName = tableName;
+		this.parser = parser;
 	}
 	
 	public String getName(){
@@ -24,4 +28,8 @@ public class Weight {
 	public String getTableName(){
 		return tableName;
 	}	
+	
+	public IParser getParser(){
+		return this.parser;
+	}
 }

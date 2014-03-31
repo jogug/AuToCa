@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.lexica.mode.IOperationMode;
+
 public final class Lexica {
 
     private static final Logger logger = LoggerFactory.getLogger(Lexica.class);

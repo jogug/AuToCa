@@ -1,30 +1,30 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.lexica;
+package ch.unibe.scg.lexica.parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Objects;
+import ch.unibe.scg.lexica.Graph;
 
-public class FoLParser implements IParser {
-	private Graph graph;
+/**
+ * Finds words after indents  on new lines and saves them in the db
+ * @author Joel
+ *
+ */
+public class IndentParser implements IParser {
 
-	public FoLParser(Graph graph){
-		Objects.requireNonNull(graph);
-		this.graph = graph;
+	public IndentParser(){
+		//TODO incase delimiter signs may change
 	}
 	
-	/**
-	 * Finds the first word of a line and saves it in the db
-	 * @throws  
-	 */
-	public void parse(BufferedReader reader, ArrayList<Integer> cflags, String table, int minWL, int maxWL) throws IOException{ 
+	public void parse(Graph graph, BufferedReader reader, ArrayList<Integer> cflags, String table, int minWL, int maxWL) throws IOException{ 
 		int counter = 0,i = 0, j = 0;	
         String name = "";
-        boolean notNewLine = true, whitespace = true;
+        char prevC = 'i';
+        boolean notNewLine = true, notIndent = true;
 	
         while ((i = reader.read()) != -1) {           	
             char c = (char) i;              
@@ -34,32 +34,37 @@ public class FoLParser implements IParser {
             	reader.skip(cflags.get(j+1)-cflags.get(j));
             	counter = cflags.get(j+1);
             	j+=2;
-                add(name, table, minWL, maxWL);
+                add(graph, name,table, minWL, maxWL);
                 name = "";
             }else{
 	            if(notNewLine){
 	            	if(c=='\n'){
 	            		notNewLine = false;
 	            	}
-	           	}else if(whitespace){
+	           	}else if(notIndent){
 	           		if(!(Character.isWhitespace(c)||Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]"))){
-	           			whitespace = false;
-		                // Add character to token
-		                 name += c;	                    		                
+	           		  if(counter>1&&Character.toString(prevC).matches("[ \\t]")){
+	           			notIndent = false;
+	                    // Add character to token
+	                    name += c;	  
+	           		  }else{
+	           			  notNewLine = true;
+	           		  }
 	           		}
 	           		           
 	            }else{
 	                if (Character.toString(c).matches("[ \\r\\n\\t]")) {
 	                    // Ignore white spaces
-	                    add(name,table, minWL, maxWL);
+	                	//TODO
+	                    add(graph, name,table, minWL, maxWL);
 	                    notNewLine = true;
-	                    whitespace = true;
+	                    notIndent = true;
 	                    name = "";
 	                } else if (Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]")) {
 	                    // Ignore delimiters
-	                    add(name,table, minWL, maxWL);
+	                    add(graph, name,table, minWL, maxWL);
 	                    notNewLine = true;
-	                    whitespace = true;
+	                    notIndent = true;
 	                    name = "";
 	                } else {
 	                    // Add character to token
@@ -67,10 +72,11 @@ public class FoLParser implements IParser {
 	                }
 	            } 
             }
+            prevC = c;
         }
 	}
     
-    public void add(String name, String table, int minWL, int maxWL){
+    public void add(Graph graph, String name, String table, int minWL,int maxWL){
         if (!name.isEmpty()&&name.length()<maxWL&&name.length()>minWL) {
             try {
 				graph.put(name, table);
@@ -80,3 +86,5 @@ public class FoLParser implements IParser {
         }
     }
 }
+
+

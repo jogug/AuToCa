@@ -24,7 +24,7 @@ public class LexicaTest {
 									"-p",
 									"/*,*/,//,\n",
 									"-m",
-									"1,10"
+									"1,11"
 									}; 
     		return stringArgs;
     	}else if(i == 2){
@@ -38,7 +38,7 @@ public class LexicaTest {
 									"-p",
 									"/*,*/",
 									"-m",
-									"1,10"
+									"1,11"
 									}; 
     		return stringArgs;
     	}else if(i == 3){
@@ -49,7 +49,7 @@ public class LexicaTest {
 									"-p",
 									"/*,*/,//,\n",
 									"-m",
-									"1,10"
+									"1,11"
 									}; 
 			return stringArgs;
     	}else if(i == 4){
@@ -60,7 +60,7 @@ public class LexicaTest {
 									"-p",
 									"\"\"\",\n,#,\n",
 									"-m",
-									"1,10"
+									"1,11"
 									}; 
 			return stringArgs;
     	}else if(i == 5){
@@ -72,7 +72,7 @@ public class LexicaTest {
 									"-p",
 									"/*,*/,//,\n",
 									"-m",
-									"1,10"
+									"1,11"
 									//"-i",
 									//"://,\"/*,/*\""
 									}; 
@@ -85,7 +85,7 @@ public class LexicaTest {
 									"-p",
 									"/*,*/,//,\n",
 									"-m",
-									"1,10"
+									"1,11"
 									}; 
     		return stringArgs;
     	}

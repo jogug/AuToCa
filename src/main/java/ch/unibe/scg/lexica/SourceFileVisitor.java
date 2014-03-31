@@ -15,10 +15,15 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ch.unibe.scg.lexica.parser.CommentParser;
 
+/**
+ * Created for each file to be visited, handles parsing to be done
+ * @author Joel
+ *
+ */
 public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
     private static final Logger logger = LoggerFactory.getLogger(SourceFileVisitor.class);
@@ -26,12 +31,12 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     private final Graph graph;
     private final PathMatcher pathMatcher;
     private ArrayList<Integer> cflags;
+    private ArrayList<Weight> weights;
 
-    public SourceFileVisitor(Graph graph) throws SQLException, IOException {
+    public SourceFileVisitor(Graph graph, ArrayList<Weight> weights) throws SQLException, IOException {
         Objects.requireNonNull(graph);
-
+        this.weights = weights;
         this.graph = graph;     
-
         pathMatcher = FileSystems.getDefault().getPathMatcher("glob:" + Configuration.getInstance().getFilePattern());
     }
 
@@ -45,19 +50,14 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             logger.debug("Parsing " + file.toString());
 
             try {
-                graph.newFile();
-                graph.newFileFoL("tokensInd");
-                graph.newFileFoL("tokensFol");
-                
+            	for(Weight i: weights){
+                    graph.newFile(i.getTableName());
+            	}            
             } catch (SQLException e) {
                 logger.error("An error occured", e);
 
                 return FileVisitResult.TERMINATE;
             }
-
-            DelimiterParser delParser = new DelimiterParser(graph);
-            IndentParser indParser = new IndentParser(graph);
-            FoLParser folParser = new FoLParser(graph);
             
             int minWL = Configuration.getInstance().getMin();
             int maxWL = Configuration.getInstance().getMax();
@@ -66,23 +66,16 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             												Configuration.getInstance().getIgnorePattern());
            //Parse Comments flags
             cflags = commentParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()));
-            
-            System.out.println("min:"+minWL+" max:"+maxWL);
-            
+                        
             //Incase an Error occured while parsing the comments, cflags%2!= 0
-            if(cflags.size()%2==0){  
-            	//Parse Delimiter Data
-            	delParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens", minWL, maxWL);
-            	//Parse FoL
-            	folParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensFol", minWL, maxWL);
-            	//Parse Indents
-            	indParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensInd", minWL, maxWL);
+            for(Weight i: weights){
+                if(cflags.size()%2==0){  
+                	//Parse Weights
+                	i.getParser().parse(graph, Files.newBufferedReader(file, Charset.defaultCharset()),cflags,i.getTableName(), minWL, maxWL);
+                }       
             }
             
-            
         }
-
         return FileVisitResult.CONTINUE;
     }
-
 }
