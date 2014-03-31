@@ -59,19 +59,24 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             IndentParser indParser = new IndentParser(graph);
             FoLParser folParser = new FoLParser(graph);
             
+            int minWL = Configuration.getInstance().getMin();
+            int maxWL = Configuration.getInstance().getMax();
+            
             CommentParser commentParser = new CommentParser(Configuration.getInstance().getCommentPattern(),
             												Configuration.getInstance().getIgnorePattern());
            //Parse Comments flags
             cflags = commentParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()));
             
+            System.out.println("min:"+minWL+" max:"+maxWL);
+            
             //Incase an Error occured while parsing the comments, cflags%2!= 0
             if(cflags.size()%2==0){  
             	//Parse Delimiter Data
-            	delParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens");
+            	delParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokens", minWL, maxWL);
             	//Parse FoL
-            	folParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensFol");
+            	folParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensFol", minWL, maxWL);
             	//Parse Indents
-            	indParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensInd");
+            	indParser.parse(Files.newBufferedReader(file, Charset.defaultCharset()),cflags,"tokensInd", minWL, maxWL);
             }
             
             

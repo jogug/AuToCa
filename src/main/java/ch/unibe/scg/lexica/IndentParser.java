@@ -9,6 +9,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * Finds words on new lines after indents and saves them in the db
+ * @author Joel
+ *
+ */
 public class IndentParser implements IParser {
 	private Graph graph;
 
@@ -20,7 +25,7 @@ public class IndentParser implements IParser {
 	/**
 	 * 
 	 */
-	public void parse(BufferedReader reader, ArrayList<Integer> cflags, String table) throws IOException{ 
+	public void parse(BufferedReader reader, ArrayList<Integer> cflags, String table, int minWL, int maxWL) throws IOException{ 
 		int counter = 0,i = 0, j = 0;	
         String name = "";
         char prevC = 'i';
@@ -34,7 +39,7 @@ public class IndentParser implements IParser {
             	reader.skip(cflags.get(j+1)-cflags.get(j));
             	counter = cflags.get(j+1);
             	j+=2;
-                add(name, table);
+                add(name,table, minWL, maxWL);
                 name = "";
             }else{
 	            if(notNewLine){
@@ -56,13 +61,13 @@ public class IndentParser implements IParser {
 	                if (Character.toString(c).matches("[ \\r\\n\\t]")) {
 	                    // Ignore white spaces
 	                	//TODO
-	                    add(name,table);
+	                    add(name,table, minWL, maxWL);
 	                    notNewLine = true;
 	                    notIndent = true;
 	                    name = "";
 	                } else if (Character.toString(c).matches("[\\\"\\'\\`\\^\\|\\~\\\\\\&\\$\\%\\#\\@\\.\\,\\;\\:\\!\\?\\+\\-\\*\\/\\=\\<\\>\\(\\)\\{\\}\\[\\]]")) {
 	                    // Ignore delimiters
-	                    add(name,table);
+	                    add(name,table, minWL, maxWL);
 	                    notNewLine = true;
 	                    notIndent = true;
 	                    name = "";
@@ -76,8 +81,8 @@ public class IndentParser implements IParser {
         }
 	}
     
-    public void add(String name, String table){
-        if (!name.isEmpty()) {
+    public void add(String name, String table, int minWL,int maxWL){
+        if (!name.isEmpty()&&name.length()<maxWL&&name.length()>minWL) {
             try {
 				graph.put(name, table);
 			} catch (SQLException e) {

@@ -42,7 +42,7 @@ public class Graph implements Closeable {
             stmt.execute("DROP ALL OBJECTS");
 
             stmt = conn.createStatement();
-            stmt.execute("CREATE TABLE IF NOT EXISTS tokens (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, average REAL NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS tokens (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
 
             stmt = conn.createStatement();
             stmt.execute("CREATE TABLE IF NOT EXISTS tokensFol (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
@@ -76,9 +76,6 @@ public class Graph implements Closeable {
         stmt.executeUpdate("UPDATE tokens SET coverage = coverage + 1 WHERE current > 0");
 
         stmt = conn.createStatement();
-        stmt.executeUpdate("UPDATE tokens SET average = (average + current) / 2");
-
-        stmt = conn.createStatement();
         stmt.executeUpdate("UPDATE tokens SET current = 0");
     }
 
@@ -110,29 +107,25 @@ public class Graph implements Closeable {
             }
         } else {
             stmt = conn.createStatement();
-            stmt.executeUpdate("INSERT INTO "+ table + " VALUES('" + name + "', 1, 0, 0, 1)");
+            stmt.executeUpdate("INSERT INTO "+ table + " VALUES('" + name + "', 1, 0, 1)");
         }
     }
     
     public void analyzeInit() throws SQLException{
     	Statement stmt = conn.createStatement();
         stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS globalT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, average REAL NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS globalT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
         stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS averageT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, average REAL NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS coverageT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
         stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS coverageT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, average REAL NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS actualTokenT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
         stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS actualTokenT (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, average REAL NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
-        stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS resultT (global REAL, average REAL, coverage REAL, precision DECIMAL(10,3), recall DECIMAL(5,3))");
+        stmt.execute("CREATE TABLE IF NOT EXISTS resultT (global REAL, coverage REAL, precision DECIMAL(10,3), recall DECIMAL(5,3))");
     }
     
     public void clearAnalyzeData() throws SQLException{
     	Statement stmt = conn.createStatement();
 		stmt.executeUpdate("DELETE globalT");
-		stmt = conn.createStatement();
-		stmt.executeUpdate("DELETE averageT");
 		stmt = conn.createStatement();
 		stmt.executeUpdate("DELETE coverageT");
 		stmt = conn.createStatement();
@@ -144,11 +137,9 @@ public class Graph implements Closeable {
 
 	public void calculateFractions(int n) throws SQLException {	
 		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("INSERT INTO globalT(token, global, average, coverage, current) SELECT TOP "+n+" token, global, average, coverage, current From tokens order by global DESC");
+		stmt.executeUpdate("INSERT INTO globalT(token, global, coverage, current) SELECT TOP "+n+" token, global, coverage, current From tokens order by global DESC");
 		stmt = conn.createStatement();
-		stmt.executeUpdate("INSERT INTO averageT(token, global, average, coverage, current) SELECT TOP "+n+" token, global, average, coverage, current From tokens order by average DESC");
-		stmt = conn.createStatement();
-		stmt.executeUpdate("INSERT INTO coverageT(token, global, average, coverage, current) SELECT TOP "+n+" token, global, average, coverage, current From tokens order by coverage DESC");
+		stmt.executeUpdate("INSERT INTO coverageT(token, global, coverage, current) SELECT TOP "+n+" token, global, coverage, current From tokens order by coverage DESC");
 	
 		
 		stmt = conn.createStatement();
@@ -156,11 +147,6 @@ public class Graph implements Closeable {
 							"SELECT count(*) FROM actualTokenT, globalt WHERE actualTokenT.token = globalt.token,"+
 							"(cast(SELECT count(*) FROM actualTokenT, globalt WHERE actualTokenT.token = globalt.token as REAL)/(SELECT count(*) FROM actualTokenT)),"+
 							"cast(SELECT count(*) FROM actualTokenT, globalt WHERE actualTokenT.token = globalt.token as REAL)/"+n+")");
-		stmt = conn.createStatement();
-		stmt.executeUpdate("INSERT INTO RESULTT( AVERAGE ,PRECISION ,RECALL ) VALUES ("+
-							"SELECT count(*) FROM actualTokenT, averaget WHERE actualTokenT.token = averaget.token,"+
-							"cast(SELECT count(*) FROM actualTokenT, averaget WHERE actualTokenT.token = averaget.token as REAL)/(SELECT count(*) FROM actualTokenT),"+
-							"cast(SELECT count(*) FROM actualTokenT, averaget WHERE actualTokenT.token = averaget.token as REAL)/"+n+")");
 		stmt = conn.createStatement();
 		stmt.executeUpdate("INSERT INTO RESULTT( COVERAGE ,PRECISION ,RECALL ) VALUES ("+
 							"SELECT count(*) FROM actualTokenT, coveraget WHERE actualTokenT.token = coveraget.token,"+
@@ -171,17 +157,14 @@ public class Graph implements Closeable {
     public void print() throws SQLException {
     	
     	Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT top 20 * FROM tokens ORDER BY coverage asc"); 
+        ResultSet rs = stmt.executeQuery("SELECT top 20 * FROM tokens ORDER BY coverage desc"); 
         
         while (rs.next()) {
             String token = rs.getString("token");
             int global = rs.getInt("global");
-            float average = rs.getFloat("average");
             int coverage = rs.getInt("coverage");
 
-            System.out.println(token + ";"+"global "+global+" average:" + average+ " coverage" +coverage);
-            System.out.print(token + ";");
-            //System.out.format("%d;%.2f;%d%n", "global "+global," average:" + average, " coverage" +coverage);
+            System.out.println(token + ";"+"global "+global+ " coverage" +coverage);
         }   	
         
     }

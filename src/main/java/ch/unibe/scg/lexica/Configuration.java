@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -28,7 +27,7 @@ public final class Configuration {
     private String filePattern = null;
     private String[] commentPattern = null;
     private String[] ignorePattern = null;
-
+    private int minWL,maxWL;
     private Configuration() {
     }
 
@@ -51,6 +50,7 @@ public final class Configuration {
         OptionSpec<String> filePatternArg = parser.accepts("f").withRequiredArg().defaultsTo("");
         OptionSpec<String> commentPatternArg = parser.accepts("p").withRequiredArg().defaultsTo("");       
         OptionSpec<String> ignorePatternArg = parser.accepts("i").withRequiredArg().defaultsTo("");
+        OptionSpec<Integer> minMaxFilterArg = parser.accepts("m").withRequiredArg().withValuesSeparatedBy(',').ofType(Integer.class).ofType(Integer.class).defaultsTo(new Integer[]{0,30});
                 
         // Parse the arguments
         OptionSet options = parser.parse(args);
@@ -93,16 +93,19 @@ public final class Configuration {
                
         // Gets the start and end-patterns !Attention produces an ERROR if comments start with [ or ]
         // When new Line is passed as argument in the cmd 
-        String temp = commentPatternArg.values(options).toString().replaceAll("\\[|\\]", "");
-        commentPattern = temp.split(",");
-        for(int i = 0; i<commentPattern.length;i++){
-        	commentPattern[i] = commentPattern[i].replaceAll("\\\\n", "\n");
-        }
+        commentPattern = commentPatternArg.values(options).toString().replaceAll("\\[|\\]", "").split(",");
+        resolveNewLineProblem(commentPattern);
         
-        temp = ignorePatternArg.values(options).toString().replaceAll("\\[|\\]", "");
-        ignorePattern = temp.split(",");
-        for(int i = 0; i<ignorePattern.length;i++){
-        	ignorePattern[i] = ignorePattern[i].replaceAll("\\\\n", "\n");
+        ignorePattern = ignorePatternArg.values(options).toString().replaceAll("\\[|\\]", "").split(",");
+        resolveNewLineProblem(ignorePattern);
+        
+        minWL = minMaxFilterArg.values(options).get(0);
+        maxWL = minMaxFilterArg.values(options).get(1);
+    }
+    
+    private void resolveNewLineProblem(String arg[]){
+        for(int i = 0; i<arg.length;i++){
+        	arg[i] = arg[i].replaceAll("\\\\n", "\n");
         }
     }
 
@@ -124,5 +127,13 @@ public final class Configuration {
 
     public String getFilePattern() {
         return filePattern;
+    }
+    
+    public int getMin(){
+    	return minWL;
+    }
+    
+    public int getMax(){
+    	return maxWL;
     }
 }

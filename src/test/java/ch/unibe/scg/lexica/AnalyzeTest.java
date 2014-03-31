@@ -14,7 +14,7 @@ public class AnalyzeTest {
     @Test
     public void test() throws ClassNotFoundException, SQLException {
     	//0 c,1 java, 2 cpp, 3 python
-    	int i = 0;
+    	int i = 3;
     	
     	AnalyzeMode test = new AnalyzeMode(loadPath(i)[0],loadPath(i)[1],33);
     	test.execute();

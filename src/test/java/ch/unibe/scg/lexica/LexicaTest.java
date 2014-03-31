@@ -12,7 +12,7 @@ public class LexicaTest {
     @Test
     public void test() {   	
     	@SuppressWarnings("unused")
-		Lexica lexica = new Lexica(loadStrings(0));
+		Lexica lexica = new Lexica(loadStrings(4));
     }
     
     public String[] loadStrings(int i){
@@ -23,6 +23,8 @@ public class LexicaTest {
 									"*.java",
 									"-p",
 									"/*,*/,//,\n",
+									"-m",
+									"1,10"
 									}; 
     		return stringArgs;
     	}else if(i == 2){
@@ -35,6 +37,8 @@ public class LexicaTest {
 									"*.cpp",
 									"-p",
 									"/*,*/",
+									"-m",
+									"1,10"
 									}; 
     		return stringArgs;
     	}else if(i == 3){
@@ -44,6 +48,8 @@ public class LexicaTest {
 									"*.c",
 									"-p",
 									"/*,*/,//,\n",
+									"-m",
+									"1,10"
 									}; 
 			return stringArgs;
     	}else if(i == 4){
@@ -53,6 +59,8 @@ public class LexicaTest {
 									"*.py",
 									"-p",
 									"\"\"\",\n,#,\n",
+									"-m",
+									"1,10"
 									}; 
 			return stringArgs;
     	}else if(i == 5){
@@ -63,6 +71,8 @@ public class LexicaTest {
 									//"*.txt",
 									"-p",
 									"/*,*/,//,\n",
+									"-m",
+									"1,10"
 									//"-i",
 									//"://,\"/*,/*\""
 									}; 
@@ -74,8 +84,10 @@ public class LexicaTest {
 									"*.java",
 									"-p",
 									"/*,*/,//,\n",
+									"-m",
+									"1,10"
 									}; 
-return stringArgs;
+    		return stringArgs;
     	}
     }
 }

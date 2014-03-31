@@ -40,7 +40,7 @@ public final class AnalyzeMode implements IOperationMode {
     
     public void loadStandardData() {
         try {
-			parser.parse(Files.newBufferedReader(actualTokenPath,Charset.defaultCharset()), new ArrayList<Integer>(),"actualTokenT");
+			parser.parse(Files.newBufferedReader(actualTokenPath,Charset.defaultCharset()), new ArrayList<Integer>(),"actualTokenT",1,10);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
