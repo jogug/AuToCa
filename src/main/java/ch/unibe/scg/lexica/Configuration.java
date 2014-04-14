@@ -15,9 +15,6 @@ import java.util.Objects;
 import ch.unibe.scg.lexica.mode.AnalyzeMode;
 import ch.unibe.scg.lexica.mode.IOperationMode;
 import ch.unibe.scg.lexica.mode.ScanMode;
-import ch.unibe.scg.lexica.parser.DelimiterParser;
-import ch.unibe.scg.lexica.parser.FoLParser;
-import ch.unibe.scg.lexica.parser.IndentParser;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -93,7 +90,7 @@ public final class Configuration {
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
         	//TODO Analyze mode not integrated from console yet
             mode = new AnalyzeMode(path,initStandardWeights(),initStandardLanguage());
-        } else {
+        }else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
 
@@ -113,10 +110,7 @@ public final class Configuration {
     }
     
     private ArrayList<Weight> initStandardWeights(){
-    	ArrayList<Weight> result = new ArrayList<>();
-    	result.add(new Weight("Occurences", "occW", new DelimiterParser()));
-    	result.add(new Weight("First of Line", "folW", new FoLParser()));
-    	result.add(new Weight("Indent", "indW", new IndentParser()));   	
+    	ArrayList<Weight> result = new ArrayList<>();  	
     	return result;
     }
     

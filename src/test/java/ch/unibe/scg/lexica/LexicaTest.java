@@ -12,7 +12,7 @@ public class LexicaTest {
     @Test
     public void test() {   	
     	@SuppressWarnings("unused")
-		Lexica lexica = new Lexica(loadStrings(4));
+		Lexica lexica = new Lexica(loadStrings(3));
     }
     
     public String[] loadStrings(int i){

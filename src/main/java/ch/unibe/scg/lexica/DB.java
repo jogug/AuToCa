@@ -8,10 +8,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -22,14 +20,98 @@ import org.slf4j.LoggerFactory;
  * @author Joel
  *
  */
-public class Graph implements Closeable {
+public class DB implements Closeable {
 
-    private static final Logger logger = LoggerFactory.getLogger(Graph.class);
+    private static final Logger logger = LoggerFactory.getLogger(DB.class);
     private static final String FILENAME = ".lexica";
 
     private final Connection conn;
+    
+    public DB(Path path) throws ClassNotFoundException, SQLException {
+        Objects.requireNonNull(path);
 
-    public Graph(Path path, ArrayList<Weight> weights) throws ClassNotFoundException, SQLException {
+        Path database = path.resolve(FILENAME);
+          
+        Class.forName("org.h2.Driver");
+        conn = DriverManager.getConnection("jdbc:h2:" + database.toString(), "sa", "");       
+        
+    }
+    
+    public void initialize() throws SQLException{
+    	Statement stmt = conn.createStatement();
+        stmt.execute("DROP ALL OBJECTS");
+        stmt = conn.createStatement();
+    	String query = 	"CREATE TABLE IF NOT EXISTS tokens ("
+    					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, token VARCHAR(30) NOT NULL, "
+    					+ "PRIMARY KEY (id));"
+    					+ "CREATE TABLE IF NOT EXISTS files ("
+    					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
+    					+ "PRIMARY KEY (id));"
+    					+ "CREATE TABLE IF NOT EXISTS token_buffer ("
+    					+ "token VARCHAR(30) NOT NULL, file VARCHAR(100) NOT NULL);"
+    					+ "CREATE TABLE IF NOT EXISTS occurences ("
+    					+ "tokenid MEDIUMINT NOT NULL, fileid MEDIUMINT NOT NULL, "
+    					+ "orderid MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (orderid));"
+    					+ "CREATE INDEX iTOKEN ON TOKEN_BUFFER (TOKEN);"
+    					+ "CREATE INDEX iTOKEN2 ON TOKENS (TOKEN);";
+    	stmt.execute(query);
+    }
+    
+    public void deleteRecords(String table) throws SQLException{
+     	Statement stmt = conn.createStatement();
+    	stmt.executeUpdate("DELETE FROM "+table);   	
+    }
+	
+	public void insertToken(String token,String table, String file) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO "+table+"(token, file) SELECT '"+token.replace("'", "£££")+"' AS TOKEN, '"+file+"' AS FILE");
+	}
+	
+
+	public void insertIDs() throws SQLException {
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO OCCURENCES ( TOKENID , FILEID ) SELECT SRC.ID, L0.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM FILES ORDER BY ID DESC) L0");		
+	}
+	
+	public void insertFile(String file,String table) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO "+table+"(file) SELECT '"+file+"' AS FILE");
+	}
+	
+	public void mergeTokens() throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO TOKENS ( TOKEN ) SELECT DISTINCT SRC.TOKEN FROM TOKEN_BUFFER SRC LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
+	}
+	
+    public void print() throws SQLException {
+    	//TODO
+    }
+    
+    //ANALYZE MODE
+    public void globalAnalyze() throws SQLException{
+    	Statement stmt = conn.createStatement();
+    	stmt.execute("SELECT L0.*, L1.TOKEN FROM (SELECT TOKENID, COUNT(TOKENID) AS COUNT FROM OCCURENCES GROUP BY TOKENID ORDER BY COUNT(TOKENID) DESC) L0 INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID");
+    }
+    
+    public void coverageAnalyze() throws SQLException{
+    	Statement stmt = conn.createStatement();
+    	stmt.execute("SELECT L1.*, L2.TOKEN FROM (SELECT  L0.TOKENID, COUNT(L0.FILEID) AS COUNT FROM (SELECT DISTINCT TOKENID,FILEID FROM OCCURENCES) L0 GROUP BY L0.TOKENID ORDER BY COUNT(L0.FILEID)  DESC) L1 INNER JOIN ( SELECT ID, TOKEN FROM TOKENS ) L2 ON L1.TOKENID =  L2.ID");   	
+    }
+    
+    @Override
+    public void close() throws IOException {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                logger.warn("Cannot close database connection", e);
+            }
+        }
+    }
+
+    
+    /*
+    public DB(Path path, ArrayList<Weight> weights) throws ClassNotFoundException, SQLException {
         Objects.requireNonNull(path);
 
         Path database = path.resolve(FILENAME);
@@ -43,7 +125,6 @@ public class Graph implements Closeable {
         for(Weight i:weights){
             stmt = conn.createStatement();
             stmt.execute("CREATE TABLE IF NOT EXISTS "+i.getTableName()+" (token VARCHAR NOT NULL UNIQUE, global INT NOT NULL, coverage INT NOT NULL, current INT NOT NULL)");
-
         }
         
         //TODO exceptions in weights with multiple tables..
@@ -53,33 +134,15 @@ public class Graph implements Closeable {
         stmt = conn.createStatement();
         stmt.execute("CREATE TABLE IF NOT EXISTS prevs (token VARCHAR NOT NULL, prev VARCHAR NOT NULL, CONSTRAINT prevskey PRIMARY KEY (token, prev))");       
     }
+    */
     
-    public Graph(Path path) throws ClassNotFoundException, SQLException {
-        Objects.requireNonNull(path);
-
-        Path database = path.resolve(FILENAME);
-          
-        Class.forName("org.h2.Driver");
-        conn = DriverManager.getConnection("jdbc:h2:" + database.toString(), "sa", "");           
-    }
-    
+    /*
     public void newFile(String table) throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("UPDATE "+table+" SET coverage = coverage + 1 WHERE current > 0");
 
         stmt = conn.createStatement();
         stmt.executeUpdate("UPDATE "+table+" SET current = 0");
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                logger.warn("Cannot close database connection", e);
-            }
-        }
     }
 
     @SuppressWarnings("resource")
@@ -175,20 +238,5 @@ public class Graph implements Closeable {
             stmt.executeUpdate("INSERT INTO "+ table + " VALUES('" + name + "', 1, 0, 1)");
         }
 	}
-	
-    public void print() throws SQLException {
-    	//TODO
-    	/*
-    	Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT top 20 * FROM tokens ORDER BY coverage desc"); 
-        
-        while (rs.next()) {
-            String token = rs.getString("token");
-            int global = rs.getInt("global");
-            int coverage = rs.getInt("coverage");
-
-            System.out.println(token + ";"+"global "+global+ " coverage" +coverage);
-        }   	
-        */
-    }
+	*/
 }

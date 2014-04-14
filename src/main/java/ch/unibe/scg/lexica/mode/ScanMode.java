@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.unibe.scg.lexica.Configuration;
-import ch.unibe.scg.lexica.Graph;
+import ch.unibe.scg.lexica.DB;
 import ch.unibe.scg.lexica.SourceFileVisitor;
 import ch.unibe.scg.lexica.Weight;
 
@@ -40,8 +40,9 @@ public final class ScanMode implements IOperationMode {
     public void execute() {
         logger.info("Scanning " + path.toString() + " with file pattern " + Configuration.getInstance().getFilePattern());
 
-        try (Graph graph = new Graph(path, weights)) {        	
-            Files.walkFileTree(path, new SourceFileVisitor(graph, weights));
+        try (DB graph = new DB(path)) {     
+        	graph.initialize();
+            Files.walkFileTree(path, new SourceFileVisitor(graph));
             graph.print();
         } catch (IOException | ClassNotFoundException | SQLException e) {
            logger.error("Cannot walk the file tree", e);

@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.lexica.parser;
+package ch.unibe.scg.lexica.analyzer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,11 +10,11 @@ import java.util.ArrayList;
 /**
  * Sets skip flags for comments, saves them in cflags
  */
-public class CommentParser {
+public class Comment {
 	private  String[] commentPat;
 	private String[] ignorePat;
 	
-	public CommentParser(String[] commentPat,String[] ignorePat){
+	public Comment(String[] commentPat,String[] ignorePat){
      	this.commentPat = commentPat;
      	this.ignorePat = ignorePat;
 	}
