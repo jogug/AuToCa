@@ -1,4 +1,4 @@
-package ch.unibe.scg.lexica.tokenizer;
+package ch.unibe.scg.autoca.tokenizer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -63,6 +63,7 @@ public class Tokenizer {
 		int oldIndent = -1;
 		int oldPosition = -1;
 		while (!atEnd(s)) {
+
 			checkProgress(oldIndent, oldPosition);
 			oldIndent = indent;
 			oldPosition = position;

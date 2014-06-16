@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.lexica.analyzer;
+package ch.unibe.scg.autoca.analyzer;
 
 import java.io.BufferedReader;
 import java.io.IOException;

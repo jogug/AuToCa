@@ -1,4 +1,4 @@
-package ch.unibe.scg.lexica.tokenizer;
+package ch.unibe.scg.autoca.tokenizer;
 
 /**
  * 

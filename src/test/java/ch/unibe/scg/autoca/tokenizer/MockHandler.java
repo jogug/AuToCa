@@ -1,6 +1,9 @@
-package ch.unibe.scg.lexica.tokenizer;
+package ch.unibe.scg.autoca.tokenizer;
 import java.util.ArrayList;
 import java.util.List;
+
+import ch.unibe.scg.autoca.tokenizer.TokenType;
+import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 
 
 public class MockHandler implements TokenizerHandler {

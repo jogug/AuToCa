@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.lexica;
+package ch.unibe.scg.autoca;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -37,6 +37,8 @@ public class DB implements Closeable {
         
     }
     
+    //TODO
+    // 1 DB for 1 Language
     public void initialize() throws SQLException{
     	Statement stmt = conn.createStatement();
         stmt.execute("DROP ALL OBJECTS");
@@ -52,48 +54,63 @@ public class DB implements Closeable {
     					+ "CREATE TABLE IF NOT EXISTS occurences ("
     					+ "tokenid MEDIUMINT NOT NULL, fileid MEDIUMINT NOT NULL, "
     					+ "orderid MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (orderid));"
-    					+ "CREATE INDEX iTOKEN ON TOKEN_BUFFER (TOKEN);"
-    					+ "CREATE INDEX iTOKEN2 ON TOKENS (TOKEN);";
+    					+ "CREATE INDEX iTOKEN ON token_buffer (TOKEN);"
+    					+ "CREATE INDEX iTOKEN2 ON tokens (TOKEN);";
     	stmt.execute(query);
     }
     
+    /**
+     * Deletes records from a specified table
+     * @param table
+     * @throws SQLException
+     */
     public void deleteRecords(String table) throws SQLException{
      	Statement stmt = conn.createStatement();
     	stmt.executeUpdate("DELETE FROM "+table);   	
     }
 	
-	public void insertToken(String token,String table, String file) throws SQLException{
+    /**
+     * Inserts a token into a table, replaces ' with '' for compatibility
+     * 
+     * @param token
+     * @param table
+     * @param file
+     * @throws SQLException
+     */
+	public void insertToken(String token, String table, String file) throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO "+table+"(token, file) SELECT '"+token.replace("'", "£££")+"' AS TOKEN, '"+file+"' AS FILE");
+		stmt.execute("INSERT INTO "+table+"(token, file) SELECT '"+token+"' AS TOKEN, '"+file+"' AS FILE");
 	}
 	
-
-	public void insertIDs() throws SQLException {
-		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO OCCURENCES ( TOKENID , FILEID ) SELECT SRC.ID, L0.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM FILES ORDER BY ID DESC) L0");		
-	}
-	
-	public void insertFile(String file,String table) throws SQLException{
+	/**
+	 * Inserts a filename into a table, assigns it an ID
+	 * 
+	 * @param file
+	 * @param table
+	 * @throws SQLException
+	 */
+	public void insertFileName(String file,String table) throws SQLException{
 		Statement stmt = conn.createStatement();
 		stmt.execute("INSERT INTO "+table+"(file) SELECT '"+file+"' AS FILE");
 	}
+
+	public void insertOrderIDs() throws SQLException {
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO OCCURENCES ( TOKENID , FILEID ) SELECT SRC.ID, L0.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM files ORDER BY ID DESC) L0");		
+	}	
 	
-	public void mergeTokens() throws SQLException{
+	public void assignTokensInTempTableIDs() throws SQLException{
 		Statement stmt = conn.createStatement();
 		stmt.execute("INSERT INTO TOKENS ( TOKEN ) SELECT DISTINCT SRC.TOKEN FROM TOKEN_BUFFER SRC LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
 	}
-	
-    public void print() throws SQLException {
-    	//TODO
-    }
-    
+
     //ANALYZE MODE
-    public void globalAnalyze() throws SQLException{
+    public void analyzeGlobal() throws SQLException{
     	Statement stmt = conn.createStatement();
     	stmt.execute("SELECT L0.*, L1.TOKEN FROM (SELECT TOKENID, COUNT(TOKENID) AS COUNT FROM OCCURENCES GROUP BY TOKENID ORDER BY COUNT(TOKENID) DESC) L0 INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID");
     }
     
-    public void coverageAnalyze() throws SQLException{
+    public void analyzeCoverage() throws SQLException{
     	Statement stmt = conn.createStatement();
     	stmt.execute("SELECT L1.*, L2.TOKEN FROM (SELECT  L0.TOKENID, COUNT(L0.FILEID) AS COUNT FROM (SELECT DISTINCT TOKENID,FILEID FROM OCCURENCES) L0 GROUP BY L0.TOKENID ORDER BY COUNT(L0.FILEID)  DESC) L1 INNER JOIN ( SELECT ID, TOKEN FROM TOKENS ) L2 ON L1.TOKENID =  L2.ID");   	
     }
@@ -108,7 +125,11 @@ public class DB implements Closeable {
             }
         }
     }
-
+	
+    public void print() throws SQLException {
+    	//TODO
+    }
+    
     
     /*
     public DB(Path path, ArrayList<Weight> weights) throws ClassNotFoundException, SQLException {

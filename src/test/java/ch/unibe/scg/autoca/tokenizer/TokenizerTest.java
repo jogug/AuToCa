@@ -1,9 +1,12 @@
-package ch.unibe.scg.lexica.tokenizer;
+package ch.unibe.scg.autoca.tokenizer;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import ch.unibe.scg.autoca.tokenizer.TokenType;
+import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 public class TokenizerTest {
 	private Tokenizer tokenizer;

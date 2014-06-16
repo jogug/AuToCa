@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.lexica;
+package ch.unibe.scg.autoca;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import ch.unibe.scg.lexica.mode.AnalyzeMode;
-import ch.unibe.scg.lexica.mode.IOperationMode;
-import ch.unibe.scg.lexica.mode.ScanMode;
+import ch.unibe.scg.autoca.mode.AnalyzeMode;
+import ch.unibe.scg.autoca.mode.IOperationMode;
+import ch.unibe.scg.autoca.mode.ScanMode;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -25,7 +25,7 @@ import joptsimple.OptionSpec;
  *
  */
 public final class Configuration {
-
+	
     private static final Configuration instance = new Configuration();
 
     private IOperationMode mode = null;
@@ -86,10 +86,10 @@ public final class Configuration {
         // Get the operation mode
         if (nonOptionArgs.get(0).equalsIgnoreCase("scan")) {
         	//TODO Standard weights list
-            mode = new ScanMode(path, initStandardWeights());
+           // mode = new ScanMode(path);
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
         	//TODO Analyze mode not integrated from console yet
-            mode = new AnalyzeMode(path,initStandardWeights(),initStandardLanguage());
+            //mode = new AnalyzeMode(path,initStandardLanguage());
         }else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
@@ -109,13 +109,9 @@ public final class Configuration {
         maxWL = minMaxFilterArg.values(options).get(1);
     }
     
-    private ArrayList<Weight> initStandardWeights(){
-    	ArrayList<Weight> result = new ArrayList<>();  	
-    	return result;
-    }
     
     private Language initStandardLanguage(){
-    	return new Language("java", Paths.get("../lexica/resources/java_tokens.txt"));
+    	return new Language("Java",".java", Paths.get("../lexica/resources/java_tokens.txt"));
     }
     
     private void resolveNewLineProblem(String arg[]){
@@ -151,4 +147,5 @@ public final class Configuration {
     public int getMax(){
     	return maxWL;
     }
+    
 }
