@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
@@ -49,6 +50,9 @@ public class DB implements Closeable {
     					+ "CREATE TABLE IF NOT EXISTS files ("
     					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
     					+ "PRIMARY KEY (id));"
+    					+ "CREATE TABLE IF NOT EXISTS projects ("
+    					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
+    					+ "PRIMARY KEY (id));"
     					+ "CREATE TABLE IF NOT EXISTS token_buffer ("
     					+ "token VARCHAR(30) NOT NULL, file VARCHAR(100) NOT NULL);"
     					+ "CREATE TABLE IF NOT EXISTS occurences ("
@@ -83,16 +87,18 @@ public class DB implements Closeable {
 	}
 	
 	/**
-	 * Inserts a filename into a table, assigns it an ID
+	 * Inserts a Objectname into a table, assigns it an ID
 	 * 
 	 * @param file
 	 * @param table
 	 * @throws SQLException
 	 */
-	public void insertFileName(String file,String table) throws SQLException{
+	public void insertObjectName(String file, String table) throws SQLException{
 		Statement stmt = conn.createStatement();
 		stmt.execute("INSERT INTO "+table+"(file) SELECT '"+file+"' AS FILE");
 	}
+	
+
 
 	public void insertOrderIDs() throws SQLException {
 		Statement stmt = conn.createStatement();
@@ -129,6 +135,13 @@ public class DB implements Closeable {
     public void print() throws SQLException {
     	//TODO
     }
+
+	public int getProjectID(String projectName) throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT ID FROM "+ "projects" + " WHERE FILE = '" + projectName + "'");
+        rs.next();
+		return rs.getInt(1);
+	}
     
     
     /*

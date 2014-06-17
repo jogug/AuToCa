@@ -11,7 +11,6 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.Configuration;
 import ch.unibe.scg.autoca.DB;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.SourceFileVisitor;
@@ -32,16 +31,16 @@ public final class ScanMode implements IOperationMode {
         this.project = project;
     }
 
-    @Override
-    public void execute() {
-        logger.info("Scanning " + project.getFilePath().toString() + " with file pattern " + project.getLanguage().getfilePattern());
-
-        try (DB db = new DB(project.getFilePath())) {     
-        	db.initialize();
-            Files.walkFileTree(project.getFilePath(), new SourceFileVisitor(db, project));
-            db.print();
-        } catch (IOException | ClassNotFoundException | SQLException e) {
+	@Override
+	public void execute(DB db) {
+        logger.info("Scanning " + project.getFilePath().toString() + " with file pattern " + project.getLanguage().getfilePattern());          
+        try {        
+        	//assign Project an ID
+			db.insertObjectName(project.getFilePath().getFileName().toString(), "projects");
+			project.setId(db.getProjectID(project.getFilePath().getFileName().toString()));
+        	Files.walkFileTree(project.getFilePath(), new SourceFileVisitor(db, project));
+        } catch (IOException | SQLException e) {
            logger.error("Cannot walk the file tree", e);
-        }                
-    }
+        }   		
+	}
 }

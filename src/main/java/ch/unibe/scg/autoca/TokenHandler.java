@@ -26,7 +26,7 @@ public class TokenHandler implements TokenizerHandler {
 		try {
 			token = token.replace("'", "''");
 			//TODO
-			if(token.length()<27 && token.length()>0){
+			if(token.length()<27 && token.length()>1){
 			db.insertToken(token, tempTable , file);
 			}
 		} catch (SQLException e) {
@@ -57,7 +57,7 @@ public class TokenHandler implements TokenizerHandler {
 	
 	private void assignFileID(){
 		try {
-			db.insertFileName(file, fileTable);
+			db.insertObjectName(file, fileTable);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -3,8 +3,10 @@
 */
 package ch.unibe.scg.autoca.mode;
 
+import ch.unibe.scg.autoca.DB;
+
 public interface IOperationMode {
 
-    void execute();
+    void execute(DB db);
 
 }

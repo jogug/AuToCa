@@ -3,7 +3,6 @@ package ch.unibe.scg.autoca;
 import java.nio.file.Path;
 
 public class Project {
-	private static int count = 0;
 	private int id;
 	private Path filePath;
 	private String name;
@@ -11,15 +10,17 @@ public class Project {
 	
 	
 	public Project(Path filePath, Language language){
-		id = count;
-		count++;
 		this.language = language;
 		this.filePath = filePath;
 		this.name = filePath.getFileName().toString();
 	}
 	
-	public int getID(){
+	public int getId(){
 		return id;
+	}
+	
+	public void setId(int argId){
+		id = argId;		
 	}
 	
 	public Path getFilePath(){

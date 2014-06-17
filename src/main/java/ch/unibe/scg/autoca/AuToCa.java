@@ -3,14 +3,8 @@
 */
 package ch.unibe.scg.autoca;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.unibe.scg.autoca.mode.IOperationMode;
-
 public final class AuToCa {
 
     private static final Logger logger = LoggerFactory.getLogger(AuToCa.class);

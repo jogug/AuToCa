@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.DB;
 import ch.unibe.scg.autoca.Language;
 
 /**
@@ -29,8 +30,9 @@ public final class AnalyzeMode implements IOperationMode {
 
     }
 
-    @Override
-    public void execute() {
-
-    }
+	@Override
+	public void execute(DB db) {
+		// TODO Auto-generated method stub
+		
+	}
 }
