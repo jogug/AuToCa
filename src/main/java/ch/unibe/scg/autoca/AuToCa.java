@@ -11,16 +11,8 @@ public final class AuToCa {
 
     public AuToCa(String[] args) {
     	Test test = new Test();
+    	test.loadStandardTest();
     	test.scan();
-    	/*
-            try {
-                Configuration.getInstance().parseArguments(args);
-                IOperationMode mode = Configuration.getInstance().getMode();
-                mode.execute();
-            } catch (IOException | ClassNotFoundException | SQLException e) {
-                logger.error("An error occured", e);
-            }
-        */
     }
 
     public static void main(String[] args) {

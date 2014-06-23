@@ -38,6 +38,7 @@ public final class ScanMode implements IOperationMode {
         	//assign Project an ID
 			db.insertObjectName(project.getFilePath().getFileName().toString(), "projects");
 			project.setId(db.getProjectID(project.getFilePath().getFileName().toString()));
+			//scan Project files
         	Files.walkFileTree(project.getFilePath(), new SourceFileVisitor(db, project));
         } catch (IOException | SQLException e) {
            logger.error("Cannot walk the file tree", e);

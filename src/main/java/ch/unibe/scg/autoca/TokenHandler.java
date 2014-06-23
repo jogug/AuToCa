@@ -6,8 +6,8 @@ import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 
 public class TokenHandler implements TokenizerHandler {
-	public DB db;
-	public String file, tempTable, fileTable;
+	private DB db;
+	private String file, tempTable, fileTable;
 	
 	public TokenHandler(DB db, String file, String tempTable, String fileTable){
 		this.tempTable = tempTable;

@@ -30,7 +30,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     private final DB db;
     private final PathMatcher pathMatcher;
 
-
+    //TODO
     public SourceFileVisitor(DB db,Project project) throws SQLException, IOException {
         Objects.requireNonNull(db);
         this.db = db;     
@@ -45,6 +45,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
         if (name != null && pathMatcher.matches(name)) {
             logger.debug("Parsing " + path.toString());            
             //File to DB
+            //TODO Table Names should get passed from Test
             TokenHandler th = new TokenHandler(db, name.toString(), "token_buffer", "files");
             Tokenizer tk = new Tokenizer(th);
             tk.loadDefaults();

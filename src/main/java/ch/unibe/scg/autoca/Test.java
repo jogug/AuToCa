@@ -3,12 +3,7 @@
  */
 
 package ch.unibe.scg.autoca;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,12 +25,11 @@ public class Test {
 	
 	public Test(){
 		this.languages = new ArrayList<Language>();
-		loadStandardTest();
 	}
 	
-	private void loadStandardTest() {		
-		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte");
-		
+	public void loadStandardTest() {		
+		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\");
+		/*
 		Language java = new Language("Java","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
 		java.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Java\\"), java);
 		languages.add(java);
@@ -43,7 +37,7 @@ public class Test {
 		Language c = new Language("C","*.c", Paths.get("../lexica/resources/c_tokens.txt"));
 		c.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\C\\"), c);
 		languages.add(c);	
-		
+		*/
 		Language python = new Language("Python", "*.py", Paths.get("../lexica/resources/python_tokens.txt"));
 		python.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Python\\"), python);
 		languages.add(python);
@@ -53,8 +47,16 @@ public class Test {
 		languages.add(cpp);			
 		
 	}
+	
+	public void loadTest(){
+		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\");
+		
+		Language java = new Language("Test","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
+		java.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Test\\"), java);
+		languages.add(java);
+	}
 
-	public synchronized void scan(){
+	public void scan(){
 		try {
 			//Create DB
 			DB db = new DB(outputLocation);
@@ -62,9 +64,11 @@ public class Test {
 	        
 			//Fill DB
 			if(!languages.isEmpty()){
-				for(Project i: languages.get(0).getProjects()){
-					ScanMode scanMode = new ScanMode(i);
-					scanMode.execute(db);	
+				for(int j= 0;j<languages.size();j++){
+					for(int i = 0;i<languages.get(j).getProjects().size();i++){
+						ScanMode scanMode = new ScanMode(languages.get(j).getProjects().get(i));
+						scanMode.execute(db);	
+					}
 				}
 			}
 		} catch (ClassNotFoundException | SQLException e) {

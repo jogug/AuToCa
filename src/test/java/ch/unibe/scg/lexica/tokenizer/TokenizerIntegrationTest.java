@@ -8,6 +8,9 @@ import java.net.URL;
 
 import org.junit.Test;
 
+import ch.unibe.scg.autoca.tokenizer.MockHandler;
+import ch.unibe.scg.autoca.tokenizer.Tokenizer;
+
 public class TokenizerIntegrationTest {
 	
 	

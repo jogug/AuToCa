@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class DB implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(DB.class);
-    private static final String FILENAME = ".lexica";
+    private static final String FILENAME = ".autoca";
 
     private final Connection conn;
     
@@ -47,17 +47,24 @@ public class DB implements Closeable {
     	String query = 	"CREATE TABLE IF NOT EXISTS tokens ("
     					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, token VARCHAR(30) NOT NULL, "
     					+ "PRIMARY KEY (id));"
+    					
     					+ "CREATE TABLE IF NOT EXISTS files ("
     					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
     					+ "PRIMARY KEY (id));"
+    					
     					+ "CREATE TABLE IF NOT EXISTS projects ("
     					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
     					+ "PRIMARY KEY (id));"
+    					
     					+ "CREATE TABLE IF NOT EXISTS token_buffer ("
-    					+ "token VARCHAR(30) NOT NULL, file VARCHAR(100) NOT NULL);"
+    					+ "token VARCHAR(30) NOT NULL, file VARCHAR(100) NOT NULL,"
+    					+ ");"
+    					
     					+ "CREATE TABLE IF NOT EXISTS occurences ("
     					+ "tokenid MEDIUMINT NOT NULL, fileid MEDIUMINT NOT NULL, "
+    					+ "projectid MEDIUMINT NOT NULL,"
     					+ "orderid MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (orderid));"
+    					
     					+ "CREATE INDEX iTOKEN ON token_buffer (TOKEN);"
     					+ "CREATE INDEX iTOKEN2 ON tokens (TOKEN);";
     	stmt.execute(query);
@@ -97,12 +104,10 @@ public class DB implements Closeable {
 		Statement stmt = conn.createStatement();
 		stmt.execute("INSERT INTO "+table+"(file) SELECT '"+file+"' AS FILE");
 	}
-	
-
 
 	public void insertOrderIDs() throws SQLException {
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO OCCURENCES ( TOKENID , FILEID ) SELECT SRC.ID, L0.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM files ORDER BY ID DESC) L0");		
+		stmt.execute("INSERT INTO OCCURENCES ( TOKENID , FILEID, PROJECTID ) SELECT SRC.ID, L0.ID, L1.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM files ORDER BY ID DESC) L0 CROSS JOIN (SELECT TOP 1 ID FROM projects ORDER BY ID DESC) L1");		
 	}	
 	
 	public void assignTokensInTempTableIDs() throws SQLException{
