@@ -41,6 +41,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
         Objects.requireNonNull(path);
         Objects.requireNonNull(attrs);
+        
         Path name = path.getFileName();
         if (name != null && pathMatcher.matches(name)) {
             logger.debug("Parsing " + path.toString());            

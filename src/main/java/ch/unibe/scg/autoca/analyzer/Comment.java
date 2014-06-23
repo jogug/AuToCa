@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 /**
  * Sets skip flags for comments, saves them in cflags
+ * 
+ * TODO JK: Should be removed, shouldn't?
  */
 public class Comment {
 	private  String[] commentPat;

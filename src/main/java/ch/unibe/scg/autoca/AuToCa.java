@@ -9,6 +9,7 @@ public final class AuToCa {
 
     private static final Logger logger = LoggerFactory.getLogger(AuToCa.class);
 
+    /** TODO JK: bad practice, to keep this in a constructor... */
     public AuToCa(String[] args) {
     	Test test = new Test();
     	test.loadStandardTest();
