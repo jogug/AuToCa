@@ -7,8 +7,7 @@ import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.unibe.scg.autoca.DB;
+import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 
 /**
@@ -18,7 +17,7 @@ import ch.unibe.scg.autoca.Language;
  */
 public final class AnalyzeMode implements IOperationMode {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnalyzeMode.class);
+    //private static final Logger logger = LoggerFactory.getLogger(AnalyzeMode.class);
 
 
 
@@ -31,7 +30,7 @@ public final class AnalyzeMode implements IOperationMode {
     }
 
 	@Override
-	public void execute(DB db) {
+	public void execute(DataSet dataset) {
 		// TODO Auto-generated method stub
 		
 	}

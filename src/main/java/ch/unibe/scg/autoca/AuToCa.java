@@ -5,15 +5,19 @@ package ch.unibe.scg.autoca;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.unibe.scg.autoca.mode.ScanMode;
 public final class AuToCa {
 
     private static final Logger logger = LoggerFactory.getLogger(AuToCa.class);
 
     /** TODO JK: bad practice, to keep this in a constructor... */
     public AuToCa(String[] args) {
-    	Test test = new Test();
-    	test.loadStandardTest();
-    	test.scan();
+    	DataSet dataset = new DataSet();
+    	dataset.loadStandardDataSet();;
+    	
+    	ScanMode scanmode = new ScanMode();
+    	scanmode.execute(dataset);
     }
 
     public static void main(String[] args) {

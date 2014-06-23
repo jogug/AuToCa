@@ -51,7 +51,7 @@ public class Language {
 		return name;
 	}
 	
-	public String getfilePattern(){
+	public String getFilePattern(){
 		return filePattern;
 	}
 	

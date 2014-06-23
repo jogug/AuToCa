@@ -7,15 +7,13 @@ import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 
 public class TokenHandler implements TokenizerHandler {
 	private DB db;
-	private String file, tempTable, fileTable;
+	private final int maxTokenLength, minTokenLength;
+	private String file;
 	
-	public TokenHandler(DB db, String file, String tempTable, String fileTable){
-		this.tempTable = tempTable;
-		this.fileTable = fileTable;
+	public TokenHandler(DB db, int maxTokenLength, int minTokenLength){
 		this.db = db;
-		this.file = file;
-		assignFileID();
-		deleteTempTable();
+		this.maxTokenLength = maxTokenLength;
+		this.minTokenLength = minTokenLength;
 	}
 	
 	/**
@@ -23,56 +21,25 @@ public class TokenHandler implements TokenizerHandler {
 	 */
 	@Override
 	public void token(String token, TokenType type) {
-		try {
-			// TODO JK: Just minor note: should be IMO responsibility of DB, not here
-			token = token.replace("'", "''");
-			//TODO
-			// TODO JK: Magic numbers, please, extract as constants
-			if(token.length()<27 && token.length()>1){
-			db.insertToken(token, tempTable , file);
+		if(token.length()>minTokenLength&&token.length()<maxTokenLength){
+			switch(type){
+				case DEDENT: 
+				case INDENT: 
+				case NEWLINE:
+				case WORD: 	try {
+								db.insertToken(token, file);
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+							break;
+				case STRING: break;
+				case UNKNOWN: break;
+				default:		
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}	
-	}
-	
-	public void insertFileIntoDB(){
-		assignTokensIDs();
-		saveOrderOfTokensInTable();
-	}
-	
-	private void assignTokensIDs(){
-		try {
-			db.assignTokensInTempTableIDs();
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 	}
 	
-	private void saveOrderOfTokensInTable(){
-		try {
-			db.insertOrderIDs();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void assignFileID(){
-		try {
-			db.insertObjectName(file, fileTable);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * clear temporary values table before starting a new file
-	 */
-	private void deleteTempTable(){
-        try {
-			db.deleteRecords(tempTable);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public void setFile(String fileName){
+		file = fileName;
 	}
 }

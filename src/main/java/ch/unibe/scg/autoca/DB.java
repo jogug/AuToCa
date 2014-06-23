@@ -24,22 +24,22 @@ import org.slf4j.LoggerFactory;
 public class DB implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(DB.class);
-    private static final String FILENAME = ".autoca";
+    
+    //TODO adjust in statements
+    private static final String FILENAME = ".autoca", tokenTable = "tokens", fileTable = "files",
+    					 projectTable = "projects", tempTable = "token_buffer", occurencesTable = "occurences";
 
     private final Connection conn;
     
     public DB(Path path) throws ClassNotFoundException, SQLException {
         Objects.requireNonNull(path);
-
+                
         Path database = path.resolve(FILENAME);
           
         Class.forName("org.h2.Driver");
-        conn = DriverManager.getConnection("jdbc:h2:" + database.toString(), "sa", "");       
-        
+        conn = DriverManager.getConnection("jdbc:h2:" + database.toString(), "sa", "");               
     }
     
-    //TODO
-    // 1 DB for 1 Language
     public void initialize() throws SQLException{
     	Statement stmt = conn.createStatement();
         stmt.execute("DROP ALL OBJECTS");
@@ -71,49 +71,52 @@ public class DB implements Closeable {
     }
     
     /**
-     * Deletes records from a specified table
+     * Deletes records from a temporary table
      * @param table
      * @throws SQLException
-     */
-    public void deleteRecords(String table) throws SQLException{
+     */  
+    public void deleteTokenBuffer() throws SQLException{
+    	//TODO myght cause heap problems
      	Statement stmt = conn.createStatement();
-    	stmt.executeUpdate("DELETE FROM "+table);   	
+    	stmt.executeUpdate("DELETE FROM "+tempTable);  
     }
 	
+    //TODO Prepared Statement for inserts
     /**
-     * Inserts a token into a table, replaces ' with '' for compatibility
+     * Inserts a token and its fileID into a table, replaces ' with '' for compatibility
      * 
      * @param token
      * @param table
      * @param file
      * @throws SQLException
      */
-	public void insertToken(String token, String table, String file) throws SQLException{
+	public void insertToken(String token, String file) throws SQLException{
 		Statement stmt = conn.createStatement();
 		// TODO JK: I am not sure, why is there the SELECT? Doesn't it cause some slowdown?
-		stmt.execute("INSERT INTO "+table+"(token, file) SELECT '"+token+"' AS TOKEN, '"+file+"' AS FILE");
+		// TODO JK: Just minor note: should be IMO responsibility of DB, not here ??
+		// TODO token = token.replace("'", "''");
+		stmt.execute("INSERT INTO " + tempTable + "(token, file) VALUES ('" + token.replace("'", "''") + "', '"+file+"')");
 	}
 	
-	/**
-	 * Inserts a Objectname into a table, assigns it an ID
-	 * 
-	 * @param file
-	 * @param table
-	 * @throws SQLException
-	 */
-	public void insertObjectName(String file, String table) throws SQLException{
+	public void insertProject(String project) throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO "+table+"(file) SELECT '"+file+"' AS FILE");
+		stmt.execute("INSERT INTO " + projectTable + "(file) VALUES ('" + project + "')");
 	}
-
+	
+	public void insertFile(String file) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO " + fileTable + "(file) VALUES ('" + file + "')");
+	}
+	
+	//TODO Fix changes to ScanMode, improve
 	public void insertOrderIDs() throws SQLException {
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO OCCURENCES ( TOKENID , FILEID, PROJECTID ) SELECT SRC.ID, L0.ID, L1.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM files ORDER BY ID DESC) L0 CROSS JOIN (SELECT TOP 1 ID FROM projects ORDER BY ID DESC) L1");		
+		stmt.execute("INSERT INTO " + occurencesTable + " ( TOKENID , FILEID, PROJECTID ) SELECT SRC.ID, L0.ID, L1.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM files ORDER BY ID DESC) L0 CROSS JOIN (SELECT TOP 1 ID FROM projects ORDER BY ID DESC) L1");		
 	}	
 	
 	public void assignTokensInTempTableIDs() throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO TOKENS ( TOKEN ) SELECT DISTINCT SRC.TOKEN FROM TOKEN_BUFFER SRC LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
+		stmt.execute("INSERT INTO " + tokenTable + " ( TOKEN ) SELECT DISTINCT SRC.TOKEN FROM TOKEN_BUFFER SRC LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
 	}
 
     //ANALYZE MODE
@@ -142,9 +145,9 @@ public class DB implements Closeable {
     	//TODO
     }
 
-	public int getProjectID(String projectName) throws SQLException {
+	public int getProjectId(String projectName) throws SQLException {
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT ID FROM "+ "projects" + " WHERE FILE = '" + projectName + "'");
+        ResultSet rs = stmt.executeQuery("SELECT ID FROM "+ projectTable + " WHERE FILE = '" + projectName + "'");
         rs.next();
 		return rs.getInt(1);
 	}

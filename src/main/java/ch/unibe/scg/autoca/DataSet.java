@@ -5,33 +5,29 @@
 package ch.unibe.scg.autoca;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
-import ch.unibe.scg.autoca.mode.ScanMode;
-
 /**
- * Holds information on a test done on one code project to be scanned
+ * Holds General information, Project file Locations and the Output location
  * @author Joel
  *
- *
- * TODO JK: remove, refactor, delete, kill, comment, ... whatever!
  */
-public class Test {
+public class DataSet {
 	private ArrayList<Language> languages;
 	private Path outputLocation;
 	
-	public Test(ArrayList<Language> language){
+	public DataSet(ArrayList<Language> language){
+		//TODO when passed from command prompt
 		this.languages = language;
 	}
 	
-	public Test(){
+	public DataSet(){
 		this.languages = new ArrayList<Language>();
 	}
 	
-	public void loadStandardTest() {		
+	public void loadStandardDataSet() {		
 		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\");
-		/*
+		
 		Language java = new Language("Java","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
 		java.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Java\\"), java);
 		languages.add(java);
@@ -39,7 +35,7 @@ public class Test {
 		Language c = new Language("C","*.c", Paths.get("../lexica/resources/c_tokens.txt"));
 		c.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\C\\"), c);
 		languages.add(c);	
-		*/
+		
 		Language python = new Language("Python", "*.py", Paths.get("../lexica/resources/python_tokens.txt"));
 		python.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Python\\"), python);
 		languages.add(python);
@@ -50,38 +46,37 @@ public class Test {
 		
 	}
 	
-	public void loadTest(){
+	public void loadTestDataSet(){
 		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\");
 		
 		Language java = new Language("Test","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
 		java.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Test\\"), java);
 		languages.add(java);
 	}
+	
+	public Path getOutputLocation(){
+		return outputLocation;
+	}
 
-	public void scan(){
-		try {
-			//Create DB
-			DB db = new DB(outputLocation);
-	        db.initialize();
-	        
-			//Fill DB
-			if(!languages.isEmpty()){
-				for(int j= 0;j<languages.size();j++){
-					for(int i = 0;i<languages.get(j).getProjects().size();i++){
-						ScanMode scanMode = new ScanMode(languages.get(j).getProjects().get(i));
-						scanMode.execute(db);	
-					}
-				}
+	public  ArrayList<Language> getLanguages() {
+		return languages;
+	}
+	
+	public int getFileCount(){
+		int k = 0;
+		for(Language i: languages){
+			for(Project j: i.getProjects()){
+				k += j.getProjectFilePaths().size();
 			}
-		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-		}  
-
-		System.out.println("Finish");
-	
+		}
+		return k;
 	}
 	
-	public void analyze(){
-
-	}
+	public int getProjectCount(){
+		int k = 0;
+		for(Language i: languages){		
+			k += i.getProjects().size();
+		}
+		return k;
+	}	
 }
