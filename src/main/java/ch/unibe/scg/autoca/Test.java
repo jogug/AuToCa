@@ -19,6 +19,8 @@ import ch.unibe.scg.autoca.mode.ScanMode;
  * Holds information on a test done on one code project to be scanned
  * @author Joel
  *
+ *
+ * TODO JK: remove, refactor, delete, kill, comment, ... whatever!
  */
 public class Test {
 	private ArrayList<Language> languages;

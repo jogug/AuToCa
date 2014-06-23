@@ -1,4 +1,4 @@
-package ch.unibe.scg.lexica.tokenizer;
+package ch.unibe.scg.autoca.tokenizer;
 
 import static org.junit.Assert.*;
 
@@ -9,11 +9,10 @@ import java.net.URL;
 import org.junit.Test;
 
 public class TokenizerIntegrationTest {
-	
-	
+
 	@Test
 	public void testDataFile() throws ClassNotFoundException, URISyntaxException {
-		URL fileUrl = this.getClass().getResource("resources/data_file.c");
+		URL fileUrl = ClassLoader.getSystemResource("data_file-short.c");
 		MockHandler mh = new MockHandler();
 		Tokenizer tokenizer = new Tokenizer(mh);
 		

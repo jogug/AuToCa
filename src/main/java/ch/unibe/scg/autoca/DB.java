@@ -83,6 +83,7 @@ public class DB implements Closeable {
      */
 	public void insertToken(String token, String table, String file) throws SQLException{
 		Statement stmt = conn.createStatement();
+		// TODO JK: I am not sure, why is there the SELECT? Doesn't it cause some slowdown?
 		stmt.execute("INSERT INTO "+table+"(token, file) SELECT '"+token+"' AS TOKEN, '"+file+"' AS FILE");
 	}
 	

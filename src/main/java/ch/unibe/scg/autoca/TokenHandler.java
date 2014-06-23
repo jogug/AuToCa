@@ -24,8 +24,10 @@ public class TokenHandler implements TokenizerHandler {
 	@Override
 	public void token(String token, TokenType type) {
 		try {
+			// TODO JK: Just minor note: should be IMO responsibility of DB, not here
 			token = token.replace("'", "''");
 			//TODO
+			// TODO JK: Magic numbers, please, extract as constants
 			if(token.length()<27 && token.length()>1){
 			db.insertToken(token, tempTable , file);
 			}
