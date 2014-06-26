@@ -38,15 +38,15 @@ public class DataSet {
 	
 	public void loadStandardDataSet() {		
 		outputLocation = Paths.get("../AuToCa/resources/");
-		/*
+		
 		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
 		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/java/"), java);
 		languages.add(java);
-		*/
+		
 		Language c = new Language("C","*.c", Paths.get("../AuToCa/resources/c_tokens.txt"));
 		c.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/C/"), c);
 		languages.add(c);	
-		/*
+		
 		Language python = new Language("Python", "*.py", Paths.get("../AuToCa/resources/python_tokens.txt"));
 		python.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Python/"), python);
 		languages.add(python);
@@ -54,7 +54,7 @@ public class DataSet {
 		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../AuToCa/resources/cpp_tokens.txt"));
 		cpp.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Cpp/"), cpp);
 		languages.add(cpp);			
-		*/
+		
 	}
 	
 	//TODO Put in test class
