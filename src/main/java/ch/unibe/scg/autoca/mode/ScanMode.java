@@ -4,7 +4,7 @@
 package ch.unibe.scg.autoca.mode;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import ch.unibe.scg.autoca.DB;
 import ch.unibe.scg.autoca.DataSet;
-import ch.unibe.scg.autoca.SourceFileVisitor;
+import ch.unibe.scg.autoca.Language;
+import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.TokenHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
@@ -23,86 +24,90 @@ import ch.unibe.scg.autoca.tokenizer.Tokenizer;
  * @author Joel
  */
 public final class ScanMode implements IOperationMode {
-
     private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
     
     private DB db;
     private TokenHandler th;
     private Tokenizer tk;
-
+    
     //TODO calculate good number for max
-    private final int maxTokenLength = 1, minTokenLength = 27;
+    //TODO pass on creation
+    private final int maxTokenLength = 1;
+    private final int minTokenLength = 27;
 
 
 	public void initializeScanMode(DataSet dataset) {
+    	logger.info("Starting Initialization");
 		Objects.requireNonNull(dataset.getLanguages());
 		try {
 			//Create DB
-			 db = new DB(dataset.getOutputLocation());
-	        db.initialize();	             
+			db = new DB(dataset.getOutputLocation());
+	        db.initialize();	           
 	        
-			//Prepare Projects	        
-			for(int j= 0;j<dataset.getLanguages().size();j++){			 
-				for(int i = 0;i<dataset.getLanguages().get(j).getProjects().size();i++){
-					 logger.info("Initializing " + dataset.getLanguages().get(j).getName() + ", " + dataset.getLanguages().get(j).getProjects().get(i).getName());  						
-					//Assign each Project an ID;
-					dataset.getLanguages().get(j).getProjects().get(i).assignId(db);
-					
-			        //Tokenizing&Token Handling
-			        th = new TokenHandler(db, minTokenLength,maxTokenLength);
-			        tk = new Tokenizer(th);
-			        tk.loadDefaults();	  
-					
-					//Extract Project Paths
-					try {
-						Files.walkFileTree( dataset.getLanguages().get(j).getProjects().get(i).getProjectPath(),
-											new SourceFileVisitor(	dataset.getLanguages().get(j).getProjects().get(i),
-																	dataset.getLanguages().get(j).getFilePattern()));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-
+	        //Tokenizing&Token Handling
+	        th = new TokenHandler(db, minTokenLength,maxTokenLength);
+	        tk = new Tokenizer(th);
+	        tk.loadDefaults();	  
+	        
+	        dataset.initializeProjects();
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}  		
 		
-		logger.info("Initialization finished AuToCa found: " + dataset.getLanguages().size() + " Languages, " + dataset.getProjectCount() + " Projects, " + dataset.getFileCount() +" Files"  );
+		logger.info("Finished initialization AuToCa found: " + dataset.getLanguages().size() + 
+					" Languages, " + dataset.getProjectCount() + 
+					" Projects, " + dataset.getFileCount() +" Files"  );
 	}
+	
 
-	//TODO maybe add time/file
+
+	//TODO maybe add timeStamps/file
 	@Override
 	public void execute(DataSet dataset) {
+    	logger.info("Starting scan on dataset");
+		int langC = 0;
+		int projC = 0;
         initializeScanMode(dataset); 
-         					
-		for(int j= 0;j<dataset.getLanguages().size();j++){
-			for(int i = 0;i<dataset.getLanguages().get(j).getProjects().size();i++){	
-				 logger.info(	dataset.getLanguages().get(j).getName() + " " +
-					 		(j+1) + "/" + dataset.getLanguages().size() + ", " +
-					 		dataset.getLanguages().get(j).getProjects().get(i).getName() + " " +
-					 		(i+1) + "/" + dataset.getLanguages().get(j).getProjects().size() +
-					 		", files: " + dataset.getLanguages().get(j).getProjects().get(i).getProjectFilePaths().size());  
-				for(int k = 0;k<dataset.getLanguages().get(j).getProjects().get(i).getProjectFilePaths().size();k++){									
+        
+        for(Language language: dataset.getLanguages()){
+        	langC++;
+        	for(Project project: language.getProjects()){
+        		projC++;
+        		int fileC = 0;
+				//Assign each Project an ID;
+				try {
+					db.insertProject(project.getName());
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}				
+				
+				logger.info(language.getName() + " " + (langC) + "/" + dataset.getLanguages().size() + ", " +
+					 		project.getName() + " " + (projC) + "/" + language.getProjects().size() +
+					 		", files: " + project.getProjectFilePaths().size());  
+        		for(Path path: project.getProjectFilePaths()){
+        			fileC++;
+        			System.out.print(fileC+",");
+        			
 					try {													
 						//Assign File ID
-						db.insertFile(dataset.getLanguages().get(j).getProjects().get(i).getProjectFilePaths().get(k).getFileName().toString());
+						db.insertFile(path.getFileName().toString());
 						//Tokenize & Insert Tokens
-						tk.tokenize(dataset.getLanguages().get(j).getProjects().get(i).getProjectFilePaths().get(k).toFile());
-						//Assign Token IDs
-						db.assignTokensInTempTableIDs();
-						//Fill Occurence Table
-						db.insertOrderIDs();
-						//Empty token_buffer table
-						db.deleteTokenBuffer();
+						tk.tokenize(path.toFile());
+						db.handleTempTable();
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
-				}
-			}	
-		}        	
-  		
-        
+        			
+        		}
+        	}
+        }
+         				           		 		
+		try {
+			db.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	logger.info("Finished scan on dataset");
 	}
 
 }

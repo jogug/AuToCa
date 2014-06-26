@@ -1,7 +1,6 @@
 package ch.unibe.scg.autoca;
 
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Project {
@@ -19,14 +18,6 @@ public class Project {
 		this.filePaths = new ArrayList<Path>();
 	}
 	
-	public void assignId(DB db){
-		try {
-			db.insertProject(name);
-			id = db.getProjectId(name);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public void addFile(Path path){
 		filePaths.add(path);

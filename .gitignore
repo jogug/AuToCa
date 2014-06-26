@@ -16,3 +16,6 @@ out/
 
 #Endings
 *.db
+
+#Folders
+/resources/testprojects

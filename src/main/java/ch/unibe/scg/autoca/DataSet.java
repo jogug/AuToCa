@@ -3,18 +3,28 @@
  */
 
 package ch.unibe.scg.autoca;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.ArrayList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Holds General information, Project file Locations and the Output location
+ * and allows to manipulate the data of the DataSet.
+ * 
  * @author Joel
- *
  */
 public class DataSet {
+    private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
 	private ArrayList<Language> languages;
-	private Path outputLocation;
+	private Path outputLocation;	
+	private boolean initialized;
 	
 	public DataSet(ArrayList<Language> language){
 		//TODO when passed from command prompt
@@ -22,37 +32,122 @@ public class DataSet {
 	}
 	
 	public DataSet(){
-		this.languages = new ArrayList<Language>();
+		languages = new ArrayList<Language>();
+		initialized = false;
 	}
 	
 	public void loadStandardDataSet() {		
-		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\");
+		outputLocation = Paths.get("C:/Users/Joel/Desktop/Testprojekte/");
 		
 		Language java = new Language("Java","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Java\\"), java);
+		java.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Java/"), java);
 		languages.add(java);
 		
 		Language c = new Language("C","*.c", Paths.get("../lexica/resources/c_tokens.txt"));
-		c.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\C\\"), c);
+		c.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/C/"), c);
 		languages.add(c);	
 		
 		Language python = new Language("Python", "*.py", Paths.get("../lexica/resources/python_tokens.txt"));
-		python.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Python\\"), python);
+		python.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Python/"), python);
 		languages.add(python);
 		
 		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../lexica/resources/cpp_tokens.txt"));
-		cpp.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Cpp\\"), cpp);
+		cpp.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Cpp/"), cpp);
 		languages.add(cpp);			
 		
 	}
 	
 	public void loadTestDataSet(){
-		outputLocation = Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\");
+		outputLocation = Paths.get("C:/Users/Joel/Desktop/Testprojekte/");
 		
 		Language java = new Language("Test","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("C:\\Users\\Joel\\Desktop\\Testprojekte\\Test\\"), java);
+		java.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Test/"), java);
 		languages.add(java);
 	}
+	
+	/**
+	 * Extracts file paths of all projects in all languages
+	 */
+	public void initializeProjects() {   
+		for(Language language: languages){
+			for(Project project: language.getProjects()){
+				logger.info("found " + language.getName() + ", " + project.getName());  				 				
+				try {
+					Files.walkFileTree( project.getProjectPath(), new SourceFileVisitor(project,language.getFilePattern()));
+				} catch (IOException | SQLException e) {
+					e.printStackTrace();
+				}						
+			}
+		}			
+		initialized = true;
+	}	
+	
+	/**
+	 * Extracts only the files affected by a scan from all the project directories into 
+	 * "\\Extracted"+sourceName directories. Files with the same name are copied in
+	 * ascending numbered sub folders. 
+	 */
+	public void extractSourceFiles() {	
+		logger.info("Starting extraction of source files from: " + outputLocation.toString());
+		if(!initialized) initializeProjects();
+		String outputExtractedSource = outputLocation.toString() + "\\Extracted" + outputLocation.getFileName().toString();
+
+		if((new File(outputExtractedSource)).exists()){
+			logger.info("Output folder for extracted source files already exists => skipped source file extraction,"+
+						"try deleting: "+outputExtractedSource);
+		}else{
+			(new File(outputExtractedSource)).mkdirs();
+				
+			for(Language language: languages){
+				String languagePath = outputExtractedSource + "\\" + language.getName().toString();
+				createFileIfNotExists(languagePath);				
+				for(Project project: language.getProjects()){
+					String projectPath = languagePath + "\\" + project.getName().toString();
+					createFileIfNotExists(projectPath);					
+					for(Path path: project.getProjectFilePaths()){	
+						int count = 0;
+						String destination = projectPath + "\\" +count+"\\"+ path.getFileName().toString();
+						createFileIfNotExists(projectPath + "\\" +count);						
+						while((new File(destination).exists())){
+							count++;
+							destination = projectPath + "\\" +count+"\\"+ path.getFileName().toString();							
+							createFileIfNotExists(projectPath + "\\" +count);
+						}						
+						try {
+							Files.copy(path,Paths.get(destination));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}			
+				}
+			}
+		}				
+		logger.info("Finished extraction to: " + outputExtractedSource);
+	}
+	
+	private void createFileIfNotExists(String path){
+		if(!(new File(path).exists())){
+			(new File(path)).mkdirs();
+		}
+	}
+	
+	public int getFileCount(){
+		int count = 0;
+		for(Language i: languages){
+			for(Project j: i.getProjects()){
+				count += j.getProjectFilePaths().size();
+			}
+		}
+		return count;
+	}
+	
+	public int getProjectCount(){
+		int count = 0;
+		for(Language i: languages){		
+			count += i.getProjects().size();
+		}
+		return count;
+	}	
 	
 	public Path getOutputLocation(){
 		return outputLocation;
@@ -61,22 +156,4 @@ public class DataSet {
 	public  ArrayList<Language> getLanguages() {
 		return languages;
 	}
-	
-	public int getFileCount(){
-		int k = 0;
-		for(Language i: languages){
-			for(Project j: i.getProjects()){
-				k += j.getProjectFilePaths().size();
-			}
-		}
-		return k;
-	}
-	
-	public int getProjectCount(){
-		int k = 0;
-		for(Language i: languages){		
-			k += i.getProjects().size();
-		}
-		return k;
-	}	
 }
