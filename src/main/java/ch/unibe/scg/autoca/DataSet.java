@@ -37,22 +37,22 @@ public class DataSet {
 	}
 	
 	public void loadStandardDataSet() {		
-		outputLocation = Paths.get("../lexica/resources/");
+		outputLocation = Paths.get("../AuToCa/resources/");
 		
-		Language java = new Language("Java","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("../lexica/resources/testprojects/java/"), java);
+		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/java/"), java);
 		languages.add(java);
 		
-		Language c = new Language("C","*.c", Paths.get("../lexica/resources/c_tokens.txt"));
-		c.addMultipleProjects(Paths.get("../lexica/resources/testprojects/C/"), c);
+		Language c = new Language("C","*.c", Paths.get("../AuToCa/resources/c_tokens.txt"));
+		c.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/C/"), c);
 		languages.add(c);	
 		
-		Language python = new Language("Python", "*.py", Paths.get("../lexica/resources/python_tokens.txt"));
-		python.addMultipleProjects(Paths.get("../lexica/resources/testprojects/Python/"), python);
+		Language python = new Language("Python", "*.py", Paths.get("../AuToCa/resources/python_tokens.txt"));
+		python.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Python/"), python);
 		languages.add(python);
 		
-		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../lexica/resources/cpp_tokens.txt"));
-		cpp.addMultipleProjects(Paths.get("../lexica/resources/testprojects/Cpp/"), cpp);
+		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../AuToCa/resources/cpp_tokens.txt"));
+		cpp.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Cpp/"), cpp);
 		languages.add(cpp);			
 		
 	}
@@ -61,7 +61,7 @@ public class DataSet {
 	public void loadTestDataSet(){
 		outputLocation = Paths.get("C:/Users/Joel/Desktop/Testprojekte/");
 		
-		Language java = new Language("Test","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
+		Language java = new Language("Test","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
 		java.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Test/"), java);
 		languages.add(java);
 	}
