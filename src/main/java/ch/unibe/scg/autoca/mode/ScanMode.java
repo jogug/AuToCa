@@ -75,6 +75,11 @@ public final class ScanMode implements IOperationMode {
         		projC++;
         		int fileC = 0;
         		int counterStep = (project.getProjectFilePaths().size()+1)/10;
+        		//TODO There are projects <10 maybe drop those
+        		if(project.getProjectFilePaths().size()<10){
+        			counterStep = 1;         		
+        		}
+
 				//Assign each Project an ID;
 				try {
 					db.insertProject(project.getName());
