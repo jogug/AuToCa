@@ -74,19 +74,21 @@ public final class ScanMode implements IOperationMode {
         	for(Project project: language.getProjects()){
         		projC++;
         		int fileC = 0;
+        		int counterStep = (project.getProjectFilePaths().size()+1)/10;
 				//Assign each Project an ID;
 				try {
 					db.insertProject(project.getName());
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				}				
-				
 				logger.info(language.getName() + " " + (langC) + "/" + dataset.getLanguages().size() + ", " +
 					 		project.getName() + " " + (projC) + "/" + language.getProjects().size() +
 					 		", files: " + project.getProjectFilePaths().size());  
         		for(Path path: project.getProjectFilePaths()){
         			fileC++;
-        			System.out.print(fileC+",");
+        			if(fileC%counterStep==0){
+            			System.out.print(fileC*100/project.getProjectFilePaths().size()+"%,");
+        			}
         			
 					try {													
 						//Assign File ID
@@ -96,9 +98,9 @@ public final class ScanMode implements IOperationMode {
 						db.handleTempTable();
 					} catch (SQLException e) {
 						e.printStackTrace();
-					}
-        			
+					}      			
         		}
+				System.out.println("100%");
         	}
         }
          				           		 		

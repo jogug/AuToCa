@@ -37,26 +37,27 @@ public class DataSet {
 	}
 	
 	public void loadStandardDataSet() {		
-		outputLocation = Paths.get("C:/Users/Joel/Desktop/Testprojekte/");
+		outputLocation = Paths.get("../lexica/resources/");
 		
 		Language java = new Language("Java","*.java", Paths.get("../lexica/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Java/"), java);
+		java.addMultipleProjects(Paths.get("../lexica/resources/testprojects/java/"), java);
 		languages.add(java);
 		
 		Language c = new Language("C","*.c", Paths.get("../lexica/resources/c_tokens.txt"));
-		c.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/C/"), c);
+		c.addMultipleProjects(Paths.get("../lexica/resources/testprojects/C/"), c);
 		languages.add(c);	
 		
 		Language python = new Language("Python", "*.py", Paths.get("../lexica/resources/python_tokens.txt"));
-		python.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Python/"), python);
+		python.addMultipleProjects(Paths.get("../lexica/resources/testprojects/Python/"), python);
 		languages.add(python);
 		
 		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../lexica/resources/cpp_tokens.txt"));
-		cpp.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Cpp/"), cpp);
+		cpp.addMultipleProjects(Paths.get("../lexica/resources/testprojects/Cpp/"), cpp);
 		languages.add(cpp);			
 		
 	}
 	
+	//TODO Put in test class
 	public void loadTestDataSet(){
 		outputLocation = Paths.get("C:/Users/Joel/Desktop/Testprojekte/");
 		
