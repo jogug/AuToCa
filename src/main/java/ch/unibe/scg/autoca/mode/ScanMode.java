@@ -29,6 +29,9 @@ public final class ScanMode implements IOperationMode {
     private DB db;
     private TokenHandler th;
     private Tokenizer tk;
+    private int langCounter;
+    private int projCounter;
+    
     
     //TODO calculate good number for max
     //TODO pass on creation
@@ -65,48 +68,14 @@ public final class ScanMode implements IOperationMode {
 	@Override
 	public void execute(DataSet dataset) {
     	logger.info("Starting scan on dataset");
-		int langC = 0;
-		int projC = 0;
+    	langCounter = 0;
+    	projCounter = 0;
+
         initializeScanMode(dataset); 
         
         for(Language language: dataset.getLanguages()){
-        	langC++;
-        	for(Project project: language.getProjects()){
-        		projC++;
-        		int fileC = 0;
-        		int counterStep = (project.getProjectFilePaths().size()+1)/10;
-        		//TODO There are projects <10 maybe drop those
-        		if(project.getProjectFilePaths().size()<10){
-        			counterStep = 1;         		
-        		}
-
-				//Assign each Project an ID;
-				try {
-					db.insertProject(project.getName());
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}				
-				logger.info(language.getName() + " " + (langC) + "/" + dataset.getLanguages().size() + ", " +
-					 		project.getName() + " " + (projC) + "/" + language.getProjects().size() +
-					 		", files: " + project.getProjectFilePaths().size());  
-        		for(Path path: project.getProjectFilePaths()){
-        			fileC++;
-        			if(fileC%counterStep==0){
-            			System.out.print(fileC*100/project.getProjectFilePaths().size()+"%,");
-        			}
-        			
-					try {													
-						//Assign File ID
-						db.insertFile(path.getFileName().toString());
-						//Tokenize & Insert Tokens
-						tk.tokenize(path.toFile());
-						db.handleTempTable();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}      			
-        		}
-				System.out.println("100%");
-        	}
+        	langCounter++;
+        	scanLanguage(language);
         }
          				           		 		
 		try {
@@ -114,7 +83,65 @@ public final class ScanMode implements IOperationMode {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
     	logger.info("Finished scan on dataset");
+	}
+	
+	private void scanLanguage(Language language){ 	    	
+    	try {
+			db.insertLanguage(language.getName());
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
+    	
+    	for(Project project: language.getProjects()){
+    		projCounter++;		
+    		scanProject(project);
+    	}    	
+	}
+	
+	private void scanProject(Project project){
+		int fileC = 0;
+		int progressStep = calculateProgressbarStepSize(project);
+
+		//Assign each Project an ID;
+		try {
+			db.insertProject(project.getName(), langCounter);
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}				
+		
+		logger.info(project.getLanguage().getName() + " " + (langCounter) + ", " +
+			 		project.getName() + " " + (projCounter) + "/" + project.getLanguage().getProjects().size() +
+			 		", files: " + project.getProjectFilePaths().size());  
+		
+		for(Path path: project.getProjectFilePaths()){
+			fileC++;
+			th.setFile(path.getFileName().toString());
+			
+			if(fileC%progressStep==0){
+    			System.out.print(fileC*100/project.getProjectFilePaths().size()+"%,");
+			}
+			
+			try {													
+				//Assign File ID
+				db.insertFile(path.getFileName().toString(), projCounter);
+				//Tokenize & Insert Tokens
+				tk.tokenize(path.toFile());
+				db.handleTempTable();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}      			
+		}
+		System.out.println();
+	}
+	
+	private int calculateProgressbarStepSize(Project project){
+		int result = (project.getProjectFilePaths().size()+1)/10;
+ 		if(project.getProjectFilePaths().size()<10){
+ 			result = 1;         		
+ 		}
+ 		return result;
 	}
 
 }

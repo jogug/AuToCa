@@ -32,6 +32,7 @@ public class DB implements Closeable {
     private static final String PROJECT = "projects";
     private static final String TEMPORARY = "token_buffer";
     private static final String OCCURENCE = "occurences";
+    private static final String LANGUAGE = "languages";
 
     private final Connection conn;
     
@@ -44,6 +45,7 @@ public class DB implements Closeable {
         conn = DriverManager.getConnection("jdbc:h2:" + database.toString(), "sa", "");               
     }
     
+    //TODO Test does the index cause memory ?
     public void initialize() throws SQLException{
     	Statement stmt = conn.createStatement();
         stmt.execute("DROP ALL OBJECTS");
@@ -54,14 +56,20 @@ public class DB implements Closeable {
     					
     					+ "CREATE TABLE IF NOT EXISTS files ("
     					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
+    					+ "projectid MEDIUMINT NOT NULL,"
     					+ "PRIMARY KEY (id));"
     					
     					+ "CREATE TABLE IF NOT EXISTS projects ("
     					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
+    					+ "languageid MEDIUMINT NOT NULL,"
+    					+ "PRIMARY KEY (id));"
+    					
+    					+ "CREATE TABLE IF NOT EXISTS languages ("
+    					+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, "
     					+ "PRIMARY KEY (id));"
     					
     					+ "CREATE TABLE IF NOT EXISTS token_buffer ("
-    					+ "token VARCHAR(30) NOT NULL, file VARCHAR(100) NOT NULL,"
+    					+ "token VARCHAR(30) NOT NULL"
     					+ ");"
     					
     					+ "CREATE TABLE IF NOT EXISTS occurences ("
@@ -92,17 +100,22 @@ public class DB implements Closeable {
 		// TODO JK: I am not sure, why is there the SELECT? Doesn't it cause some slowdown?
 		// TODO JK: Just minor note: should be IMO responsibility of DB, not here ??
 		// TODO token = token.replace("'", "''");
-		stmt.execute("INSERT INTO " + TEMPORARY + "(token, file) VALUES ('" + token.replace("'", "''") + "', '"+file+"')");
+		stmt.execute("INSERT INTO " + TEMPORARY + "(token) VALUES ('" + token.replace("'", "''")+"')");
 	}
 	
-	public void insertProject(String project) throws SQLException{
+	public void insertLanguage(String language) throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO " + PROJECT + "(file) VALUES ('" + project + "')");
+		stmt.execute("INSERT INTO " + LANGUAGE + "(file) VALUES ('" + language + "')");
 	}
 	
-	public void insertFile(String file) throws SQLException{
+	public void insertProject(String project, int langId) throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO " + FILE + "(file) VALUES ('" + file + "')");
+		stmt.execute("INSERT INTO " + PROJECT + "(file, languageid) VALUES ('" + project + "'," + langId + ")");
+	}
+	
+	public void insertFile(String file, int projId) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("INSERT INTO " + FILE + "(file, projectid) VALUES ('" + file + "'," + projId + ")");
 	}
 	
 	/**
