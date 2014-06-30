@@ -1,12 +1,10 @@
 /*
-** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
-*/
+ ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
+ */
 package ch.unibe.scg.autoca.mode;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,124 +22,130 @@ import ch.unibe.scg.autoca.tokenizer.Tokenizer;
  * @author Joel
  */
 public final class ScanMode implements IOperationMode {
-    private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
-    
-    private DB db;
-    private TokenHandler th;
-    private Tokenizer tk;
-    private int langCounter;
-    private int projCounter;
-    
-    
-    //TODO calculate good number for max
-    //TODO pass on creation
-    private final int maxTokenLength = 1;
-    private final int minTokenLength = 27;
+	private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
 
+	private DB db;
+	private TokenHandler th;
+	private Tokenizer tk;
+	private int langCounter;
+	private int projCounter;
+
+	private DataSet dataset;
+
+	// TODO calculate good number for max
+	// TODO pass on creation
+	private final int DEFAULT_MAX_TOKEN_LENGTH = 1;
+	private final int DEFAULT_MIN_TOKEN_LENGTH = 27;
+
+	public ScanMode(DataSet dataset) {
+		this.dataset = dataset;
+
+		initializeScanMode(dataset);
+	}
 
 	public void initializeScanMode(DataSet dataset) {
-    	logger.info("Starting Initialization");
-		Objects.requireNonNull(dataset.getLanguages());
+		logger.info("Starting Initialization");
+
 		try {
-			//Create DB
+			// Create DB
 			db = new DB(dataset.getOutputLocation());
-	        db.initialize();	           
-	        
-	        //Tokenizing&Token Handling
-	        th = new TokenHandler(db, minTokenLength,maxTokenLength);
-	        tk = new Tokenizer(th);
-	        tk.loadDefaults();	  
-	        
-	        dataset.initializeProjects();
+			db.initialize();
+
+			// Tokenizing&Token Handling
+			th = new TokenHandler(db, DEFAULT_MIN_TOKEN_LENGTH, DEFAULT_MAX_TOKEN_LENGTH);
+			tk = new Tokenizer(th);
+			tk.loadDefaults();
+
+			// dataset.initializeProjects();
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-		}  		
-		
-		logger.info("Finished initialization AuToCa found: " + dataset.getLanguages().size() + 
-					" Languages, " + dataset.getProjectCount() + 
-					" Projects, " + dataset.getFileCount() +" Files"  );
+			logger.error("Something went wrong: ", e);
+		}
+
+		logger.info("Finished initialization AuToCa found: " + dataset.getLanguages().size() + " Languages, "
+				+ dataset.getProjectCount() + " Projects, " + dataset.getFileCount() + " Files");
 	}
-	
 
-
-	//TODO maybe add timeStamps/file
+	// TODO maybe add timeStamps/file
 	@Override
-	public void execute(DataSet dataset) {
-    	logger.info("Starting scan on dataset");
-    	langCounter = 0;
-    	projCounter = 0;
+	public void execute() {
+		logger.info("Starting scan on dataset");
+		langCounter = 0;
+		projCounter = 0;
 
-        initializeScanMode(dataset); 
-        
-        for(Language language: dataset.getLanguages()){
-        	langCounter++;
-        	scanLanguage(language);
-        }
-         				           		 		
-		try {
-			db.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		for (Language language : dataset.getLanguages()) {
+			langCounter++;
+			processLanguage(language);
 		}
-		
-    	logger.info("Finished scan on dataset");
-	}
-	
-	private void scanLanguage(Language language){ 	    	
-    	try {
-			db.insertLanguage(language.getName());
-		} catch (SQLException e2) {
-			e2.printStackTrace();
-		}
-    	
-    	for(Project project: language.getProjects()){
-    		projCounter++;		
-    		scanProject(project);
-    	}    	
-	}
-	
-	private void scanProject(Project project){
-		int fileC = 0;
-		int progressStep = calculateProgressbarStepSize(project);
 
-		//Assign each Project an ID;
+		logger.info("Finished scan on dataset");
+	}
+
+	private void processLanguage(Language language) {
 		try {
-			db.insertProject(project.getName(), langCounter);
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}				
-		
-		logger.info(project.getLanguage().getName() + " " + (langCounter) + ", " +
-			 		project.getName() + " " + (projCounter) + "/" + project.getLanguage().getProjects().size() +
-			 		", files: " + project.getProjectFilePaths().size());  
-		
-		for(Path path: project.getProjectFilePaths()){
-			fileC++;
-			th.setFile(path.getFileName().toString());
-			
-			if(fileC%progressStep==0){
-    			System.out.print(fileC*100/project.getProjectFilePaths().size()+"%,");
+			db.newLanguage(language.getName());
+
+			for (Project project : language.getProjects()) {
+				projCounter++;
+				processProject(project);
 			}
-			
-			try {													
-				//Assign File ID
-				db.insertFile(path.getFileName().toString(), projCounter);
-				//Tokenize & Insert Tokens
-				tk.tokenize(path.toFile());
-				db.handleTempTable();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}      			
+
+			db.languageFinished(language.getName());
+		} catch (ClassNotFoundException | SQLException e) {
+			logger.error("Couldnt scan langauge " + language.getName() + " because: " + e.toString(), e);
 		}
-		System.out.println();
+
 	}
-	
-	private int calculateProgressbarStepSize(Project project){
-		int result = (project.getProjectFilePaths().size()+1)/10;
- 		if(project.getProjectFilePaths().size()<10){
- 			result = 1;         		
- 		}
- 		return result;
+
+	private void processProject(Project project) {
+		int progressStep = calculateProgressbarStepSize(project);
+		// Assign each Project an ID;
+		try {
+			db.newProject(project.getName(), langCounter);
+
+			logger.info(project.getLanguage().getName() + " " + (langCounter) + ", " + project.getName() + " "
+					+ (projCounter) + "/" + project.getLanguage().getProjects().size() + ", files: "
+					+ project.getProjectFilePaths().size());
+
+			processFiles(project, progressStep);
+
+			System.out.println();
+			db.projectFinished();
+		} catch (SQLException e1) {
+			logger.error("scan project errore: ", e1);
+		}
+	}
+
+	private void processFiles(Project project, int progressStep) {
+		int fileC = 0;
+		for (Path path : project.getProjectFilePaths()) {
+			th.setFile(path.getFileName().toString());
+
+			if (fileC % progressStep == 0) {
+				System.out.print(fileC * 100 / project.getFileCount() + "%,");
+			}
+
+			try {
+
+				// Assign File ID
+				db.newFile(path.getFileName().toString(), projCounter);
+				// Tokenize & Insert Tokens
+				tk.tokenize(path.toFile());
+				db.fileFinished();
+
+				fileC++;
+			} catch (SQLException e) {
+				// TODO:
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private int calculateProgressbarStepSize(Project project) {
+		int result = (project.getProjectFilePaths().size() + 1) / 10;
+		if (project.getProjectFilePaths().size() < 10) {
+			result = 1;
+		}
+		return result;
 	}
 
 }

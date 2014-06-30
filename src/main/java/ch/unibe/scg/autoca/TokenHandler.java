@@ -27,7 +27,7 @@ public class TokenHandler implements TokenizerHandler {
 				case INDENT: 
 				case NEWLINE:
 				case WORD: 	try {
-								db.insertToken(token, file);
+								db.newToken(token);
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}

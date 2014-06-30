@@ -5,9 +5,6 @@ package ch.unibe.scg.autoca.mode;
 
 import java.nio.file.Path;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 
 /**
@@ -30,7 +27,7 @@ public final class AnalyzeMode implements IOperationMode {
     }
 
 	@Override
-	public void execute(DataSet dataset) {
+	public void execute() {
 		// TODO Auto-generated method stub
 		
 	}

@@ -15,8 +15,8 @@ public final class AuToCa {
 	public void run() {
 		dataset.loadStandardDataSet();
 
-		ScanMode scanmode = new ScanMode();
-		scanmode.execute(dataset);
+		ScanMode scanmode = new ScanMode(dataset);
+		scanmode.execute();
 	}
 
 	public static void main(String[] args) {
