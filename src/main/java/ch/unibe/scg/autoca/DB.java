@@ -42,6 +42,8 @@ public class DB {
 	private String insertStatementQuery;
 
 	private PreparedStatement insertStatement;
+	
+	private int fileId;
 
 	public DB(Path path) throws ClassNotFoundException, SQLException {
 		database = path.resolve(FILENAME);
@@ -54,7 +56,7 @@ public class DB {
 		Statement stmt = conn.createStatement();
 		stmt.execute("DROP ALL OBJECTS");
 		stmt = conn.createStatement();
-		String query = "CREATE TABLE IF NOT EXISTS tokens ("
+		String query = "CREATE MEMORY TABLE IF NOT EXISTS TOKENS ("
 				+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, token VARCHAR(30) NOT NULL, " + "PRIMARY KEY (id));"
 	
 				+ "CREATE TABLE IF NOT EXISTS files ("
@@ -68,14 +70,14 @@ public class DB {
 				+ "CREATE TABLE IF NOT EXISTS languages ("
 				+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, file VARCHAR(100) NOT NULL, " + "PRIMARY KEY (id));"
 	
-				+ "CREATE TABLE IF NOT EXISTS token_buffer (" + "token VARCHAR(30) NOT NULL" + ");"
-	
 				+ "CREATE TABLE IF NOT EXISTS occurences (" + "tokenid MEDIUMINT NOT NULL, fileid MEDIUMINT NOT NULL, "
 				+ "orderid MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (orderid));"
+				+ "CREATE INDEX iTOKEN2 ON tokens (TOKEN);";
 	
-				+ "CREATE INDEX iTOKEN ON token_buffer (TOKEN);" + "CREATE INDEX iTOKEN2 ON tokens (TOKEN);";
 		stmt.execute(query);
 		stmt.close();
+
+		createTempTable();
 		
 		closeConnection();
 	}
@@ -93,6 +95,7 @@ public class DB {
 		public void newLanguage(String name) throws ClassNotFoundException, SQLException {
 			openConnection();
 			insertLanguage(name);
+			createTempTable();
 			
 			insertStatementQuery = "INSERT INTO " + TEMPORARY + "(token) VALUES (?)";
 			insertStatement = conn.prepareStatement(insertStatementQuery);
@@ -145,8 +148,11 @@ public class DB {
 	}
 
 	public void newFile(String file, int projId) throws SQLException {
+		createTempTable();
+		
 		Statement stmt = conn.createStatement();
 		stmt.execute("INSERT INTO " + FILE + "(file, projectid) VALUES ('" + file + "'," + projId + ")");
+		fileId = getFileId(file);
 		stmt.close();
 	}
 	
@@ -173,7 +179,12 @@ public class DB {
 		conn = null;
 	}
 
-	
+	private void createTempTable() throws SQLException {
+		String query = "CREATE MEMORY TABLE IF NOT EXISTS " + TEMPORARY + " (" + "token VARCHAR(30) NOT NULL" + ");";
+		Statement stmt = conn.createStatement();
+		stmt.execute(query);
+		stmt.close();
+	}
 
 	/*
 	 * SCANMODE
@@ -188,23 +199,28 @@ public class DB {
 	private void deleteTokenBuffer() throws SQLException {
 		// TODO there are temporary tables
 		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("DELETE FROM " + TEMPORARY);
+		
+		
+		stmt.executeUpdate("DROP TABLE " + TEMPORARY);
 		stmt.close();
 	}
 
 	// TODO Fix changes to ScanMode, improve
 	private void insertOrderIDs() throws SQLException {
 		Statement stmt = conn.createStatement();
-		stmt.execute("INSERT INTO "
-				+ OCCURENCE
-				+ " ( TOKENID , FILEID) SELECT SRC.ID, L0.ID FROM TOKENS SRC INNER JOIN TOKEN_BUFFER DST ON SRC.TOKEN = DST.TOKEN CROSS JOIN (SELECT TOP 1 ID FROM files ORDER BY ID DESC) L0");
+		stmt.execute("INSERT INTO "+ OCCURENCE + " ( TOKENID , FILEID) "
+				+ "		SELECT SRC.ID, " + fileId + " FROM TOKENS SRC INNER JOIN " + TEMPORARY + "  DST ON SRC.TOKEN = DST.TOKEN ");
 	}
 
 	private void assignTokensInTempTableIDs() throws SQLException {
 		Statement stmt = conn.createStatement();
+
+		stmt.execute("CREATE INDEX iTOKEN ON " + TEMPORARY + " (TOKEN);");
+		
+		
 		stmt.execute("INSERT INTO "
 				+ TOKEN
-				+ " ( TOKEN ) SELECT DISTINCT SRC.TOKEN FROM TOKEN_BUFFER SRC LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
+				+ " ( TOKEN ) SELECT DISTINCT SRC.TOKEN FROM  " + TEMPORARY + "  SRC LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
 		stmt.close();
 	}
 
@@ -224,7 +240,21 @@ public class DB {
 		stmt.close();
 	}
 
-
+	public int getFileId(String fileName) throws SQLException {
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT TOP 1 ID FROM " + FILE + " WHERE FILE = '" + fileName + "' ORDER BY ID DESC");
+		int id = 0;
+		
+		if (rs.next())
+				id = rs.getInt(1);
+		else {
+			logger.error("OUPS, something is wrong!");
+		}
+		
+		rs.close();
+		stmt.close();
+		return id;
+	}
 
 //	public int getProjectId(String projectName) throws SQLException {
 //		Statement stmt = conn.createStatement();

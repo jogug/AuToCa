@@ -36,7 +36,7 @@ public class DataSet {
 		outputLocation = Paths.get("../AuToCa/resources/");
 		
 		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/java/"), java);
+		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Java/"), java);
 		languages.add(java);
 		
 		Language c = new Language("C","*.c", Paths.get("../AuToCa/resources/c_tokens.txt"));

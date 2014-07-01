@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ public class Project {
 	private Path projectPath;
 	private String name;
 	private Language language;
-	private List<Path> filePaths;
+	private List<Path> filePaths = new ArrayList<>();
 	
 	
 	public Project(Path projectPath, Language language){
