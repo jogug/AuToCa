@@ -8,7 +8,6 @@ import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 public class TokenHandler implements TokenizerHandler {
 	private DB db;
 	private final int maxTokenLength, minTokenLength;
-	private String file;
 	
 	public TokenHandler(DB db, int maxTokenLength, int minTokenLength){
 		this.db = db;
@@ -37,9 +36,5 @@ public class TokenHandler implements TokenizerHandler {
 				default:		
 			}
 		}
-	}
-	
-	public void setFile(String fileName){
-		file = fileName;
 	}
 }

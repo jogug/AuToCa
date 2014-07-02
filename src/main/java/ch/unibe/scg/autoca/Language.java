@@ -36,16 +36,15 @@ public class Language {
 	 * @param argLang
 	 */
 	public void addMultipleProjects(Path argPath, Language argLang){
-		System.out.println("aaa: " + argPath.toAbsolutePath());
-		    try (DirectoryStream<Path> stream = Files.newDirectoryStream(argPath)) {
-		        for (Path path : stream) {
-		        	if(Files.isDirectory(path)){
-		        		projects.add(new Project(path, argLang));
-		        	}
-		        }
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    }	
+	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(argPath)) {
+	        for (Path path : stream) {
+	        	if(Files.isDirectory(path)){
+	        		projects.add(new Project(path, argLang));
+	        	}
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }	
 	}
 	
 	public String getName(){

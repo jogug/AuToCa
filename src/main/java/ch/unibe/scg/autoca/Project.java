@@ -58,10 +58,11 @@ public class Project {
 	}
 
 	private void loadFilePaths() {
+		logger.info("Extracting paths form: " + getName());
 		try {
 			Files.walkFileTree( getProjectPath(), new SourceFileVisitor());
 		} catch (IOException e) {
-			logger.error("", e);
+			logger.error("Error occured in project loadFilePaths", e);
 		}
 	}
 	

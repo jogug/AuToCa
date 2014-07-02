@@ -11,6 +11,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.mode.ScanMode;
+
 /**
  * Holds General information, Project file Locations and the Output location
  * and allows to manipulate the data of the DataSet.
@@ -18,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * @author Joel
  */
 public class DataSet {
-    private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
+	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
 	private List<Language> languages;
 	private Path outputLocation;	
 
@@ -33,6 +35,7 @@ public class DataSet {
 	}
 	
 	public void loadStandardDataSet() {		
+		logger.info("Starting data initialization");
 		outputLocation = Paths.get("../AuToCa/resources/");
 		
 		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
@@ -50,7 +53,9 @@ public class DataSet {
 		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../AuToCa/resources/cpp_tokens.txt"));
 		cpp.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Cpp/"), cpp);
 		languages.add(cpp);			
-		
+
+		logger.info("Finished data initialization found: " + getLanguages().size() + " Languages, "
+				+ getProjectCount() + " Projects, " + getFileCount() + " Files");
 	}
 	
 	//TODO Put in test class

@@ -36,6 +36,7 @@ public final class ScanMode implements IOperationMode {
 	// TODO pass on creation
 	private final int DEFAULT_MAX_TOKEN_LENGTH = 1;
 	private final int DEFAULT_MIN_TOKEN_LENGTH = 27;
+	private final int DEFAULT_PROGRESS_STEPS = 15;
 
 	public ScanMode(DataSet dataset) {
 		this.dataset = dataset;
@@ -44,8 +45,7 @@ public final class ScanMode implements IOperationMode {
 	}
 
 	public void initializeScanMode(DataSet dataset) {
-		logger.info("Starting Initialization");
-
+		logger.info("ScanMode Initialization");
 		try {
 			// Create DB
 			db = new DB(dataset.getOutputLocation());
@@ -60,15 +60,12 @@ public final class ScanMode implements IOperationMode {
 		} catch (ClassNotFoundException | SQLException e) {
 			logger.error("Something went wrong: ", e);
 		}
-
-		logger.info("Finished initialization AuToCa found: " + dataset.getLanguages().size() + " Languages, "
-				+ dataset.getProjectCount() + " Projects, " + dataset.getFileCount() + " Files");
+		logger.info("Finished ScanMode Initialization");
 	}
 
-	// TODO maybe add timeStamps/file
 	@Override
 	public void execute() {
-		logger.info("Starting scan on dataset");
+		logger.info("Starting Scan on dataset");
 		langCounter = 0;
 		projCounter = 0;
 
@@ -76,10 +73,10 @@ public final class ScanMode implements IOperationMode {
 			langCounter++;
 			processLanguage(language);
 		}
-
-		logger.info("Finished scan on dataset");
+		logger.info("Finished Scan on dataset");
 	}
-
+	
+	//TODO move counter dependency to db
 	private void processLanguage(Language language) {
 		try {
 			db.newLanguage(language.getName());
@@ -95,20 +92,23 @@ public final class ScanMode implements IOperationMode {
 		}
 
 	}
-
+	
+	//TODO move counter dependency to db
 	private void processProject(Project project) {
 		int progressStep = calculateProgressbarStepSize(project);
+		
 		// Assign each Project an ID;
 		try {
 			db.newProject(project.getName(), langCounter);
-
 			logger.info(project.getLanguage().getName() + " " + (langCounter) + ", " + project.getName() + " "
 					+ (projCounter) + "/" + project.getLanguage().getProjects().size() + ", files: "
 					+ project.getProjectFilePaths().size());
-
+			
+			double before = System.currentTimeMillis();
 			processFiles(project, progressStep);
-
-			System.out.println();
+			System.out.println("		Average Time/File: " 
+								+ (System.currentTimeMillis()-before)/project.getFileCount());
+			
 			db.projectFinished();
 		} catch (SQLException e1) {
 			logger.error("scan project errore: ", e1);
@@ -116,33 +116,35 @@ public final class ScanMode implements IOperationMode {
 	}
 
 	private void processFiles(Project project, int progressStep) {
-		int fileC = 0;
+		int fileCounter = 0;
+		int lastPrint = 0;
 		for (Path path : project.getProjectFilePaths()) {
-			th.setFile(path.getFileName().toString());
-
-			if (fileC % progressStep == 0) {
-				System.out.print(fileC * 100 / project.getFileCount() + "%,");
-			}
-
 			try {
-
 				// Assign File ID
 				db.newFile(path.getFileName().toString(), projCounter);
 				// Tokenize & Insert Tokens
 				tk.tokenize(path.toFile());
-				db.fileFinished();
-
-				fileC++;
+				db.fileFinished();											
 			} catch (SQLException e) {
-				// TODO:
+				logger.error("Error occured during processFiles", e);
 				e.printStackTrace();
 			}
+			
+			//
+			fileCounter++;
+			if (fileCounter % progressStep == 0) {
+				lastPrint = fileCounter * 100 / project.getFileCount();
+				System.out.print(lastPrint + "%,");
+			}
+		}
+		if(lastPrint!=100){
+			System.out.print("100%,");
 		}
 	}
 
 	private int calculateProgressbarStepSize(Project project) {
-		int result = (project.getProjectFilePaths().size() + 1) / 10;
-		if (project.getProjectFilePaths().size() < 10) {
+		int result = (project.getProjectFilePaths().size()) / DEFAULT_PROGRESS_STEPS;
+		if (project.getProjectFilePaths().size() < DEFAULT_PROGRESS_STEPS) {
 			result = 1;
 		}
 		return result;
