@@ -24,13 +24,19 @@ public class TokenHandler implements TokenizerHandler {
 			switch(type){
 				case DEDENT: 
 				case INDENT: 
-				case NEWLINE:
 				case WORD: 	try {
 								db.newToken(token);
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
 							break;
+				case NEWLINE://TODO Not thrown yet -> remove 
+							try {
+								db.newToken("#newline");
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+				break;
 				case STRING: break;
 				case UNKNOWN: break;
 				default:		

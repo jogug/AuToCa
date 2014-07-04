@@ -20,7 +20,7 @@ public final class AuToCa {
 	}
 	
 	public void runAnalyze(){
-		AnalyzeMode analyzemode = new AnalyzeMode(dataset, true, true, true);
+		AnalyzeMode analyzemode = new AnalyzeMode(dataset, true, true, false);
 		analyzemode.execute();
 	}
 

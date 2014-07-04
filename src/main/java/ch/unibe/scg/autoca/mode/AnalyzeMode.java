@@ -27,6 +27,7 @@ public final class AnalyzeMode implements IOperationMode {
 	private boolean global;
 	private boolean coverage;
 	private boolean simpleInd;
+	//TODO MOVE to DB
 	private final String OCC = "OCCURENCES_"; 
 	private final String GLO = "GLOBAL_"; 
 	private final String COV = "COVERAGE_";
@@ -96,7 +97,9 @@ public final class AnalyzeMode implements IOperationMode {
 			db.analyzeCoveragePerLanguage(COV+langName, OCC+langName);
 		}
 		if(simpleInd){
-			
+			//TODO
+			db.dropOldTableIfExists(SIND+langName);
+			db.analyzeSimpleIndentPerLanguage(SIND+langName, OCC+langName);
 		}
 	}
 	
@@ -110,7 +113,7 @@ public final class AnalyzeMode implements IOperationMode {
 			db.analyzeCoveragePerProject(COV+projName, projName, OCC+langName);
 		}
 		if(simpleInd){
-			
+			//TODO
 		}
 	}
 	

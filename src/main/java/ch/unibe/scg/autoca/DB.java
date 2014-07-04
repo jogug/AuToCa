@@ -32,6 +32,8 @@ public class DB {
 	private static final String TEMPORARY = "token_buffer";
 	private static final String OCCURENCE = "occurences";
 	private static final String LANGUAGE = "languages";
+	private static final String TEMP = "temp_table";
+	private static final String TEMP2 = "temp_table2";
 
 	private Connection conn;
 	private Path database;
@@ -209,6 +211,7 @@ public class DB {
 	//TODO TEST THOSE FUNCTIONS
 	public void extractLanguageFromOccurences(String resultTableName, String language) throws SQLException{
 		Statement stmt = conn.createStatement();
+		//TODO REMOVE LANGUAGE
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "
 				+ "SELECT PR.LANGUAGEID, PROJECTID ,OC.* FROM PROJECTS PR "
 				+ "INNER JOIN (SELECT * FROM LANGUAGES WHERE FILE = '" + language + "') SP ON PR.LANGUAGEID = SP.ID "
@@ -256,8 +259,37 @@ public class DB {
 		stmt.close();
 	}
 
-	public void analyzeSimpleIndentPerProject(){
-		//TODO
+	public void analyzeSimpleIndentPerLanguage(String resultTableName,String langTableName) throws SQLException{
+		extractIndDedNel(langTableName);
+		extractTokenFromIndDedNel(langTableName);
+		
+		Statement stmt = conn.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS"
+				+ " SELECT TOKEN,COUNT(TOKENID) AS COUNT FROM " + TEMP2 + " L0"
+				+ " INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
+		stmt.close();
+		
+		
+		dropOldTableIfExists(TEMP);
+		dropOldTableIfExists(TEMP2);
+	}
+	
+	public void extractIndDedNel(String langTableName) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS " + TEMP + " AS " +
+				"SELECT * FROM \"" + langTableName + "\" WHERE TOKENID=" 
+				+ getTokenId("#indent") + " OR TOKENID=" 
+				+ getTokenId("#dedent") + " OR TOKENID=" 
+				+ getTokenId("#newline"));
+		stmt.close();
+	}
+	
+	public void extractTokenFromIndDedNel(String langTableName) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS " + TEMP2 + " AS " 
+				+ "SELECT TOKENID,FILEID,ORDERID FROM \"" + langTableName +  "\n ltb" 
+				+ "INNER JOIN " + TEMP + " TMP ON TMP.ORDERID+1 = ltb.ORDERID AND TMP.FILEID = ltb.FILEID");
+		stmt.close();
 	}
 	
 	public void dropOldTableIfExists(String tableName) throws SQLException{
@@ -289,6 +321,16 @@ public class DB {
 	public int getProjectId(String projectName) throws SQLException {
 		Statement stmt = conn.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT ID FROM " + PROJECT + " WHERE FILE = '" + projectName + "'");
+		rs.next();
+		int projectId = rs.getInt(1);
+		rs.close();
+		stmt.close();
+		return projectId;
+	}
+	
+	public int getTokenId(String tokenName) throws SQLException {
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT ID FROM " + TOKEN + " WHERE TOKEN = '" + tokenName + "'");
 		rs.next();
 		int projectId = rs.getInt(1);
 		rs.close();
