@@ -157,9 +157,6 @@ public class DB {
 		stmt.close();
 	}
 
-	/*
-	 * SCANMODE
-	 */
 
 	private void insertLanguage(String language) throws SQLException {
 		Statement stmt = conn.createStatement();
@@ -193,19 +190,85 @@ public class DB {
 	/*
 	 * ANALYZE MODE
 	 */
+	
+	public void newExtractLanguage() throws ClassNotFoundException, SQLException {
+		openConnection();
+	}
 
-	public void analyzeGlobal() throws SQLException {
+	public void extractLanguageFinished() throws SQLException {
+		closeConnection();
+	}	
+	
+	public void newAnalyzeLanguage() throws ClassNotFoundException, SQLException {
+		openConnection();
+	}
+
+	public void analyzeLanguageFinished() throws SQLException {
+		closeConnection();
+	}	
+	//TODO TEST THOSE FUNCTIONS
+	public void extractLanguageFromOccurences(String resultTableName, String language) throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("SELECT L0.*, L1.TOKEN FROM (SELECT TOKENID, COUNT(TOKENID) AS COUNT FROM OCCURENCES GROUP BY TOKENID ORDER BY COUNT(TOKENID) DESC) L0 INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID");
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "
+				+ "SELECT PR.LANGUAGEID, PROJECTID ,OC.* FROM PROJECTS PR "
+				+ "INNER JOIN (SELECT * FROM LANGUAGES WHERE FILE = '" + language + "') SP ON PR.LANGUAGEID = SP.ID "
+				+ "INNER JOIN (SELECT * FROM FILES) FL ON FL.PROJECTID = PR.ID "
+				+ "INNER JOIN (SELECT * FROM OCCURENCES) OC ON OC.FILEID = FL.ID");
 		stmt.close();
 	}
 
-	public void analyzeCoverage() throws SQLException {
+	public void analyzeGlobalPerProject(String resultTableName, String projectName, String langTableName) throws SQLException{
 		Statement stmt = conn.createStatement();
-		stmt.execute("SELECT L1.*, L2.TOKEN FROM (SELECT  L0.TOKENID, COUNT(L0.FILEID) AS COUNT FROM (SELECT DISTINCT TOKENID,FILEID FROM OCCURENCES) L0 GROUP BY L0.TOKENID ORDER BY COUNT(L0.FILEID)  DESC) L1 INNER JOIN ( SELECT ID, TOKEN FROM TOKENS ) L2 ON L1.TOKENID =  L2.ID");
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS"
+				+ " SELECT TOKEN,COUNT(TOKENID) AS COUNT FROM"
+				+ " (SELECT * FROM \"" + langTableName + "\" WHERE PROJECTID = "+getProjectId(projectName)+") L0"
+				+ " INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
+		stmt.close();
+	}
+	public void analyzeGlobalPerLanguage(String resultTableName, String langTableName) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS"
+				+ " SELECT TOKEN,COUNT(TOKENID) AS COUNT FROM \"" + langTableName +"\" L0"
+				+ " INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
+		stmt.close();
+	}
+	
+	public void analyzeCoveragePerProject(String resultTableName, String projectName, String langTableName) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "
+				+ "SELECT L2.TOKEN, L1.COUNT FROM "
+				+ "(SELECT  L0.TOKENID, COUNT(L0.FILEID) AS COUNT FROM "
+				+ "(SELECT DISTINCT TOKENID,FILEID FROM "
+				+ "(SELECT TOKENID, FILEID FROM \"" + langTableName + "\" WHERE PROJECTID = "+getProjectId(projectName)+")) L0  "
+				+ "GROUP BY L0.TOKENID ORDER BY COUNT(L0.FILEID)  DESC) L1 "
+				+ "INNER JOIN ( SELECT ID, TOKEN FROM TOKENS ) L2 ON L1.TOKENID =  L2.ID");
+		stmt.close();
+	}
+	
+	public void analyzeCoveragePerLanguage(String resultTableName,String langTableName) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "
+				+ "SELECT L2.TOKEN, L1.COUNT FROM "
+				+ "(SELECT  L0.TOKENID, COUNT(L0.FILEID) AS COUNT FROM "
+				+ "(SELECT DISTINCT TOKENID,FILEID FROM \"" + langTableName + "\") L0 "
+				+ "GROUP BY L0.TOKENID ORDER BY COUNT(L0.FILEID)  DESC) L1 "
+				+ "INNER JOIN ( SELECT ID, TOKEN FROM TOKENS ) L2 ON L1.TOKENID =  L2.ID");
 		stmt.close();
 	}
 
+	public void analyzeSimpleIndentPerProject(){
+		//TODO
+	}
+	
+	public void dropOldTableIfExists(String tableName) throws SQLException{
+		Statement stmt = conn.createStatement();
+		stmt.execute("DROP TABLE IF EXISTS \"" + tableName + "\""); 
+		stmt.close();
+	}
+	
+	/*
+	 * ACCESS IDS
+	 */
 	public int getcurrentFileId(String fileName) throws SQLException {
 		Statement stmt = conn.createStatement();
 		ResultSet rs = 
@@ -223,15 +286,15 @@ public class DB {
 		return id;
 	}
 
-//	public int getProjectId(String projectName) throws SQLException {
-//		Statement stmt = conn.createStatement();
-//		ResultSet rs = stmt.executeQuery("SELECT ID FROM " + PROJECT + " WHERE FILE = '" + projectName + "'");
-//		rs.next();
-//		int projectId = rs.getInt(1);
-//		rs.close();
-//		stmt.close();
-//		return projectId;
-//	}
+	public int getProjectId(String projectName) throws SQLException {
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT ID FROM " + PROJECT + " WHERE FILE = '" + projectName + "'");
+		rs.next();
+		int projectId = rs.getInt(1);
+		rs.close();
+		stmt.close();
+		return projectId;
+	}
 
 
 	/*
