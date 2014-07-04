@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.DB;
 import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
+import ch.unibe.scg.autoca.db.DB;
 
 /**
  * Analyzes the tokens extracted from the code according to the actual tokesn of a language

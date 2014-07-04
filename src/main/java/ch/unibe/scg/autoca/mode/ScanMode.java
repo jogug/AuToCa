@@ -9,11 +9,11 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.DB;
 import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.TokenHandler;
+import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
@@ -86,7 +86,7 @@ public final class ScanMode implements IOperationMode {
 				processProject(project);
 			}
 
-			db.languageFinished(language.getName());
+			db.languageFinished();
 		} catch (ClassNotFoundException | SQLException e) {
 			logger.error("Couldnt scan langauge " + language.getName() + " because: " + e.toString(), e);
 		}

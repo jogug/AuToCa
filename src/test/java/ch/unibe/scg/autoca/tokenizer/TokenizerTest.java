@@ -113,6 +113,24 @@ public class TokenizerTest {
 		assertEquals(TokenType.WORD, mh.types.get(3));
 
 	}
+
+	
+	@Test
+	public void testIndent3() {
+		tokenizer.tokenize("hello		\n 		\n		world");
+
+		assertEquals(4, mh.tokens.size());
+		
+		assertEquals("hello", mh.tokens.get(0));
+		assertEquals(TokenType.WORD, mh.types.get(0));
+
+		assertEquals(TokenType.NEWLINE, mh.types.get(1));
+		assertEquals(TokenType.INDENT, mh.types.get(2));
+
+		assertEquals("world", mh.tokens.get(3));
+		assertEquals(TokenType.WORD, mh.types.get(3));
+
+	}	
 	
 	@Test
 	public void testDedent() {
@@ -135,6 +153,68 @@ public class TokenizerTest {
 		assertEquals("there", mh.tokens.get(6));
 		assertEquals(TokenType.WORD, mh.types.get(6));
 	}
+	
+	
+	@Test
+	public void testMultiComment1() {
+		//TODO: 
+		tokenizer.tokenize("/* how are you \n today? */");
 
+		assertEquals(1, mh.tokens.size());
+
+		assertEquals(TokenType.COMMENT, mh.types.get(0));
+	}
+	
+	@Test
+	public void testMultiComment2() {
+		//TODO: 
+		tokenizer.tokenize("hello  /* how are you \n today? */ \n  world\nthere");
+
+		assertEquals(8, mh.tokens.size());
+		
+		assertEquals("hello", mh.tokens.get(0));
+		assertEquals(TokenType.WORD, mh.types.get(0));
+
+		assertEquals(TokenType.COMMENT, mh.types.get(1));
+
+		
+		assertEquals(TokenType.NEWLINE, mh.types.get(2));
+		assertEquals(TokenType.INDENT, mh.types.get(3));
+
+		assertEquals("world", mh.tokens.get(4));
+		assertEquals(TokenType.WORD, mh.types.get(4));
+
+		assertEquals(TokenType.NEWLINE, mh.types.get(5));
+		assertEquals(TokenType.DEDENT, mh.types.get(6));
+
+		assertEquals("there", mh.tokens.get(7));
+		assertEquals(TokenType.WORD, mh.types.get(7));
+	}
+	
+	@Test
+	public void testSingleComment1() {
+		//TODO: 
+		tokenizer.tokenize("// how are you \n");
+
+		assertEquals(1, mh.tokens.size());
+
+		assertEquals(TokenType.COMMENT, mh.types.get(0));
+	}
+
+	@Test
+	public void testSingleComment2() {
+		//TODO: 
+		tokenizer.tokenize("// how are you \n today");
+
+		assertEquals(2, mh.tokens.size());
+
+		assertEquals(TokenType.COMMENT, mh.types.get(0));
+		
+		assertEquals("today", mh.tokens.get(1));
+		assertEquals(TokenType.WORD, mh.types.get(1));
+		
+	}
+
+	
 }
 

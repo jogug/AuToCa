@@ -1,7 +1,7 @@
 /*
  ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
  */
-package ch.unibe.scg.autoca;
+package ch.unibe.scg.autoca.db;
 
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -22,15 +22,17 @@ import org.slf4j.LoggerFactory;
  */
 public class DB {
 
+	public static final String FILENAME = ".autoca";
+	public static final String TEMPORARY = "token_buffer";
+	public static final String OCCURENCE = "occurences";
+
+	
 	private static final Logger logger = LoggerFactory.getLogger(DB.class);
 
 	// TODO adjust in statements
-	private static final String FILENAME = ".autoca";
 	private static final String TOKEN = "tokens";
 	private static final String FILE = "files";
 	private static final String PROJECT = "projects";
-	private static final String TEMPORARY = "token_buffer";
-	private static final String OCCURENCE = "occurences";
 	private static final String LANGUAGE = "languages";
 	private static final String TEMP = "temp_table";
 	private static final String TEMP2 = "temp_table2";
@@ -101,7 +103,7 @@ public class DB {
 		prepInsertStatement = conn.prepareStatement(prepInsertStatementQuery);
 	}
 
-	public void languageFinished(String name) throws SQLException {
+	public void languageFinished() throws SQLException {
 		prepInsertStatement.close();
 		closeConnection();
 	}	
@@ -153,7 +155,8 @@ public class DB {
 	}
 
 	private void createTempTable() throws SQLException {
-		String query = "CREATE MEMORY TABLE IF NOT EXISTS " + TEMPORARY + " (" + "token VARCHAR(30) NOT NULL" + ");";
+		//TODO: MAGIC CONSTANT
+		String query = "CREATE MEMORY TABLE IF NOT EXISTS " + TEMPORARY + " (id MEDIUMINT NOT NULL AUTO_INCREMENT, token VARCHAR(30) NOT NULL);";
 		Statement stmt = conn.createStatement();
 		stmt.execute(query);
 		stmt.close();
@@ -174,9 +177,13 @@ public class DB {
 
 	private void insertOrderIDs() throws SQLException {
 		Statement stmt = conn.createStatement();
+//		stmt.execute("INSERT INTO "+ OCCURENCE + " ( TOKENID , FILEID) "
+//				+ "SELECT SRC.ID, " + currentFileId + " FROM " + TOKEN + " SRC "
+//				+ "INNER JOIN " + TEMPORARY + "  DST ON SRC.TOKEN = DST.TOKEN ");
 		stmt.execute("INSERT INTO "+ OCCURENCE + " ( TOKENID , FILEID) "
-				+ "SELECT SRC.ID, " + currentFileId + " FROM " + TOKEN + " SRC "
-				+ "INNER JOIN " + TEMPORARY + "  DST ON SRC.TOKEN = DST.TOKEN ");
+				+ "SELECT TOKENS.ID, " + currentFileId + " FROM " + TEMPORARY + " TEMP "
+				+ "INNER JOIN " + TOKEN + "  TOKENS ON TOKENS.TOKEN = TEMP.TOKEN "
+				+ "ORDER BY TEMP.ID ASC");
 	}
 
 	private void assignTokensInTempTableIDs() throws SQLException {
@@ -184,8 +191,8 @@ public class DB {
 		stmt.execute("CREATE INDEX iTOKEN ON " + TEMPORARY + " (TOKEN);");				
 		
 		stmt.execute("INSERT INTO "	+ TOKEN	+ " ( TOKEN ) "
-				+ "SELECT DISTINCT SRC.TOKEN FROM  " + TEMPORARY + "  SRC"
-				+ " LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL");
+				+ "(SELECT DISTINCT SRC.TOKEN FROM  " + TEMPORARY + "  SRC"
+				+ " LEFT OUTER JOIN TOKENS DST ON SRC.TOKEN = DST.TOKEN WHERE DST.TOKEN IS NULL)");
 		stmt.close();
 	}
 

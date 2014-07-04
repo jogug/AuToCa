@@ -10,6 +10,7 @@ public class Tokenizer {
 	public final String DEFAULT_LS = "\n";
 	public final String DEFAULT_WORD = "[a-zA-Z]\\w+";
 	public final String DEFAULT_STRING = "(?s)\".*?\"";
+	public final String DEFAULT_COMMENT = "(?s)/\\*.*?\\*/";
 	
 	private final String WHITESPACE = "[ \t]+";
 	private final String START_OF_LINE = "(?m)^[ \t]*";
@@ -20,17 +21,19 @@ public class Tokenizer {
 
 	private List<String> words = new ArrayList<String>();
 	private List<String> strings = new ArrayList<String>();
+	private List<String> comments= new ArrayList<String>();
 
 	private List<TokenPositions> tpWords = new ArrayList<TokenPositions>();
 	private List<TokenPositions> tpStrings = new ArrayList<TokenPositions>();
+	private List<TokenPositions> tpComments = new ArrayList<TokenPositions>();
+
 	private TokenPositions tpStartOfLine;
 	private TokenPositions tpWhitespace;
 	private TokenPositions tpNewline;
 	
 	private int position;
 	private int indent;
-	private int oldPosition;
-
+	
 	public Tokenizer(TokenizerHandler th) {
 		this.th = th;
 	}
@@ -38,6 +41,8 @@ public class Tokenizer {
 	public void loadDefaults() {
 		addWord(DEFAULT_WORD);
 		addString(DEFAULT_STRING);
+		addComment(DEFAULT_COMMENT);
+		//TODO: SINGLELINE?
 	}
 
 	public void addWord(String word) {
@@ -48,6 +53,11 @@ public class Tokenizer {
 		strings.add(string);
 	}
 
+	public void addComment(String string) {
+		comments.add(string);
+	}
+
+	
 	public void setLineSeparator(String ls) {
 		this.ls = ls;
 	}
@@ -68,6 +78,7 @@ public class Tokenizer {
 			oldIndent = indent;
 			oldPosition = position;
 
+			//TODO: try comment
 			if (tryIndent())
 				continue;
 			if (tryDedent())
@@ -99,6 +110,7 @@ public class Tokenizer {
 
 		initializeTokenPositions(tpWords, words, s);
 		initializeTokenPositions(tpStrings, strings, s);
+		initializeTokenPositions(tpComments, comments, s);
 
 		tpWhitespace = new TokenPositions(WHITESPACE, s);
 		tpStartOfLine = new TokenPositions(START_OF_LINE, s);
@@ -125,6 +137,11 @@ public class Tokenizer {
 		return tryTokens(tpStrings, TokenType.STRING);
 	}
 
+	private boolean tryComments() {
+		return tryTokens(tpComments, TokenType.COMMENT);
+	}
+
+	
 	private boolean tryTokens(List<TokenPositions> tps, TokenType type) {
 		for (TokenPositions tp : tps) {
 			if (tryToken(tp, type)) {
