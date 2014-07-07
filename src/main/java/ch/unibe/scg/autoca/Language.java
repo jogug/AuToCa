@@ -51,14 +51,26 @@ public class Language {
 		return name;
 	}
 	
+	/**
+	 * Code file pattern e.g ".java"
+	 * @return
+	 */
 	public String getFilePattern(){
 		return filePattern;
 	}
 	
+	/**
+	 * Paths to projects
+	 * @return
+	 */
 	public ArrayList<Project> getProjects(){
 		return projects;
 	}
 	
+	/**
+	 * Path to the actual tokens
+	 * @return
+	 */
 	public Path getTokenPath(){
 		return tokenPath;
 	}

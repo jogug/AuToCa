@@ -12,6 +12,9 @@ import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.db.DefaultTokenHandler;
+import ch.unibe.scg.autoca.db.TokenHandler;
+import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
  * Analyzes the tokens extracted from the code according to the actual tokesn of a language
@@ -27,11 +30,6 @@ public final class AnalyzeMode implements IOperationMode {
 	private boolean global;
 	private boolean coverage;
 	private boolean simpleInd;
-	//TODO MOVE to DB
-	private final String OCC = "OCCURENCES_"; 
-	private final String GLO = "GLOBAL_"; 
-	private final String COV = "COVERAGE_";
-	private final String SIND = "SIMIND_";
 	
     public AnalyzeMode(DataSet dataset,boolean global, boolean coverage, boolean simpleInd){  	     	
     	this.dataset = dataset;
@@ -47,39 +45,23 @@ public final class AnalyzeMode implements IOperationMode {
 
 	@Override
 	public void execute() {
-		logger.info("Starting AnalyzeMode");
-		// Deletes old Tables
-		// Extract Language Data 
-		extractLanguageData();
+		logger.info("Starting AnalyzeMode: ");
+		loadActualTokens();
 		analyzeDataSet();
 		logger.info("Finished AnalyzeMode");
 	}
 
-	private void extractLanguageData() {
-		try {
-			db.newExtractLanguage();
-			for(Language language:dataset.getLanguages()){	
-				logger.info("extracting language table: " + language.getName());
-				db.dropOldTableIfExists(OCC+language.getName());
-				db.extractLanguageFromOccurences(OCC+language.getName(), language.getName());
-			}
-			db.extractLanguageFinished();
-		} catch (ClassNotFoundException | SQLException e) {
-			logger.error("Something happened during Extraction",e);
-		}
-		logger.info("Finished language table extraction");
-	}
-	
+
 	private void analyzeDataSet(){
 		try {
 			db.newAnalyzeLanguage();
 			for(Language language:dataset.getLanguages()){	
-				logger.info("Analyzing: " + language.getName());
-				analyzeLanguage(language.getName());			
+				logger.info("analyzing language: " + language.getName());
+				analyzeLanguage(language.getName());
 				for(Project project: language.getProjects()){
-					logger.info("Analyzing project: "+project.getName());
+					logger.info("analyzing project: "+project.getName());
 					analyzeProject(project.getName(), language.getName());
-				}
+				}			
 			}
 			db.analyzeLanguageFinished();
 		} catch (ClassNotFoundException | SQLException e) {
@@ -89,33 +71,41 @@ public final class AnalyzeMode implements IOperationMode {
 	
 	private void analyzeLanguage(String langName) throws SQLException{
 		if(global){
-			db.dropOldTableIfExists(GLO+langName);
-			db.analyzeGlobalPerLanguage(GLO+langName, OCC+langName);
+			db.analyzeGlobalPerLanguage(langName, langName);
 		}
 		if(coverage){
-			db.dropOldTableIfExists(COV+langName);
-			db.analyzeCoveragePerLanguage(COV+langName, OCC+langName);
+			db.analyzeCoveragePerLanguage(langName, langName);
 		}
 		if(simpleInd){
-			//TODO
-			db.dropOldTableIfExists(SIND+langName);
-			db.analyzeSimpleIndentPerLanguage(SIND+langName, OCC+langName);
+			db.analyzeSimpleIndentPerLanguage(langName, langName);
 		}
 	}
 	
 	private void analyzeProject(String projName, String langName) throws SQLException{
 		if(global){
-			db.dropOldTableIfExists(GLO+projName);
-			db.analyzeGlobalPerProject(GLO+projName, projName, OCC+langName);
+			db.analyzeGlobalPerProject(projName, projName, langName);
 		}
 		if(coverage){
-			db.dropOldTableIfExists(COV+projName);
-			db.analyzeCoveragePerProject(COV+projName, projName, OCC+langName);
+			db.analyzeCoveragePerProject(projName, projName, langName);
 		}
 		if(simpleInd){
-			//TODO
+			db.analyzeSimpleIndentPerProject(projName, langName, projName);
 		}
-	}
+	}	
 	
-
+	private void loadActualTokens() {
+		DefaultTokenHandler th = new DefaultTokenHandler(db,dataset.getMinTokenLength(),dataset.getMaxTokenLength());
+		Tokenizer tk = new Tokenizer(th);
+		tk.loadDefaults();
+		
+		for(Language language:dataset.getLanguages()){
+			try {
+				db.newActualTokenFile();
+				tk.tokenize(language.getTokenPath().toFile());
+				db.actualTokenFileFinished(language.getName());
+			} catch (ClassNotFoundException | SQLException e) {
+				logger.info("Couldnt load actual Token of: " + language.getName(), e);
+			}
+		}	
+	}
 }

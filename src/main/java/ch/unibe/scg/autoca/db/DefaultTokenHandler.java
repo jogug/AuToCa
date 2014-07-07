@@ -1,17 +1,19 @@
-package ch.unibe.scg.autoca;
+package ch.unibe.scg.autoca.db;
 
 import java.sql.SQLException;
 
-import ch.unibe.scg.autoca.db.DB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 
-public class TokenHandler implements TokenizerHandler {
-	private static final String NEWLINE = "#newline";
+public class DefaultTokenHandler implements TokenizerHandler {
+	private static final Logger logger = LoggerFactory.getLogger(DefaultTokenHandler.class);
 	private DB db;
 	private final int maxTokenLength, minTokenLength;
 
-	public TokenHandler(DB db, int maxTokenLength, int minTokenLength) {
+	public DefaultTokenHandler(DB db, int maxTokenLength, int minTokenLength) {
 		this.db = db;
 		this.maxTokenLength = maxTokenLength;
 		this.minTokenLength = minTokenLength;
@@ -23,8 +25,6 @@ public class TokenHandler implements TokenizerHandler {
 	@Override
 	public void token(String token, TokenType type) {
 		switch (type) {
-		case DEDENT:
-		case INDENT:
 		case WORD:
 			if (token.length() > minTokenLength && token.length() < maxTokenLength) {
 				try {
@@ -32,14 +32,15 @@ public class TokenHandler implements TokenizerHandler {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
+			}else{
+				logger.error("Actual token found longer or smaller than limits, Check Default Token Handler: " + token.length());
 			}
 			break;
-		case NEWLINE:// TODO Not thrown yet -> remove
-			try {
-				db.newToken(NEWLINE);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+		case DEDENT:
+			break;
+		case INDENT:
+			break;
+		case NEWLINE:
 			break;
 		case STRING:
 			break;

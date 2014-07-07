@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
-import ch.unibe.scg.autoca.TokenHandler;
 import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.db.TokenHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
@@ -32,12 +32,6 @@ public final class ScanMode implements IOperationMode {
 
 	private DataSet dataset;
 
-	// TODO calculate good number for max
-	// TODO pass on creation
-	private final int DEFAULT_MAX_TOKEN_LENGTH = 1;
-	private final int DEFAULT_MIN_TOKEN_LENGTH = 27;
-	private final int DEFAULT_PROGRESS_STEPS = 15;
-
 	public ScanMode(DataSet dataset) {
 		this.dataset = dataset;
 
@@ -52,7 +46,7 @@ public final class ScanMode implements IOperationMode {
 			db.initialize();
 
 			// Tokenizing&Token Handling
-			th = new TokenHandler(db, DEFAULT_MIN_TOKEN_LENGTH, DEFAULT_MAX_TOKEN_LENGTH);
+			th = new TokenHandler(db, dataset.getMinTokenLength(), dataset.getMaxTokenLength());
 			tk = new Tokenizer(th);
 			tk.loadDefaults();
 
@@ -143,8 +137,8 @@ public final class ScanMode implements IOperationMode {
 	}
 
 	private int calculateProgressbarStepSize(Project project) {
-		int result = (project.getProjectFilePaths().size()) / DEFAULT_PROGRESS_STEPS;
-		if (project.getProjectFilePaths().size() < DEFAULT_PROGRESS_STEPS) {
+		int result = (project.getProjectFilePaths().size()) / dataset.getProgressSteps();
+		if (project.getProjectFilePaths().size() < dataset.getProgressSteps()) {
 			result = 1;
 		}
 		return result;

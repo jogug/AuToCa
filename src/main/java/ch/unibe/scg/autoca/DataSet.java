@@ -21,6 +21,10 @@ public class DataSet {
 	private static final Logger logger = LoggerFactory.getLogger(DataSet.class);
 	private List<Language> languages;
 	private Path outputLocation;	
+	
+	private final int DEFAULT_MAX_TOKEN_LENGTH = 1;
+	private final int DEFAULT_MIN_TOKEN_LENGTH = 27;
+	private final int DEFAULT_PROGRESS_STEPS = 15;
 
 	
 	public DataSet(List<Language> language){
@@ -40,17 +44,17 @@ public class DataSet {
 //		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Java-Small/"), java);
 //		languages.add(java);
 
-		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Java/"), java);
-		languages.add(java);
+//		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+//		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Java/"), java);
+//		languages.add(java);
+//		
+//		Language c = new Language("C","*.c", Paths.get("../AuToCa/resources/c_tokens.txt"));
+//		c.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/C/"), c);
+//		languages.add(c);	
 		
-		Language c = new Language("C","*.c", Paths.get("../AuToCa/resources/c_tokens.txt"));
-		c.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/C/"), c);
-		languages.add(c);	
-		
-//		Language python = new Language("Python", "*.py", Paths.get("../AuToCa/resources/python_tokens.txt"));
-//		python.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Python/"), python);
-//		languages.add(python);
+		Language python = new Language("Python", "*.py", Paths.get("../AuToCa/resources/python_tokens.txt"));
+		python.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Python/"), python);
+		languages.add(python);
 //		
 //		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../AuToCa/resources/cpp_tokens.txt"));
 //		cpp.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Cpp/"), cpp);
@@ -86,6 +90,18 @@ public class DataSet {
 		}
 		return count;
 	}	
+	
+	public int getMaxTokenLength(){
+		return DEFAULT_MAX_TOKEN_LENGTH;
+	}
+	
+	public int getMinTokenLength(){
+		return DEFAULT_MIN_TOKEN_LENGTH;
+	}
+	
+	public int getProgressSteps(){
+		return DEFAULT_PROGRESS_STEPS;
+	}
 	
 	public Path getOutputLocation(){
 		return outputLocation;

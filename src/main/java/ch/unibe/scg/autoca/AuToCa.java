@@ -20,15 +20,14 @@ public final class AuToCa {
 	}
 	
 	public void runAnalyze(){
-		AnalyzeMode analyzemode = new AnalyzeMode(dataset, true, true, false);
+		AnalyzeMode analyzemode = new AnalyzeMode(dataset, false, false, true);
 		analyzemode.execute();
 	}
 
 	public static void main(String[] args) {
 		AuToCa autoca = new AuToCa(args);
-		autoca.runScan();
+		//autoca.runScan();
 		autoca.runAnalyze();
-
 	}
 
 }
