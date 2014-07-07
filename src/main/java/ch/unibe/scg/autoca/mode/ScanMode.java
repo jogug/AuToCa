@@ -13,7 +13,7 @@ import ch.unibe.scg.autoca.DataSet;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.db.DB;
-import ch.unibe.scg.autoca.db.TokenHandler;
+import ch.unibe.scg.autoca.db.DBTokenHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
@@ -25,7 +25,7 @@ public final class ScanMode implements IOperationMode {
 	private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
 
 	private DB db;
-	private TokenHandler th;
+	private DBTokenHandler th;
 	private Tokenizer tk;
 	private int langCounter;
 	private int projCounter;
@@ -46,7 +46,7 @@ public final class ScanMode implements IOperationMode {
 			db.initialize();
 
 			// Tokenizing&Token Handling
-			th = new TokenHandler(db, dataset.getMinTokenLength(), dataset.getMaxTokenLength());
+			th = new DBTokenHandler(db, dataset.getMinTokenLength(), dataset.getMaxTokenLength());
 			tk = new Tokenizer(th);
 			tk.loadDefaults();
 

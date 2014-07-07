@@ -13,7 +13,7 @@ import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.db.DefaultTokenHandler;
-import ch.unibe.scg.autoca.db.TokenHandler;
+import ch.unibe.scg.autoca.db.DBTokenHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**

@@ -169,7 +169,7 @@ public class DB {
 
 	private void deleteTokenBuffer() throws SQLException {
 		Statement stmt = conn.createStatement();		
-		stmt.executeUpdate("DROP TABLE " + TEMPORARY);
+		stmt.executeUpdate("DROP TABLE IF EXISTS " + TEMPORARY);
 		stmt.close();
 	}
 

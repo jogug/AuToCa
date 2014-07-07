@@ -5,12 +5,12 @@ import java.sql.SQLException;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 
-public class TokenHandler implements TokenizerHandler {
+public class DBTokenHandler implements TokenizerHandler {
 	private static final String NEWLINE = "#newline";
 	private DB db;
 	private final int maxTokenLength, minTokenLength;
 
-	public TokenHandler(DB db, int maxTokenLength, int minTokenLength) {
+	public DBTokenHandler(DB db, int maxTokenLength, int minTokenLength) {
 		this.db = db;
 		this.maxTokenLength = maxTokenLength;
 		this.minTokenLength = minTokenLength;
@@ -41,6 +41,9 @@ public class TokenHandler implements TokenizerHandler {
 			}
 			break;
 		case STRING:
+			// TODO: db.newToken(STRING):
+			break;
+		case COMMENT:
 			break;
 		case UNKNOWN:
 			break;

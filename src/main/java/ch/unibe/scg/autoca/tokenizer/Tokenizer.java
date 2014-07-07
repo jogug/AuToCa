@@ -10,7 +10,11 @@ public class Tokenizer {
 	public final String DEFAULT_LS = "\n";
 	public final String DEFAULT_WORD = "[a-zA-Z]\\w+";
 	public final String DEFAULT_STRING = "(?s)\".*?\"";
-	public final String DEFAULT_COMMENT = "(?s)/\\*.*?\\*/";
+	public final String DEFAULT_MULTI_COMMENT = "(?s)/\\*.*?\\*/";
+	public final String DEFAULT_SINGLE_COMMENT = "(?s)//.*?\n";
+
+	
+	public final String PYTHON_LIKE_COMMENT = "(?s)#.*?\n";
 	
 	private final String WHITESPACE = "[ \t]+";
 	private final String START_OF_LINE = "(?m)^[ \t]*";
@@ -41,8 +45,11 @@ public class Tokenizer {
 	public void loadDefaults() {
 		addWord(DEFAULT_WORD);
 		addString(DEFAULT_STRING);
-		addComment(DEFAULT_COMMENT);
-		//TODO: SINGLELINE?
+		addComment(DEFAULT_MULTI_COMMENT);
+		addComment(DEFAULT_SINGLE_COMMENT);
+		
+		// TODO: HACK ALERT?
+		addComment(PYTHON_LIKE_COMMENT);
 	}
 
 	public void addWord(String word) {
@@ -78,12 +85,13 @@ public class Tokenizer {
 			oldIndent = indent;
 			oldPosition = position;
 
-			//TODO: try comment
 			if (tryIndent())
 				continue;
 			if (tryDedent())
 				continue;
 			if (tryWhitespace())
+				continue;
+			if (tryComments())
 				continue;
 			if (tryWords())
 				continue;

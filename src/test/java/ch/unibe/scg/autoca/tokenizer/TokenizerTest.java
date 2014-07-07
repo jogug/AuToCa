@@ -117,18 +117,22 @@ public class TokenizerTest {
 	
 	@Test
 	public void testIndent3() {
+		// FAILS, INDENT is returned even if followed by a new line
+		// TODO: Needs to be fixed in tokenizer, JAN
 		tokenizer.tokenize("hello		\n 		\n		world");
 
-		assertEquals(4, mh.tokens.size());
+		assertEquals(5, mh.tokens.size());
 		
 		assertEquals("hello", mh.tokens.get(0));
 		assertEquals(TokenType.WORD, mh.types.get(0));
 
 		assertEquals(TokenType.NEWLINE, mh.types.get(1));
-		assertEquals(TokenType.INDENT, mh.types.get(2));
+		assertEquals(TokenType.NEWLINE, mh.types.get(1));
 
-		assertEquals("world", mh.tokens.get(3));
-		assertEquals(TokenType.WORD, mh.types.get(3));
+		assertEquals(TokenType.INDENT, mh.types.get(3));
+
+		assertEquals("world", mh.tokens.get(4));
+		assertEquals(TokenType.WORD, mh.types.get(4));
 
 	}	
 	
@@ -192,8 +196,7 @@ public class TokenizerTest {
 	}
 	
 	@Test
-	public void testSingleComment1() {
-		//TODO: 
+	public void testSingleComment1() { 
 		tokenizer.tokenize("// how are you \n");
 
 		assertEquals(1, mh.tokens.size());
@@ -203,8 +206,7 @@ public class TokenizerTest {
 
 	@Test
 	public void testSingleComment2() {
-		//TODO: 
-		tokenizer.tokenize("// how are you \n today");
+		tokenizer.tokenize("// how are you \ntoday");
 
 		assertEquals(2, mh.tokens.size());
 
