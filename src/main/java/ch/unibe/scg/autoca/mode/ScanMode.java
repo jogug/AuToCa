@@ -17,7 +17,8 @@ import ch.unibe.scg.autoca.db.DBTokenHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
- * Scans a DataSet for files to be evaluated
+ * A scan of a dataSet extracts all possible tokens into a database at the 
+ * output location
  * 
  * @author Joel
  */
@@ -42,12 +43,12 @@ public final class ScanMode implements IOperationMode {
 		logger.info("ScanMode Initialization");
 		try {
 			// Create DB
-			db = new DB(dataset.getOutputLocation());
+			db = new DB(dataset.getOutputLocation(), dataset);
 			db.initialize();
 
-			// Tokenizing&Token Handling
-			th = new DBTokenHandler(db, dataset.getMinTokenLength(), dataset.getMaxTokenLength());
-			tk = new Tokenizer(th);
+			// Tokenizing & Token Handling
+			th = new DBTokenHandler(db, dataset.getDEFAULT_MAX_TOKEN_LENGTH(), dataset.getDEFAULT_MIN_TOKEN_LENGTH());
+			tk = new Tokenizer(th, dataset);
 			tk.loadDefaults();
 
 			// dataset.initializeProjects();
@@ -67,7 +68,7 @@ public final class ScanMode implements IOperationMode {
 			langCounter++;
 			processLanguage(language);
 		}
-		logger.info("Finished Scan on dataset");
+		logger.info("\nFinished Scan on dataset");
 	}
 	
 	//TODO move counter dependency to db
@@ -137,8 +138,8 @@ public final class ScanMode implements IOperationMode {
 	}
 
 	private int calculateProgressbarStepSize(Project project) {
-		int result = (project.getProjectFilePaths().size()) / dataset.getProgressSteps();
-		if (project.getProjectFilePaths().size() < dataset.getProgressSteps()) {
+		int result = (project.getProjectFilePaths().size()) / dataset.getDEFAULT_PROGRESS_STEPS();
+		if (project.getProjectFilePaths().size() < dataset.getDEFAULT_PROGRESS_STEPS()) {
 			result = 1;
 		}
 		return result;

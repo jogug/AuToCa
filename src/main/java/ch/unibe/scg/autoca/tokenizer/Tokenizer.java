@@ -6,22 +6,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.unibe.scg.autoca.DataSet;
+
 public class Tokenizer {
-	public final String DEFAULT_LS = "\n";
-	public final String DEFAULT_WORD = "[a-zA-Z]\\w+";
-	public final String DEFAULT_STRING = "(?s)\".*?\"";
-	public final String DEFAULT_MULTI_COMMENT = "(?s)/\\*.*?\\*/";
-	public final String DEFAULT_SINGLE_COMMENT = "(?s)//.*?\n";
+	public final String DEFAULT_LS;
+	public final String DEFAULT_WORD;
+	public final String DEFAULT_STRING;
+	public final String DEFAULT_MULTI_COMMENT;
+	public final String DEFAULT_SINGLE_COMMENT;
 
 	
-	public final String PYTHON_LIKE_COMMENT = "(?s)#.*?\n";
+	public final String PYTHON_LIKE_COMMENT;
 	
-	private final String WHITESPACE = "[ \t]+";
-	private final String START_OF_LINE = "(?m)^[ \t]*";
-	private final String NEWLINE = "\n";
+	private final String WHITESPACE;
+	private final String START_OF_LINE;
+	private final String NEWLINE;
 
 	private TokenizerHandler th;
-	private String ls = DEFAULT_LS;
+	private String ls;
 
 	private List<String> words = new ArrayList<String>();
 	private List<String> strings = new ArrayList<String>();
@@ -38,8 +40,20 @@ public class Tokenizer {
 	private int position;
 	private int indent;
 	
-	public Tokenizer(TokenizerHandler th) {
+	public Tokenizer(TokenizerHandler th, DataSet dataset) {
 		this.th = th;
+		DEFAULT_LS = dataset.getDEFAULT_LS();
+		DEFAULT_WORD = dataset.getDEFAULT_WORD();
+		DEFAULT_STRING = dataset.getDEFAULT_STRING();
+		DEFAULT_MULTI_COMMENT = dataset.getDEFAULT_MULTI_COMMENT();
+		DEFAULT_SINGLE_COMMENT = dataset.getDEFAULT_SINGLE_COMMENT();
+		
+		PYTHON_LIKE_COMMENT = dataset.getPYTHON_LIKE_COMMENT();
+		
+		WHITESPACE = dataset.getWHITESPACE();
+		START_OF_LINE = dataset.getSTART_OF_LINE();
+		NEWLINE = dataset.getNEWLINE();
+		ls = DEFAULT_LS;
 	}
 
 	public void loadDefaults() {
@@ -63,7 +77,6 @@ public class Tokenizer {
 	public void addComment(String string) {
 		comments.add(string);
 	}
-
 	
 	public void setLineSeparator(String ls) {
 		this.ls = ls;

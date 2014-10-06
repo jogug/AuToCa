@@ -10,11 +10,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
- * Holds name and the location of the actual Tokens of a Language
+ * Holds the name and the paths to the languages, projects 
  * @author Joel
- *
  */
 public class Language {
+	
 	private String name, filePattern;
 	private Path tokenPath;
 	private ArrayList<Project> projects;
@@ -35,11 +35,11 @@ public class Language {
 	 * @param argPath
 	 * @param argLang
 	 */
-	public void addMultipleProjects(Path argPath, Language argLang){
+	public void addMultipleProjects(Path argPath){
 	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(argPath)) {
 	        for (Path path : stream) {
 	        	if(Files.isDirectory(path)){
-	        		projects.add(new Project(path, argLang));
+	        		projects.add(new Project(path, this));
 	        	}
 	        }
 	    } catch (IOException e) {

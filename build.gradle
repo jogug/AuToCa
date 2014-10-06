@@ -8,7 +8,7 @@ apply plugin: 'coveralls'
 
 description = 'Lexical Analyzer'
 
-group = 'ch.unibe.scg.lexica'
+group = 'ch.unibe.scg.autoca'
 version = '1.1.0-alpha'
 ext.releaseBranch = 'master'
 
@@ -83,6 +83,7 @@ dependencies {
     compile 'org.slf4j:slf4j-log4j12:1.7.+'
     compile 'log4j:log4j:1.2.+'
     compile 'net.sf.jopt-simple:jopt-simple:4.3'
+    compile 'org.json:json:20140107'
 
     compile 'com.h2database:h2:1.3.+'
 

@@ -14,6 +14,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Holds the name of the projects and the paths to its files 
+ * @author Joel
+ */
 public class Project {
     private static final Logger logger = LoggerFactory.getLogger(DataSet.class);	
 	

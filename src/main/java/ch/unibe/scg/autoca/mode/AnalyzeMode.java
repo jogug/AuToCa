@@ -37,7 +37,7 @@ public final class AnalyzeMode implements IOperationMode {
     	this.coverage = coverage;
     	this.simpleInd = simpleInd;
     	try {
-			this.db = new DB(dataset.getOutputLocation());
+			this.db = new DB(dataset.getOutputLocation(), dataset);
 		} catch (ClassNotFoundException | SQLException e) {
 			logger.error("Error in AnalyzeMode creation",e);
 		}
@@ -94,8 +94,8 @@ public final class AnalyzeMode implements IOperationMode {
 	}	
 	
 	private void loadActualTokens() {
-		DefaultTokenHandler th = new DefaultTokenHandler(db,dataset.getMinTokenLength(),dataset.getMaxTokenLength());
-		Tokenizer tk = new Tokenizer(th);
+		DefaultTokenHandler th = new DefaultTokenHandler(db,dataset.getDEFAULT_MAX_TOKEN_LENGTH(),dataset.getDEFAULT_MIN_TOKEN_LENGTH());
+		Tokenizer tk = new Tokenizer(th, dataset);
 		tk.loadDefaults();
 		
 		for(Language language:dataset.getLanguages()){

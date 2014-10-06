@@ -9,22 +9,27 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.unibe.scg.autoca.JsonInterface;
+import ch.unibe.scg.autoca.DataSet;
+
 public class TestDB {
 	private DB db;
 	private Connection conn;
+	private DataSet dataset;
 	Path path = Paths.get("test-db");
 	private PreparedStatement stmt;
 	private ResultSet res;
 	
 	@Before
 	public void setUp() throws ClassNotFoundException, SQLException {
-		db = new DB(path);
+		JsonInterface config = new JsonInterface();
+		dataset = config.testDataSet();
+    	db = new DB(path, dataset);
 		db.initialize();
 		
 		openConnection();
@@ -135,7 +140,6 @@ public class TestDB {
 		db.languageFinished();
 	}
 	
-	
 	@Test
 	public void testToken3() throws SQLException, ClassNotFoundException {
 		db.newLanguage("LangA");
@@ -189,25 +193,22 @@ public class TestDB {
 		
 		db.projectFinished();
 		db.languageFinished();
-	}
-	
-	
+	}		
 	
 	private ResultSet getOccurences() throws SQLException {
-		stmt = conn.prepareStatement("SELECT * FROM " + DB.OCCURENCE);
+		stmt = conn.prepareStatement("SELECT * FROM " + dataset.getOCCURENCE());
 		return stmt.executeQuery();
 	}	
 
 	private ResultSet getTempTokens() throws SQLException {
-		stmt = conn.prepareStatement("SELECT * FROM " + DB.TEMPORARY);
+		stmt = conn.prepareStatement("SELECT * FROM " + dataset.getTEMPORARY());
 		return stmt.executeQuery();
 	}
 	
-
 	private void openConnection() throws ClassNotFoundException, SQLException {
 		if (conn == null) {
 			Class.forName("org.h2.Driver");
-			conn = DriverManager.getConnection("jdbc:h2:" + path.resolve(DB.FILENAME).toString(), "sa", "");
+			conn = DriverManager.getConnection("jdbc:h2:" + path.resolve(dataset.getFilename()).toString(), "sa", "");
 		}
 	}
 }
