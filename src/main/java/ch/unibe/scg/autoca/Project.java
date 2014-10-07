@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @author Joel
  */
 public class Project {
-    private static final Logger logger = LoggerFactory.getLogger(DataSet.class);	
+    private static final Logger logger = LoggerFactory.getLogger(JSONInterface.class);	
 	
 	private int id;
 	private Path projectPath;

@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.JSONInterface;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.db.DB;
@@ -31,15 +31,15 @@ public final class ScanMode implements IOperationMode {
 	private int langCounter;
 	private int projCounter;
 
-	private DataSet dataset;
+	private JSONInterface dataset;
 
-	public ScanMode(DataSet dataset) {
+	public ScanMode(JSONInterface dataset) {
 		this.dataset = dataset;
 
 		initializeScanMode(dataset);
 	}
 
-	public void initializeScanMode(DataSet dataset) {
+	public void initializeScanMode(JSONInterface dataset) {
 		logger.info("ScanMode Initialization");
 		try {
 			// Create DB

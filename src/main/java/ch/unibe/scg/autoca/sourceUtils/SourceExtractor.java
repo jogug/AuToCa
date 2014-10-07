@@ -16,7 +16,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.JSONInterface;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.mode.ScanMode;
@@ -36,7 +36,7 @@ public class SourceExtractor {
 	 * directories into "\\Extracted"+sourceName directories. Files with the
 	 * same name are copied in ascending numbered sub folders.
 	 */
-	public void extractSourceFiles(DataSet data) {
+	public void extractSourceFiles(JSONInterface data) {
 		logger.info("Starting extraction of source files from: " + data.getOutputLocation().toString());
 
 		outputExtractedSource = createExtractFolder(data);
@@ -87,7 +87,7 @@ public class SourceExtractor {
 		}
 	}
 
-	private static String createExtractFolder(DataSet data) {
+	private static String createExtractFolder(JSONInterface data) {
 		String outputExtractedSource = data.getOutputLocation().toString() + "\\Extracted"
 				+ data.getOutputLocation().getFileName().toString();
 		return outputExtractedSource;

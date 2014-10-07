@@ -17,12 +17,12 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Joel
  */
-public class DataSet {	
+public class JSONInterface {	
 	//GENERAL
 	private JSONObject plainData;
 	private List<Language> languages;	
 
-	public DataSet(JSONObject plainData, List<Language> languages){
+	public JSONInterface(JSONObject plainData, List<Language> languages){
 		this.languages = languages;
 		this.plainData = plainData;
 	}

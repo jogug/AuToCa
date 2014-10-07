@@ -10,10 +10,10 @@ import ch.unibe.scg.autoca.mode.ScanMode;
 
 public final class AuToCa {
 
-	private DataSet dataset;
+	private JSONInterface dataset;
 
 	public AuToCa(String[] args) {
-		JsonInterface config = new JsonInterface();
+		Configuration config = new Configuration();
 		try {
 			config.parseArguments(args);
 		} catch (ClassNotFoundException e) {

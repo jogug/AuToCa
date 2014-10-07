@@ -7,8 +7,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,20 +16,17 @@ import java.util.Objects;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.mode.AnalyzeMode;
-import ch.unibe.scg.autoca.mode.IOperationMode;
 import ch.unibe.scg.autoca.mode.ScanMode;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
 
 /**
  * Gets the execution settings from the cmd arguments
  * @author Joel
  *
  */
-public final class JsonInterface {
+public final class Configuration {
 	
 	private enum OperationsMode {SCAN, ANALYZE, BOTH};
 	private enum ConfigMode {DEF, PATH};
@@ -80,7 +75,7 @@ public final class JsonInterface {
 		switch(cfMode){
 		case DEF:
 	    	List<Language> languages = processLanguages(plainData);
-	    	DataSet dataset = new DataSet(plainData, languages);
+	    	JSONInterface dataset = new JSONInterface(plainData, languages);
 		        switch(opMode){
 	        	case SCAN:
 	        		ScanMode scanMode = new ScanMode(dataset);
@@ -88,6 +83,7 @@ public final class JsonInterface {
 	        		break;
 	        	case ANALYZE:  
 	        		AnalyzeMode analyzeMode = new AnalyzeMode(dataset, true, true, true);
+	        		analyzeMode.execute();
 	        		break;
 	        	case BOTH:
 	        		
@@ -130,10 +126,10 @@ public final class JsonInterface {
 		    return s.hasNext() ? s.next() : "";
 	}
 	
-	public DataSet  testDataSet(){
+	public JSONInterface  testDataSet(){
     	JSONObject plainData = loadConfiguration("resources/default.cfg");
     	List<Language> languages = processLanguages(plainData);
-    	return new DataSet(plainData, languages);
+    	return new JSONInterface(plainData, languages);
 	}
     
     /**

@@ -8,12 +8,11 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.JSONInterface;
 import ch.unibe.scg.autoca.Language;
 import ch.unibe.scg.autoca.Project;
 import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.db.DefaultTokenHandler;
-import ch.unibe.scg.autoca.db.DBTokenHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
@@ -26,12 +25,12 @@ public final class AnalyzeMode implements IOperationMode {
     private static final Logger logger = LoggerFactory.getLogger(AnalyzeMode.class);
 
 	private DB db;
-	private DataSet dataset;
+	private JSONInterface dataset;
 	private boolean global;
 	private boolean coverage;
 	private boolean simpleInd;
 	
-    public AnalyzeMode(DataSet dataset,boolean global, boolean coverage, boolean simpleInd){  	     	
+    public AnalyzeMode(JSONInterface dataset,boolean global, boolean coverage, boolean simpleInd){  	     	
     	this.dataset = dataset;
     	this.global = global;
     	this.coverage = coverage;

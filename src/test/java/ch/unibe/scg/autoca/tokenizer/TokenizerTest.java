@@ -5,8 +5,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.JsonInterface;
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.Configuration;
+import ch.unibe.scg.autoca.JSONInterface;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
@@ -16,8 +16,8 @@ public class TokenizerTest {
 
 	@Before
 	public void setUp() {
-		JsonInterface config = new JsonInterface();
-		DataSet dataset = config.testDataSet();
+		Configuration config = new Configuration();
+		JSONInterface dataset = config.testDataSet();
 		mh = new MockHandler();
 		tokenizer = new Tokenizer(mh, dataset);
 		tokenizer.loadDefaults();

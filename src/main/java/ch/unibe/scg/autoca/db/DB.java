@@ -14,7 +14,7 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.JSONInterface;
 
 /**
  * Handles connections and code links to H2DB.
@@ -53,7 +53,7 @@ public class DB {
 	private PreparedStatement prepInsertStatement;	
 	private int currentFileId;
 
-	public DB(Path path, DataSet dataset) throws ClassNotFoundException, SQLException {
+	public DB(Path path, JSONInterface dataset) throws ClassNotFoundException, SQLException {
 
 		FILENAME = dataset.getFilename();
 		DRIVER = dataset.getDriver();

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.JSONInterface;
 
 public class Tokenizer {
 	public final String DEFAULT_LS;
@@ -40,7 +40,7 @@ public class Tokenizer {
 	private int position;
 	private int indent;
 	
-	public Tokenizer(TokenizerHandler th, DataSet dataset) {
+	public Tokenizer(TokenizerHandler th, JSONInterface dataset) {
 		this.th = th;
 		DEFAULT_LS = dataset.getDEFAULT_LS();
 		DEFAULT_WORD = dataset.getDEFAULT_WORD();

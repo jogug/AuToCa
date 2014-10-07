@@ -14,20 +14,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.JsonInterface;
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.Configuration;
+import ch.unibe.scg.autoca.JSONInterface;
 
 public class TestDB {
 	private DB db;
 	private Connection conn;
-	private DataSet dataset;
+	private JSONInterface dataset;
 	Path path = Paths.get("test-db");
 	private PreparedStatement stmt;
 	private ResultSet res;
 	
 	@Before
 	public void setUp() throws ClassNotFoundException, SQLException {
-		JsonInterface config = new JsonInterface();
+		Configuration config = new Configuration();
 		dataset = config.testDataSet();
     	db = new DB(path, dataset);
 		db.initialize();

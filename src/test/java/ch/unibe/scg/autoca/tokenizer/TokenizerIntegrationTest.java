@@ -8,8 +8,8 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.JsonInterface;
-import ch.unibe.scg.autoca.DataSet;
+import ch.unibe.scg.autoca.Configuration;
+import ch.unibe.scg.autoca.JSONInterface;
 import ch.unibe.scg.autoca.tokenizer.MockHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
@@ -18,8 +18,8 @@ public class TokenizerIntegrationTest {
 	@Test
 	public void testDataFile() throws ClassNotFoundException, URISyntaxException {
 		URL fileUrl = ClassLoader.getSystemResource("data_file-short.c");
-		JsonInterface config = new JsonInterface();
-		DataSet dataset = config.testDataSet();
+		Configuration config = new Configuration();
+		JSONInterface dataset = config.testDataSet();
 		MockHandler mh = new MockHandler();
 		Tokenizer tokenizer = new Tokenizer(mh, dataset);
 		
