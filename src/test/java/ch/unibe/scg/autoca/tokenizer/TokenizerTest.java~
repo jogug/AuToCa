@@ -118,7 +118,7 @@ public class TokenizerTest {
 
 	}
 
-	/*
+	
 	@Test
 	public void testIndent3() {
 		// FAILS, INDENT is returned even if followed by a new line
@@ -139,7 +139,7 @@ public class TokenizerTest {
 		assertEquals(TokenType.WORD, mh.types.get(4));
 
 	}	
-	*/
+	
 	@Test
 	public void testDedent() {
 		tokenizer.tokenize("hello  \n  world\nthere");
