@@ -2,6 +2,11 @@ package ch.unibe.scg.autoca.filter;
 
 import ch.unibe.scg.autoca.db.DB;
 
+/**
+ * Filter, register in J
+ * @author Joel
+ *
+ */
 public abstract class Filter {
 	private Filter next;
 	

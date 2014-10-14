@@ -198,8 +198,7 @@ public final class Configuration {
 	
 	public JSONInterface  testDataSet(){
     	JSONObject plainData = loadJSON("resources/default.cfg");
-    	List<Language> languages = processLanguages(plainData);
-    	return new JSONInterface(plainData, languages, null);
+    	return new JSONInterface(plainData, processLanguages(plainData), null);
 	}
     
     /**

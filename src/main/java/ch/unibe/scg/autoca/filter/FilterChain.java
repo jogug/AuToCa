@@ -35,4 +35,13 @@ public class FilterChain {
 			logger.info("Finish");
 		}
 	}
+	
+	public String getResultName(){
+		return resultName;
+	}
+	
+	public List<String> getLanguageNames(){
+		return languageNames;
+	}
+	
 }

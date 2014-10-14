@@ -13,7 +13,7 @@ public class IndentFilter extends Filter {
 	
 	@Override
 	void execute(DB db, String languageName, String resultTable) {
-		logger.info("Indent filter");
+		logger.info("Indent Method");
 		try {
 			db.newFilterTable();
 			db.indentKeywordMethod(languageName, resultTable);

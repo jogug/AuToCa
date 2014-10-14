@@ -21,7 +21,7 @@ public class Output extends Filter {
 	void execute(DB db, String languageName, String resultTable) {
 		if(save){
 			try {
-				logger.info("Outputting");
+				logger.info("Outputting " + resultTable);
 				db.newFilterTable();
 				db.nameOrderToken(languageName, resultTable);
 			} catch (SQLException | ClassNotFoundException e) {
@@ -29,7 +29,7 @@ public class Output extends Filter {
 			}
 		}else{
 			try {
-				logger.info("Removing");
+				logger.info("Dropping " + resultTable);
 				db.newFilterTable();
 				db.dropTableIfExists(resultTable);
 			} catch (SQLException | ClassNotFoundException e) {

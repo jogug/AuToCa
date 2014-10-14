@@ -329,6 +329,23 @@ public class DB {
 	}
 	
 	
+
+	public void newAnalyzeLanguage() throws ClassNotFoundException, SQLException {
+		openConnection();
+	}
+
+	public void analyzeLanguageFinished() throws SQLException {
+		closeConnection();
+	}	
+	
+	public void newLanguageStatistics() throws ClassNotFoundException, SQLException {
+		openConnection();
+	}
+
+	public void LanguageStatisticsFinished() throws SQLException {
+		closeConnection();
+	}	
+	
 //	/*
 //	 * ANALYZE MODE OPEN&CLOSE
 //	 */
@@ -341,13 +358,6 @@ public class DB {
 //		closeConnection();
 //	}	
 //	
-	public void newAnalyzeLanguage() throws ClassNotFoundException, SQLException {
-		openConnection();
-	}
-
-	public void analyzeLanguageFinished() throws SQLException {
-		closeConnection();
-	}	
 //	
 //	/*
 //	 * ANALYZE MODE
@@ -447,7 +457,7 @@ public class DB {
 //	}
 	
 	//TODO outputname
-	public double calculateStatistics(String srcTable,String method, String langName) throws SQLException{
+	public double calculateStatistics(String langName, String srcTable) throws SQLException{
 		Statement stmt = connection.createStatement();
 		double countAll = getTableCount(langName);
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(SRC.TOKEN) FROM "

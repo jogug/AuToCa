@@ -13,7 +13,7 @@ public class GlobalFilter extends Filter {
 	
 	@Override
 	void execute(DB db, String languageName, String resultTable) {
-		logger.info("Global filter");
+		logger.info("Global Method");
 		try {
 			db.newFilterTable();
 			db.globalKeywordMethod(languageName, resultTable);

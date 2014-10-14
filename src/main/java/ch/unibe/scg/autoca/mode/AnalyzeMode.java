@@ -40,8 +40,9 @@ public final class AnalyzeMode implements IOperationMode {
 	@Override
 	public void execute() {
 		logger.info("Starting AnalyzeMode: ");
+		analyzeDataSet();	
 		loadActualTokens();
-		analyzeDataSet();
+		calculateStatisticsOnOutputTable();
 		logger.info("Finished AnalyzeMode");
 	}
 
@@ -57,48 +58,21 @@ public final class AnalyzeMode implements IOperationMode {
 		}	
 	}
 
-//	private void analyzeDataSet(){
-//		try {
-//			db.newAnalyzeLanguage();
-//			for(Language language:dataset.getLanguages()){	
-//				logger.info("analyzing language: " + language.getName());
-//				analyzeLanguage(language.getName());
-//				for(Project project: language.getProjects()){
-//					logger.info("analyzing project: "+project.getName());
-//					analyzeProject(project.getName(), language.getName());
-//				}			
-//			}
-//			db.analyzeLanguageFinished();
-//		} catch (ClassNotFoundException | SQLException e) {
-//			logger.error("Some error occured during Extraction",e);
-//		}
-//	}
-//	
-//	private void analyzeLanguage(String langName) throws SQLException{
-//		if(global){
-//			db.analyzeGlobalPerLanguage(langName, langName);
-//		}
-//		if(coverage){
-//			db.analyzeCoveragePerLanguage(langName, langName);
-//		}
-//		if(simpleInd){
-//			db.analyzeSimpleIndentPerLanguage(langName, langName);
-//		}
-//	}
-//	
-//	private void analyzeProject(String projName, String langName) throws SQLException{
-//		if(global){
-//			db.analyzeGlobalPerProject(projName, projName, langName);
-//		}
-//		if(coverage){
-//			db.analyzeCoveragePerProject(projName, projName, langName);
-//		}
-//		if(simpleInd){
-//			db.analyzeSimpleIndentPerProject(projName, langName, projName);
-//		}
-//	}	
+	public void calculateStatisticsOnOutputTable(){
+		for(FilterChain filterChain: dataset.getFilterChain()){
+			for(String languageName: filterChain.getLanguageNames()){
+				try {
+					db.newLanguageStatistics();
+					double result = db.calculateStatistics(languageName,languageName+filterChain.getResultName());
+					logger.info("Percentage right keywords identified in top #of actual tokens from " + languageName+filterChain.getResultName() +": " + result);
+					db.LanguageStatisticsFinished();
+				} catch (SQLException | ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}	
+	}
 	
-
 	private void loadActualTokens() {
 		DefaultTokenHandler th = new DefaultTokenHandler(db,dataset.getDEFAULT_MAX_TOKEN_LENGTH(),dataset.getDEFAULT_MIN_TOKEN_LENGTH());
 		Tokenizer tk = new Tokenizer(th, dataset);
@@ -113,5 +87,5 @@ public final class AnalyzeMode implements IOperationMode {
 				logger.info("Couldnt load actual Token of: " + language.getName(), e);
 			}
 		}	
-	}
+	}	
 }

@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 public class Language {
     private static final Logger logger = LoggerFactory.getLogger(Language.class);	
 	
-	private String name, filePattern;
+	private String name; 
+	private String filePattern;
 	private Path tokenPath;
 	private ArrayList<Project> projects;
 	
