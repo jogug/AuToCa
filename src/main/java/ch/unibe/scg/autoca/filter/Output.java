@@ -1,23 +1,40 @@
 package ch.unibe.scg.autoca.filter;
 
+import java.sql.SQLException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.unibe.scg.autoca.db.DB;
 
 public class Output extends Filter {
-	private String output;
+	
+    private static final Logger logger = LoggerFactory.getLogger(Output.class);	
+	
 	private boolean save;
 
-	public Output(Filter next, boolean save, String output) {
-		super(next);
-		this.output = output;
+	public Output(Filter next, boolean save) {
 		this.save = save;
 	}
 
 	@Override
-	void execute(DB db) {
+	void execute(DB db, String languageName, String resultTable) {
 		if(save){
-			// TODO Save result in database
+			try {
+				logger.info("Outputting");
+				db.newFilterTable();
+				db.nameOrderToken(languageName, resultTable);
+			} catch (SQLException | ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 		}else{
-			
-		}		
+			try {
+				logger.info("Removing");
+				db.newFilterTable();
+				db.dropTableIfExists(resultTable);
+			} catch (SQLException | ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

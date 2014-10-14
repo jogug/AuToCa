@@ -8,9 +8,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.filter.FilterChain;
 
 /**
  * Holds settings for the scan and analysis modes, data input and the output locations
@@ -21,15 +20,22 @@ public class JSONInterface {
 	//GENERAL
 	private JSONObject plainData;
 	private List<Language> languages;	
+	private List<FilterChain> filterChains;
 
-	public JSONInterface(JSONObject plainData, List<Language> languages){
+	public JSONInterface(JSONObject plainData, List<Language> languages, List<FilterChain> filterChains){
 		this.languages = languages;
 		this.plainData = plainData;
+		this.filterChains = filterChains;
 	}
 	
+
 	//TODO TABLE NAMES!!!!!
 	public List<Language> getLanguages() {
 		return languages;
+	}
+	
+	public List<FilterChain> getFilterChain() {
+		return filterChains;
 	}
 	
 	public Path getOutputLocation() {

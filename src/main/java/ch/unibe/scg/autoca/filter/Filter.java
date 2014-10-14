@@ -5,9 +5,13 @@ import ch.unibe.scg.autoca.db.DB;
 public abstract class Filter {
 	private Filter next;
 	
-	public Filter(Filter next){
+	public void setNext(Filter next){
 		this.next = next;
 	}
 	
-	abstract void execute(DB db);
+	public Filter getNext(){
+		return next;
+	}
+	
+	abstract void execute(DB db, String languageName, String resultTable);
 }

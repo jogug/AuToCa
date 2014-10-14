@@ -15,7 +15,18 @@ import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.filter.CoverageFilter;
+import ch.unibe.scg.autoca.filter.Filter;
+import ch.unibe.scg.autoca.filter.FilterChain;
+import ch.unibe.scg.autoca.filter.GlobalFilter;
+import ch.unibe.scg.autoca.filter.IndentFilter;
+import ch.unibe.scg.autoca.filter.IntersectFilter;
+import ch.unibe.scg.autoca.filter.Output;
+import ch.unibe.scg.autoca.filter.SubStringFilter;
+import ch.unibe.scg.autoca.filter.UpCaseFilter;
 import ch.unibe.scg.autoca.mode.AnalyzeMode;
 import ch.unibe.scg.autoca.mode.ScanMode;
 import joptsimple.OptionParser;
@@ -27,6 +38,7 @@ import joptsimple.OptionSet;
  *
  */
 public final class Configuration {
+    private static final Logger logger = LoggerFactory.getLogger(Configuration.class);	
 	
 	private enum OperationsMode {SCAN, ANALYZE, BOTH};
 	private enum ConfigMode {DEF, PATH};
@@ -60,42 +72,52 @@ public final class Configuration {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
         
-        //TODO load config file from path arg
-		switch(cfMode){
-	    case PATH:
-	    	
-	    	 break;        	     
-		}
         execute();
     }
     
     private void execute(){
-    	JSONObject plainData = loadConfiguration("resources/default.cfg");
+    	JSONObject plainData;
+    	JSONInterface dataset;
+    	ScanMode scanMode;
+    	AnalyzeMode analyzeMode;
     	
+    	//Load config file from default path or arg
 		switch(cfMode){
 		case DEF:
-	    	List<Language> languages = processLanguages(plainData);
-	    	JSONInterface dataset = new JSONInterface(plainData, languages);
-		        switch(opMode){
-	        	case SCAN:
-	        		ScanMode scanMode = new ScanMode(dataset);
-	        		scanMode.execute();
-	        		break;
-	        	case ANALYZE:  
-	        		AnalyzeMode analyzeMode = new AnalyzeMode(dataset, true, true, true);
-	        		analyzeMode.execute();
-	        		break;
-	        	case BOTH:
-	        		
-	        		break;
-		        }
+			plainData = loadJSON("resources/default.cfg");
 	     	break;
 	    case PATH:
-	    	 break;        	     
+	    	//TODO PATH from arg
+	    	plainData = loadJSON("resources/default.cfg");
+	    	 break;   
+	    default: 
+			plainData = loadJSON("resources/default.cfg");
 		}
+		
+		//Switch between different operations modes
+        switch(opMode){
+    	case SCAN:   		
+    		dataset = new JSONInterface(plainData, processLanguages(plainData), null);	        		
+    		scanMode = new ScanMode(dataset);
+    		scanMode.execute();
+    		break;
+    	case ANALYZE:  
+    		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));	        		
+    		analyzeMode = new AnalyzeMode(dataset);
+    		analyzeMode.execute();
+    		break;
+    	case BOTH:
+    		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
+    		analyzeMode = new AnalyzeMode(dataset);
+    		scanMode = new ScanMode(dataset);
+    		scanMode.execute();
+    		analyzeMode.execute();
+    		break;
+        }
     }
 
-	private JSONObject loadConfiguration(String path) {
+	private JSONObject loadJSON(String path) {
+		logger.info("Loading configuration from JSON File");
 	    InputStream is = null;;
 		try {
 			is = new FileInputStream(path);
@@ -103,7 +125,7 @@ public final class Configuration {
 			e.printStackTrace();
 		}
 	    String jsonTxt = convertStreamToString(is);
-	        
+		logger.info("finished loading configuration"); 
 		return new JSONObject(jsonTxt);
 	}
 	
@@ -120,16 +142,64 @@ public final class Configuration {
 		}
 		return languages;
 	}
+	
+	private List<FilterChain> processFilterChain(JSONObject plainData){
+		List<FilterChain> filterChains = new ArrayList<>();
+		
+		JSONArray plainChains = plainData.getJSONArray("FilterChains");
+		for(int i=0; i<plainChains.length();i++){
+			String resultName = plainChains.getJSONObject(i).getString("resultName");
+			
+			JSONArray plainLangs = plainChains.getJSONObject(i).getJSONArray("languages");
+			List<String> languageNames = new ArrayList<>();
+			for(int j=0; j<plainLangs.length();j++){
+				languageNames.add(plainLangs.getJSONObject(j).getString("name"));
+			}
+			
+			JSONArray plainFilters = plainChains.getJSONObject(i).getJSONArray("filters");
+			Filter start = processFilters(plainFilters);
+			
+			filterChains.add(new FilterChain(resultName, languageNames, start));
+		}
+		return filterChains;
+	}
+	
+	private Filter processFilters(JSONArray plainFilters){
+		List<Filter> active = new ArrayList<>();
+		for(int i=0; i<plainFilters.length();i++){
+			switch(plainFilters.getJSONObject(i).getString("name")){
+				case "Output":			active.add(new Output(null, true));
+										break;
+				case "UpCaseFilter": 	active.add(new UpCaseFilter());
+										break;
+				case "IntersectFilter": active.add(new IntersectFilter(plainFilters.getJSONObject(i).getInt("#occInProj")));
+										break;
+				case "GlobalFilter": 	active.add(new GlobalFilter());
+										break;
+				case "CoverageFilter":	active.add(new CoverageFilter());
+										break;
+				case "IndentFilter": 	active.add(new IndentFilter());
+										break;
+				case "SubStringFilter": active.add(new SubStringFilter(plainFilters.getJSONObject(i).getString("subString")));
+				break;
+			}
+		}
+		for(int i = active.size()-1;i>0;i--){
+			active.get(i).setNext(active.get(i-1));
+		}
+		return active.get(active.size()-1);
+	}
     
 	private String convertStreamToString(java.io.InputStream is) {
-		    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+		    @SuppressWarnings("resource")
+			java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 		    return s.hasNext() ? s.next() : "";
 	}
 	
 	public JSONInterface  testDataSet(){
-    	JSONObject plainData = loadConfiguration("resources/default.cfg");
+    	JSONObject plainData = loadJSON("resources/default.cfg");
     	List<Language> languages = processLanguages(plainData);
-    	return new JSONInterface(plainData, languages);
+    	return new JSONInterface(plainData, languages, null);
 	}
     
     /**

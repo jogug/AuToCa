@@ -43,10 +43,8 @@ public class DB {
 	private final String LANGUAGE;
 	
 	//PreFixes
-	private final String GLO = "GLOBAL_"; 
-	private final String COV = "COVERAGE_";
-	private final String SIND = "SIMIND_";
-	private final String ACT = "ACTUALT_";
+
+
 	
 	private Connection connection;
 	private Path pathDb;
@@ -211,11 +209,11 @@ public class DB {
 	 */
 	public void newFilterTable() throws ClassNotFoundException, SQLException{
 		openConnection();
-		createFilterTable();
 	}
 	
 	public void filterTableFinished() throws SQLException{
 		dropTableIfExists(TEMPFILTER);
+		dropTableIfExists(TEMPORARY);
 		closeConnection();
 	}
 	
@@ -223,6 +221,103 @@ public class DB {
 	/*
 	 * FILTER MODE
 	 */
+	public void globalKeywordMethod(String languageName, String resultTable) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS " +
+				"SELECT TOKENID, PROJECTID, COUNT(TOKENID) COUNT FROM " +
+				"(SELECT TOKENID,PROJECTID FROM OCCURENCES " + 
+				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
+				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID  " +
+				"WHERE PROJECTS.LANGUAGEID = " + getLanguageId(languageName) + ") " +
+				"GROUP BY TOKENID, PROJECTID ORDER BY COUNT DESC");	
+		stmt.close();
+	}
+	
+	public void coverageKeywordMethod(String languageName, String resultTable) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS " +
+				"SELECT TOKENID, PROJECTID, COUNT(FILEID) COUNT FROM  " +
+				"(SELECT DISTINCT TOKENID, PROJECTID, FILEID, FILES.FILE FROM OCCURENCES " +   
+				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " +
+				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " +  
+				"WHERE PROJECTS.LANGUAGEID = " + getLanguageId(languageName) + ") " +
+				"GROUP BY  TOKENID, PROJECTID ORDER BY COUNT DESC");	
+		stmt.close();
+	}
+	
+	//TODO FIX INDENT
+	public void indentKeywordMethod(String languageName, String resultTable) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS " +
+				"SELECT TOKENID, PROJECTID, COUNT(TOKENID) COUNT FROM " +
+				"(SELECT TOKENID, PROJECTID, ORDERID FROM OCCURENCES " +
+				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " +
+				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + getLanguageId(languageName) + ") A " +
+				"INNER JOIN (SELECT ORDERID FROM OCCURENCES WHERE TOKENID =  " + getTokenId("#indent") + ") B ON A.ORDERID = B.ORDERID + 1 " +  
+				"GROUP BY TOKENID, PROJECTID ORDER BY COUNT DESC");	
+		stmt.close();
+	}
+	
+	public void intersectLanguageProjects(String languageName, String resultTable, int occInProj) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" AS " +
+				"SELECT TOKENID, COUNT(PROJECTID) COUNT FROM \"" + resultTable + "\" " +
+				"GROUP BY TOKENID ORDER BY COUNT DESC;" +
+				
+				"DELETE FROM \"" + TEMPFILTER + "\" WHERE COUNT < " + occInProj + "; " +// TODO CONSTANT 
+
+				"ALTER TABLE \"" + resultTable + "\" RENAME TO \"" + TEMPORARY + "\" ; " +
+				
+				"CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS " +
+				"SELECT A.TOKENID, PROJECTID, A.COUNT FROM \"" + TEMPORARY + "\" A " +
+				"INNER JOIN \"" + TEMPFILTER + "\" B ON A.TOKENID = B.TOKENID");	
+		stmt.close();
+	}
+	
+	public void upperCaseRemoval(String languageName, String resultTable) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPORARY + "\" AS " +
+				"SELECT TOKEN, L0.TOKENID, PROJECTID, COUNT FROM " +
+				"(SELECT * FROM \"" + resultTable + "\") L0 " +
+				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID; " +				
+				"DELETE FROM \"" + TEMPORARY + "\" t WHERE t.TOKEN NOT LIKE LOWER(t.TOKEN);"+
+				"DROP TABLE \"" + resultTable + "\" ; " +
+				"ALTER TABLE \"" + TEMPORARY + "\" DROP COLUMN TOKEN; " +
+				"ALTER TABLE \"" + TEMPORARY + "\" RENAME TO \"" + resultTable + "\"");
+		stmt.close();
+	}
+	
+	public void nameOrderToken(String languageName, String resultTable) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPORARY + "\" AS " +
+				"SELECT TOKEN, L0.TOKENID, PROJECTID, COUNT FROM " +
+				"(SELECT * FROM \"" + resultTable + "\") L0 " +
+				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID; " +
+				
+				"DROP TABLE \"" + resultTable + "\" ; " +
+		
+				"CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS " +
+				"SELECT TOKEN, SUM(COUNT) COUNT FROM \"" + TEMPORARY + "\" " + 
+				"GROUP BY TOKEN ORDER BY COUNT DESC;");
+		stmt.close();
+	}
+	
+	public void specialSubRemoval(String languageName, String resultTable, String substring) throws SQLException{
+		Statement stmt = connection.createStatement();
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPORARY + "\" AS " +
+				"SELECT TOKEN, L0.TOKENID, PROJECTID, COUNT FROM " +
+				"(SELECT * FROM \"" + resultTable + "\") L0 " +
+				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID; " +
+	
+				"DROP TABLE \"" + resultTable + "\" ; " +
+	
+				"DELETE FROM \"" + TEMPORARY + "\" t WHERE LOCATE('" + substring + "' , t.TOKEN) > 0;" +
+				"ALTER TABLE \"" + TEMPORARY + "\" DROP COLUMN TOKEN; " +
+				"ALTER TABLE \"" + TEMPORARY + "\" RENAME TO \"" + resultTable + "\"");
+		stmt.close();
+	}
+	
+	//TODO
 	public void intersectTables(String[] tables, String table) throws SQLException{
 		Statement stmt = connection.createStatement();
 		String statement = "SELECT * FROM " + table + " a";
@@ -233,30 +328,19 @@ public class DB {
 		stmt.close();
 	}
 	
-	public void removeUpperCase() throws SQLException{
-		Statement stmt = connection.createStatement();
-		stmt.execute("DELETE * FROM " + TEMPFILTER + " t WHERE t.TOKEN NOT LIKE LOWER(t.TOKEN)");
-		stmt.close();
-	}
 	
-	public void removeSpecialSub(String substring) throws SQLException{
-		Statement stmt = connection.createStatement();
-		stmt.execute("DELETE * FROM " + TEMPFILTER + " t WHERE LOCATE('" + substring + "' , t.TOKEN) > 0)");
-		stmt.close();
-	}
-	
-	/*
-	 * ANALYZE MODE OPEN&CLOSE
-	 */
-	
-	public void newExtractLanguage() throws ClassNotFoundException, SQLException {
-		openConnection();
-	}
-
-	public void extractLanguageFinished() throws SQLException {
-		closeConnection();
-	}	
-	
+//	/*
+//	 * ANALYZE MODE OPEN&CLOSE
+//	 */
+//	
+//	public void newExtractLanguage() throws ClassNotFoundException, SQLException {
+//		openConnection();
+//	}
+//
+//	public void extractLanguageFinished() throws SQLException {
+//		closeConnection();
+//	}	
+//	
 	public void newAnalyzeLanguage() throws ClassNotFoundException, SQLException {
 		openConnection();
 	}
@@ -264,110 +348,111 @@ public class DB {
 	public void analyzeLanguageFinished() throws SQLException {
 		closeConnection();
 	}	
+//	
+//	/*
+//	 * ANALYZE MODE
+//	 */
+//	public void analyzeGlobalPerProject(String resultTableName, String projectName, String langName) throws SQLException{
+//		resultTableName = GLO+resultTableName;
+//		dropTableIfExists(resultTableName);
+//		Statement stmt = connection.createStatement();
+//		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " +
+//				"SELECT TOKEN,COUNT(TOKENID) COUNT FROM " +
+//				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
+//				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID "+
+//				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + 
+//				getLanguageId(langName) + " AND PROJECTS.ID = " + getProjectId(projectName) + ") L0 " + 
+//				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
+//		stmt.close();
+//	}
+//	
+//	public void analyzeGlobalPerLanguage(String resultTableName, String langName) throws SQLException{
+//		resultTableName = GLO+resultTableName;
+//		dropTableIfExists(resultTableName);
+//		Statement stmt = connection.createStatement();
+//		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " +
+//				"SELECT TOKEN,COUNT(TOKENID) COUNT FROM " +
+//				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
+//				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " +
+//				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " +
+//				"WHERE PROJECTS.LANGUAGEID = " + getLanguageId(langName) + ") L0 " +
+//				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
+//				stmt.close();
+//	}
+//	
+//	public void analyzeCoveragePerProject(String resultTableName, String projectName, String langName) throws SQLException{
+//		resultTableName = COV+resultTableName;
+//		dropTableIfExists(resultTableName);
+//		Statement stmt = connection.createStatement();
+//		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " + 
+//				"SELECT TOKEN, COUNT(FILEID) COUNT FROM " + 
+//				"(SELECT DISTINCT TOKENID, FILEID, FILES.FILE FROM OCCURENCES  " + 
+//				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
+//				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " + 
+//				"WHERE PROJECTS.LANGUAGEID = " + 
+//				getLanguageId(langName) + " AND PROJECTS.ID = " + getProjectId(projectName) + ") L0 "  + 
+//				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKENID ORDER BY COUNT DESC");		
+//		stmt.close();
+//	}
+//	
+//	public void analyzeCoveragePerLanguage(String resultTableName,String langName) throws SQLException{
+//		resultTableName = COV+resultTableName;
+//		dropTableIfExists(resultTableName);
+//		Statement stmt = connection.createStatement();
+//		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " + 
+//				"SELECT TOKEN, COUNT(FILEID) COUNT FROM " + 
+//				"(SELECT DISTINCT TOKENID, FILEID, FILES.FILE FROM OCCURENCES  " + 
+//				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
+//				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " + 
+//				"WHERE PROJECTS.LANGUAGEID = " + getLanguageId(langName) + ") L0 " + 
+//				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKENID ORDER BY COUNT DESC");		
+//		stmt.close();
+//	}
+//
+//	public void analyzeSimpleIndentPerLanguage(String resultTableName,String langName) throws SQLException{		
+//		resultTableName = SIND+resultTableName;
+//		dropTableIfExists(resultTableName);
+//		Statement stmt = connection.createStatement();
+//		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "+
+//				"SELECT TOKEN, COUNT(TOKENID) COUNT FROM " + 
+//				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
+//				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
+//				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + 
+//				getLanguageId(langName) + ") A " +
+//				"INNER JOIN (SELECT ORDERID FROM OCCURENCES WHERE TOKENID = " + 
+//				getTokenId("#indent") + ") B ON A.ORDERID = B.ORDERID + 1 " + 
+//				"INNER JOIN TOKENS ON TOKENS.ID = A.TOKENID " +
+//				"GROUP BY TOKENID " +
+//				"ORDER BY COUNT DESC");
+//		stmt.close();
+//		System.out.println("STATISTICS: " + calculateStatistics(resultTableName, SIND, langName));
+//	}
+//	
+//	public void analyzeSimpleIndentPerProject(String resultTableName,String langName, String projectName) throws SQLException{	
+//		resultTableName = SIND+resultTableName;
+//		dropTableIfExists(resultTableName);
+//		Statement stmt = connection.createStatement();
+//		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "+
+//				"SELECT TOKEN, COUNT(TOKENID) COUNT FROM " + 
+//				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
+//				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
+//				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + 
+//				getLanguageId(langName) + "AND PROJECTS.ID=" + getProjectId(projectName) + ") A " +
+//				"INNER JOIN (SELECT ORDERID FROM OCCURENCES WHERE TOKENID = " + getTokenId("#indent") + 
+//				") B ON A.ORDERID = B.ORDERID + 1 " + 
+//				"INNER JOIN TOKENS ON TOKENS.ID = A.TOKENID " +
+//				"GROUP BY TOKENID " +
+//				"ORDER BY COUNT DESC");
+//		stmt.close();
+//	}
 	
-	/*
-	 * ANALYZE MODE
-	 */
-	public void analyzeGlobalPerProject(String resultTableName, String projectName, String langName) throws SQLException{
-		resultTableName = GLO+resultTableName;
-		dropTableIfExists(resultTableName);
-		Statement stmt = connection.createStatement();
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " +
-				"SELECT TOKEN,COUNT(TOKENID) COUNT FROM " +
-				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
-				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID "+
-				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + 
-				getLanguageId(langName) + " AND PROJECTS.ID = " + getProjectId(projectName) + ") L0 " + 
-				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
-		stmt.close();
-	}
-	
-	public void analyzeGlobalPerLanguage(String resultTableName, String langName) throws SQLException{
-		resultTableName = GLO+resultTableName;
-		dropTableIfExists(resultTableName);
-		Statement stmt = connection.createStatement();
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " +
-				"SELECT TOKEN,COUNT(TOKENID) COUNT FROM " +
-				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
-				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " +
-				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " +
-				"WHERE PROJECTS.LANGUAGEID = " + getLanguageId(langName) + ") L0 " +
-				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKEN ORDER BY COUNT DESC");
-				stmt.close();
-	}
-	
-	public void analyzeCoveragePerProject(String resultTableName, String projectName, String langName) throws SQLException{
-		resultTableName = COV+resultTableName;
-		dropTableIfExists(resultTableName);
-		Statement stmt = connection.createStatement();
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " + 
-				"SELECT TOKEN, COUNT(FILEID) COUNT FROM " + 
-				"(SELECT DISTINCT TOKENID, FILEID, FILES.FILE FROM OCCURENCES  " + 
-				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
-				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " + 
-				"WHERE PROJECTS.LANGUAGEID = " + 
-				getLanguageId(langName) + " AND PROJECTS.ID = " + getProjectId(projectName) + ") L0 "  + 
-				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKENID ORDER BY COUNT DESC");		
-		stmt.close();
-	}
-	
-	public void analyzeCoveragePerLanguage(String resultTableName,String langName) throws SQLException{
-		resultTableName = COV+resultTableName;
-		dropTableIfExists(resultTableName);
-		Statement stmt = connection.createStatement();
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS " + 
-				"SELECT TOKEN, COUNT(FILEID) COUNT FROM " + 
-				"(SELECT DISTINCT TOKENID, FILEID, FILES.FILE FROM OCCURENCES  " + 
-				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
-				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID " + 
-				"WHERE PROJECTS.LANGUAGEID = " + getLanguageId(langName) + ") L0 " + 
-				"INNER JOIN TOKENS L1 ON L0.TOKENID = L1.ID GROUP BY  TOKENID ORDER BY COUNT DESC");		
-		stmt.close();
-	}
-
-	public void analyzeSimpleIndentPerLanguage(String resultTableName,String langName) throws SQLException{		
-		resultTableName = SIND+resultTableName;
-		dropTableIfExists(resultTableName);
-		Statement stmt = connection.createStatement();
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "+
-				"SELECT TOKEN, COUNT(TOKENID) COUNT FROM " + 
-				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
-				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
-				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + 
-				getLanguageId(langName) + ") A " +
-				"INNER JOIN (SELECT ORDERID FROM OCCURENCES WHERE TOKENID = " + 
-				getTokenId("#indent") + ") B ON A.ORDERID = B.ORDERID + 1 " + 
-				"INNER JOIN TOKENS ON TOKENS.ID = A.TOKENID " +
-				"GROUP BY TOKENID " +
-				"ORDER BY COUNT DESC");
-		stmt.close();
-		System.out.println("STATISTICS: " + calculateStatistics(resultTableName, SIND, langName));
-	}
-	
-	public void analyzeSimpleIndentPerProject(String resultTableName,String langName, String projectName) throws SQLException{	
-		resultTableName = SIND+resultTableName;
-		dropTableIfExists(resultTableName);
-		Statement stmt = connection.createStatement();
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "+
-				"SELECT TOKEN, COUNT(TOKENID) COUNT FROM " + 
-				"(SELECT TOKENID,ORDERID FROM OCCURENCES " +
-				"INNER JOIN FILES ON OCCURENCES.FILEID = FILES.ID " + 
-				"INNER JOIN PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + 
-				getLanguageId(langName) + "AND PROJECTS.ID=" + getProjectId(projectName) + ") A " +
-				"INNER JOIN (SELECT ORDERID FROM OCCURENCES WHERE TOKENID = " + getTokenId("#indent") + 
-				") B ON A.ORDERID = B.ORDERID + 1 " + 
-				"INNER JOIN TOKENS ON TOKENS.ID = A.TOKENID " +
-				"GROUP BY TOKENID " +
-				"ORDER BY COUNT DESC");
-		stmt.close();
-	}
-	
+	//TODO outputname
 	public double calculateStatistics(String srcTable,String method, String langName) throws SQLException{
 		Statement stmt = connection.createStatement();
-		double countAll = getTableCount(ACT+langName);
+		double countAll = getTableCount(langName);
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(SRC.TOKEN) FROM "
 				+ "(SELECT TOP " + countAll + " TOKEN FROM \"" + srcTable + "\" ORDER BY COUNT DESC) SRC "
-				+ "INNER JOIN \"" + ACT + langName + "\" DST ON SRC.TOKEN = DST.TOKEN" );
+				+ "INNER JOIN \"" +  langName + "\" DST ON SRC.TOKEN = DST.TOKEN" );
 		rs.next();
 		double count = rs.getInt(1);
 		rs.close();
@@ -403,11 +488,13 @@ public class DB {
 		stmt.close();
 	}
 	
-	private void createFilterTable() throws SQLException {
-		String query = "CREATE MEMORY TABLE IF NOT EXISTS " + TEMPFILTER + " "
-				+ "(token VARCHAR(30) NOT NULL);";
+	/*
+	 * RENAME TABLE
+	 */
+	
+	public void renameTable(String currentName, String newName) throws SQLException{
 		Statement stmt = connection.createStatement();
-		stmt.execute(query);
+		stmt.execute("RENAME TABLE \"" + currentName + "\" TO \"" + newName + "\"");
 		stmt.close();
 	}
 	
@@ -422,9 +509,8 @@ public class DB {
 		String prepInsertStatementQuery = "INSERT INTO " + TEMPORARY + "(token) VALUES (?)";
 		prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);		
 	}
-	
+
 	public void actualTokenFileFinished(String resultTableName) throws SQLException{
-		resultTableName = ACT + resultTableName;
 		dropTableIfExists(resultTableName);		
 		Statement stmt = connection.createStatement();
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "+

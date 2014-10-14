@@ -9,11 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Holds the name and the paths to the languages, projects 
  * @author Joel
  */
 public class Language {
+    private static final Logger logger = LoggerFactory.getLogger(Language.class);	
 	
 	private String name, filePattern;
 	private Path tokenPath;
@@ -36,6 +40,7 @@ public class Language {
 	 * @param argLang
 	 */
 	public void addMultipleProjects(Path argPath){
+		logger.info("Adding " + getName() + " projects:");
 	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(argPath)) {
 	        for (Path path : stream) {
 	        	if(Files.isDirectory(path)){
