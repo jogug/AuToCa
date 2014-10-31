@@ -85,6 +85,10 @@ public class JSONInterface {
 	public String getLANGUAGE() {
 		return plainData.getJSONObject("Tables").getString("LANGUAGE");
 	}
+	
+	public String getRESULTTABLE() {
+		return plainData.getJSONObject("Tables").getString("RESULTTABLE");
+	}
 
 	public String getLoginprefix() {
 		return plainData.getJSONObject("DB").getString("LOGINPREFIX");
@@ -137,46 +141,39 @@ public class JSONInterface {
 	public String getNEWLINE() {
 		return plainData.getJSONObject("Tokenizer").getString("NEWLINE");
 	}
-
-	//MOVE TO CONFIGURATION
-	/*
-	public void loadStandardDataSet() {		
-		logger.info("Starting data initialization");
-		outputLocation = Paths.get("../AuToCa/resources/");
-		
-//		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
-//		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Java-Small/"), java);
-//		languages.add(java);
-
-		Language java = new Language("Java","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Java/"), java);
-		languages.add(java);
-		
-//		Language c = new Language("C","*.c", Paths.get("../AuToCa/resources/c_tokens.txt"));
-//		c.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/C/"), c);
-//		languages.add(c);	
-//		
-//		Language python = new Language("Python", "*.py", Paths.get("../AuToCa/resources/python_tokens.txt"));
-//		python.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Python/"), python);
-//		languages.add(python);
-//		
-//		Language cpp = new Language("Cpp", "*.cpp", Paths.get("../AuToCa/resources/cpp_tokens.txt"));
-//		cpp.addMultipleProjects(Paths.get("../AuToCa/resources/testprojects/Cpp/"), cpp);
-//		languages.add(cpp);			
-
-		logger.info("Finished data initialization found: " + getLanguages().size() + " Languages, "
-				+ getProjectCount() + " Projects, " + getFileCount() + " Files");
-	}
 	
-	//TODO Put in test class
-	public void loadTestDataSet(){
-		outputLocation = Paths.get("C:/Users/Joel/Desktop/Testprojekte/");
-		
-		Language java = new Language("Test","*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
-		java.addMultipleProjects(Paths.get("C:/Users/Joel/Desktop/Testprojekte/Test/"), java);
-		languages.add(java);
+	public String getDBNEWLINE() {
+		return plainData.getJSONObject("DBTokenHandler").getString("DBNEWLINE");
 	}
-	*/
+
+	public String getDEDENT() {
+		return plainData.getJSONObject("DBTokenHandler").getString("DEDENT");
+	}
+
+	public String getINDENT() {
+		return plainData.getJSONObject("DBTokenHandler").getString("INDENT");
+	}
+
+
+	public String getSTRING() {
+		return plainData.getJSONObject("DBTokenHandler").getString("STRING");
+	}
+
+
+	public String getCOMMENT() {
+		return plainData.getJSONObject("DBTokenHandler").getString("COMMENT");
+	}
+
+
+	public String getUNKNOWN() {
+		return plainData.getJSONObject("DBTokenHandler").getString("UNKNOWN");
+	}
+
+
+	public String getLONGWORD() {
+		return plainData.getJSONObject("DBTokenHandler").getString("LONGWORD");
+	}
+
 	public int getFileCount(){
 		int count = 0;
 		for(Language i: languages){

@@ -24,6 +24,7 @@ import ch.unibe.scg.autoca.filter.FilterChain;
 import ch.unibe.scg.autoca.filter.GlobalFilter;
 import ch.unibe.scg.autoca.filter.IndentFilter;
 import ch.unibe.scg.autoca.filter.IntersectFilter;
+import ch.unibe.scg.autoca.filter.NewlineFilter;
 import ch.unibe.scg.autoca.filter.Output;
 import ch.unibe.scg.autoca.filter.SubStringFilter;
 import ch.unibe.scg.autoca.filter.UpCaseFilter;
@@ -68,6 +69,8 @@ public final class Configuration {
         	opMode = OperationsMode.SCAN;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
             opMode = OperationsMode.ANALYZE;
+        } else if (nonOptionArgs.get(0).equalsIgnoreCase("both")) {
+            opMode = OperationsMode.BOTH;
         }else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
@@ -108,9 +111,9 @@ public final class Configuration {
     		break;
     	case BOTH:
     		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
-    		analyzeMode = new AnalyzeMode(dataset);
     		scanMode = new ScanMode(dataset);
     		scanMode.execute();
+    		analyzeMode = new AnalyzeMode(dataset);
     		analyzeMode.execute();
     		break;
         }
@@ -180,8 +183,10 @@ public final class Configuration {
 										break;
 				case "IndentFilter": 	active.add(new IndentFilter());
 										break;
+				case "NewlineFilter":	active.add(new NewlineFilter());
+										break;
 				case "SubStringFilter": active.add(new SubStringFilter(plainFilters.getJSONObject(i).getString("subString")));
-				break;
+										break;
 			}
 		}
 		for(int i = active.size()-1;i>0;i--){
@@ -200,128 +205,4 @@ public final class Configuration {
     	JSONObject plainData = loadJSON("resources/default.cfg");
     	return new JSONInterface(plainData, processLanguages(plainData), null);
 	}
-    
-    /**
-     * Parse the Command Line arguments.
-     *
-     * <scan|analyze> [path] [-f <constants mode>] [-p <start pattern>,<end pattern>,<start...] [-i <ignore pattern>, ..] [-m <int> min, max]
-     *
-     * @param args the arguments
-     * @throws IOException if an I/O error occurs
-     * @throws SQLException 
-     * @throws ClassNotFoundException 
-     */
-    /**
-    private static final Configuration instance = new Configuration();
-
-    private IOperationMode mode = null;
-    private String constants = null;
-    private String[] commentPattern = null;
-    private String[] ignorePattern = null;
-    private int minWL,maxWL;
-    
-    public void parseArguments(String[] args) throws IOException, ClassNotFoundException, SQLException {
-        Objects.requireNonNull(args);
-        
-        // Parse Options
-        // load standards -s
-        OptionParser parser = new OptionParser();
-        OptionSpec<String> filePatternArg = parser.accepts("f").withRequiredArg().defaultsTo("");
-        OptionSpec<String> commentPatternArg = parser.accepts("p").withRequiredArg().defaultsTo("");       
-        OptionSpec<String> ignorePatternArg = parser.accepts("i").withRequiredArg().defaultsTo("");
-        OptionSpec<Integer> minMaxFilterArg = parser.accepts("m").withRequiredArg().withValuesSeparatedBy(',').ofType(Integer.class).ofType(Integer.class).defaultsTo(new Integer[]{0,30});
-                
-        // Parse the arguments
-        OptionSet options = parser.parse(args);
-
-        // Check the non-option arguments
-        List<String> nonOptionArgs = options.nonOptionArguments();
-        if (nonOptionArgs.size() < 1) {
-            throw new OptionException("Please specify an operation mode");
-        } else if (nonOptionArgs.size() > 2) {
-            throw new OptionException("Unknown option: " + nonOptionArgs.get(2));
-        }
-
-        // Get the path
-        Path path = null;
-        if (nonOptionArgs.size() == 2) {
-            path = Paths.get(nonOptionArgs.get(1)).toRealPath();
-            if (!Files.exists(path)) {
-                throw new OptionException("Directory does not exist: " + path.toString());
-            } else if (!Files.isDirectory(path)) {
-                throw new OptionException("Path is not a directory: " + path.toString());
-            }
-        } else {
-            path = Paths.get(".").toRealPath();
-            assert Files.exists(path);
-            assert Files.isDirectory(path);
-        }
-        
-        //Get the constants mode
-        constants = filePatternArg.value(options).replaceAll("[\\\"]", "");
-        if(constants.equalsIgnoreCase("standard")){
-        	
-        }else{
-            throw new OptionException("Please provide a config file for the constants");        
-        }
-
-        // Get the operation mode
-        if (nonOptionArgs.get(0).equalsIgnoreCase("scan")) {
-        	//TODO Standard weights list
-           // mode = new ScanMode(path);
-        } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
-        	//TODO Analyze mode not integrated from console yet
-            //mode = new AnalyzeMode(path,initStandardLanguage());
-        }else {
-            throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
-        }
-
-   
-        // Gets the start and end-patterns !Attention produces an ERROR if comments start with [ or ]
-        // When new Line is passed as argument in the cmd 
-        commentPattern = commentPatternArg.values(options).toString().replaceAll("\\[|\\]", "").split(",");
-        resolveNewLineProblem(commentPattern);
-        
-        ignorePattern = ignorePatternArg.values(options).toString().replaceAll("\\[|\\]", "").split(",");
-        resolveNewLineProblem(ignorePattern);
-        
-        minWL = minMaxFilterArg.values(options).get(0);
-        maxWL = minMaxFilterArg.values(options).get(1);
-    }
-    
-    
-    private Language initStandardLanguage(){
-    	return new Language("Java",".java", Paths.get("../lexica/resources/java_tokens.txt"));
-    }
-    
-    private void resolveNewLineProblem(String arg[]){
-        for(int i = 0; i<arg.length;i++){
-        	arg[i] = arg[i].replaceAll("\\\\n", "\n");
-        }
-    }
-
-	public String[] getCommentPattern() {
-		return commentPattern;
-	}
-	
-	public String[] getIgnorePattern(){
-		return ignorePattern;
-	}
-
-    public static Configuration getInstance() {
-        return instance;
-    }
-
-    public IOperationMode getMode() {
-        return mode;
-    }
-
-    public int getMin(){
-    	return minWL;
-    }
-    
-    public int getMax(){
-    	return maxWL;
-    }
-    **/
 }

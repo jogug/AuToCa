@@ -35,7 +35,7 @@ public final class ScanMode implements IOperationMode {
 
 	public ScanMode(JSONInterface dataset) {
 		this.dataset = dataset;
-
+		
 		initializeScanMode(dataset);
 	}
 
@@ -47,7 +47,7 @@ public final class ScanMode implements IOperationMode {
 			db.initialize();
 
 			// Tokenizing & Token Handling
-			th = new DBTokenHandler(db, dataset.getDEFAULT_MAX_TOKEN_LENGTH(), dataset.getDEFAULT_MIN_TOKEN_LENGTH());
+			th = new DBTokenHandler(db, dataset);
 			tk = new Tokenizer(th, dataset);
 			tk.loadDefaults();
 

@@ -2,26 +2,35 @@ package ch.unibe.scg.autoca.db;
 
 import java.sql.SQLException;
 
+import ch.unibe.scg.autoca.JSONInterface;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 
 public class DBTokenHandler implements TokenizerHandler {
 	
-	private static final String NEWLINE = "#newline";
-	private static final String DEDENT = "#dedent";
-	private static final String INDENT = "#indent";
-	private static final String STRING = "#string";
-	private static final String COMMENT = "#comment";
-	private static final String UNKNOWN = "#unknown";
-	private static final String LONGWORD = "#longword";
+	private final String NEWLINE;
+	private final String DEDENT;
+	private final String INDENT;
+	private final String STRING;
+	private final String COMMENT;
+	private final String UNKNOWN;
+	private final String LONGWORD;
 	
 	private DB db;
 	private final int maxTokenLength, minTokenLength;
 
-	public DBTokenHandler(DB db, int maxTokenLength, int minTokenLength) {
+	public DBTokenHandler(DB db, JSONInterface dataset) {
 		this.db = db;
-		this.maxTokenLength = maxTokenLength;
-		this.minTokenLength = minTokenLength;
+		this.maxTokenLength = dataset.getDEFAULT_MAX_TOKEN_LENGTH();
+		this.minTokenLength = dataset.getDEFAULT_MIN_TOKEN_LENGTH();
+		
+		NEWLINE = dataset.getDBNEWLINE();
+		DEDENT = dataset.getDEDENT();
+		INDENT = dataset.getINDENT();
+		STRING = dataset.getSTRING();
+		COMMENT = dataset.getCOMMENT();
+		UNKNOWN = dataset.getUNKNOWN();
+		LONGWORD = dataset.getLONGWORD();
 	}
 
 	/**

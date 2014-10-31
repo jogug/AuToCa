@@ -59,6 +59,15 @@ public final class AnalyzeMode implements IOperationMode {
 	}
 
 	public void calculateStatisticsOnOutputTable(){
+		try {
+			db.newLanguageStatistics();
+			db.dropTableIfExists(dataset.getRESULTTABLE());
+			db.createResulttable();
+			db.LanguageStatisticsFinished();
+		} catch (ClassNotFoundException | SQLException e1) {
+			//TODO
+		}
+
 		for(FilterChain filterChain: dataset.getFilterChain()){
 			for(String languageName: filterChain.getLanguageNames()){
 				try {
