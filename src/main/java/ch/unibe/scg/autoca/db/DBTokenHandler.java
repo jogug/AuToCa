@@ -54,6 +54,7 @@ public class DBTokenHandler implements TokenizerHandler {
 			}
 			break;
 		case WORD:
+			//LENGTH FILTER
 			if (token.length() > minTokenLength && token.length() < maxTokenLength) {
 				try {
 					db.newToken(token);

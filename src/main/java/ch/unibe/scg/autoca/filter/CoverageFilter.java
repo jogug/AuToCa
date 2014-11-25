@@ -16,6 +16,7 @@ public class CoverageFilter extends Filter {
 		logger.info("Coverage method");
 		try {
 			db.newFilterTable();
+			db.dropTableIfExists(resultTable);
 			db.coverageKeywordMethod(languageName, resultTable);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {

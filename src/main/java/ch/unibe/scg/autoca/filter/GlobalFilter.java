@@ -16,6 +16,7 @@ public class GlobalFilter extends Filter {
 		logger.info("Global Method");
 		try {
 			db.newFilterTable();
+			db.dropTableIfExists(resultTable);
 			db.globalKeywordMethod(languageName, resultTable);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {

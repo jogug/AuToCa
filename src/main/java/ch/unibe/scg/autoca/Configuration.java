@@ -26,10 +26,12 @@ import ch.unibe.scg.autoca.filter.IndentFilter;
 import ch.unibe.scg.autoca.filter.IntersectFilter;
 import ch.unibe.scg.autoca.filter.NewlineFilter;
 import ch.unibe.scg.autoca.filter.Output;
+import ch.unibe.scg.autoca.filter.RealIndentFilter;
 import ch.unibe.scg.autoca.filter.SubStringFilter;
 import ch.unibe.scg.autoca.filter.UpCaseFilter;
 import ch.unibe.scg.autoca.mode.AnalyzeMode;
 import ch.unibe.scg.autoca.mode.ScanMode;
+import ch.unibe.scg.autoca.sourceUtils.SourceExtractor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -41,8 +43,9 @@ import joptsimple.OptionSet;
 public final class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);	
 	
-	private enum OperationsMode {SCAN, ANALYZE, BOTH};
+	private enum OperationsMode {SCAN, ANALYZE, BOTH, PREP};
 	private enum ConfigMode {DEF, PATH};
+	private String path;
 	
 	public ConfigMode cfMode;
 	public OperationsMode opMode;
@@ -60,6 +63,7 @@ public final class Configuration {
             cfMode = ConfigMode.DEF;
          } else if (nonOptionArgs.get(1).equalsIgnoreCase("path")) {
             cfMode = ConfigMode.PATH;
+            path = nonOptionArgs.get(2).toString();
          }else {
              throw new OptionException("Unknown configurations mode: " + nonOptionArgs.get(1));
          }
@@ -71,6 +75,8 @@ public final class Configuration {
             opMode = OperationsMode.ANALYZE;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("both")) {
             opMode = OperationsMode.BOTH;
+        } else if (nonOptionArgs.get(0).equalsIgnoreCase("prep")) {
+            opMode = OperationsMode.PREP;
         }else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
@@ -90,8 +96,7 @@ public final class Configuration {
 			plainData = loadJSON("resources/default.cfg");
 	     	break;
 	    case PATH:
-	    	//TODO PATH from arg
-	    	plainData = loadJSON("resources/default.cfg");
+	    	plainData = loadJSON(path);
 	    	 break;   
 	    default: 
 			plainData = loadJSON("resources/default.cfg");
@@ -115,6 +120,11 @@ public final class Configuration {
     		scanMode.execute();
     		analyzeMode = new AnalyzeMode(dataset);
     		analyzeMode.execute();
+    		break;
+    	case PREP:
+    		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
+    		SourceExtractor se = new SourceExtractor();
+    		se.extractSourceFiles(dataset);
     		break;
         }
     }
@@ -147,6 +157,7 @@ public final class Configuration {
 	}
 	
 	private List<FilterChain> processFilterChain(JSONObject plainData){
+		if (!plainData.has("FilterChains")) return null;
 		List<FilterChain> filterChains = new ArrayList<>();
 		
 		JSONArray plainChains = plainData.getJSONArray("FilterChains");
@@ -183,6 +194,8 @@ public final class Configuration {
 										break;
 				case "IndentFilter": 	active.add(new IndentFilter());
 										break;
+				case "RealIndentFilter":active.add(new RealIndentFilter());
+										break;						
 				case "NewlineFilter":	active.add(new NewlineFilter());
 										break;
 				case "SubStringFilter": active.add(new SubStringFilter(plainFilters.getJSONObject(i).getString("subString")));

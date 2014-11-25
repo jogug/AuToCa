@@ -18,7 +18,8 @@ public final class AuToCa {
 
 
 	public static void main(String[] args) {
-		String[] x = {"both", "default"};
+		//String[] x = {"prep", "path", "resources/prep.cfg"};
+		String[] x = {"both", "path", "resources/config/testjava.cfg"};
 		AuToCa autoca = new AuToCa(x);
 	}
 

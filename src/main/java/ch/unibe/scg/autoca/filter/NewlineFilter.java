@@ -16,6 +16,7 @@ public class NewlineFilter extends Filter {
 		logger.info("Newline Method");
 		try {
 			db.newFilterTable();
+			db.dropTableIfExists(resultTable);
 			db.newlineKeywordMethod(languageName, resultTable);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {

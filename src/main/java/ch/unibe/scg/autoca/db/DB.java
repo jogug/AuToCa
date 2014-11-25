@@ -3,6 +3,9 @@
  */
 package ch.unibe.scg.autoca.db;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,6 +13,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -283,6 +290,91 @@ public class DB {
 		stmt.close();
 	}
 	
+	public void realIndentKeywordMethod(String languageName, String resultTable) throws SQLException{
+			int newlineID = getTokenId(NEWLINE);
+			int indentID = getTokenId(INDENT);
+			int languageID = getLanguageId(languageName);
+			int projectid;
+			List<String> projects = new ArrayList<>();
+			List<String> matches = new ArrayList<>();
+			Statement stmt = connection.createStatement();	
+			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
+					"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL)");
+			
+			ResultSet rs = stmt.executeQuery("SELECT * FROM \"" + PROJECT + "\" WHERE languageid = " + languageID);
+			while(rs.next()){
+				projects.add(rs.getString(2));
+			}
+			
+			for(String project: projects){
+				projectid = getProjectId(project);			
+				//Fetch occurences from DB for project
+				rs = stmt.executeQuery("SELECT GROUP_CONCAT(tokenid separator ' ') FROM " +
+						 "(SELECT TOKENID, ORDERID FROM \""+OCCURENCE+"\" OCCURENCES " + 
+						 "INNER JOIN \""+FILE+"\" FILES ON OCCURENCES.FILEID = FILES.ID WHERE FILES.PROJECTID = " +
+						 projectid + "ORDER BY ORDERID ASC)");
+				
+				rs.next();
+				String tokenOcc = rs.getString(1);
+				rs.close();			
+				
+				//For each pattern extract Token	
+				try {
+			        BufferedWriter out = new BufferedWriter(new FileWriter("../AuToCa/resources/output.txt", false));
+
+			                out.write(tokenOcc);
+			            
+			            out.close();
+			    } catch (IOException e) {}
+				
+				//Prepare string for pattern extraction		
+				tokenOcc = tokenOcc.replace(""+newlineID, newlineID + " \n");
+				Pattern p = Pattern.compile("(.*?)(?:\\s*" + newlineID + "\\s*)*(?:" + indentID + ")");
+				
+				//Find Patterns	\n <?>	\n indent	
+				//TODO FIXABLE couldnt find the solution http://regex101.com/r/gE5dM9/2
+				//Pattern p = Pattern.compile("(.+?(?=" + newlineID + "))(?:\\s*" + newlineID + "\\s*)*(?:" + indentID + ")");				
+				Matcher m = p.matcher(tokenOcc);
+				
+				while (m.find()) {
+					if(!m.group(1).isEmpty()){
+						matches.add(m.group(1));
+					}
+				}
+				
+				//Find first number on matches save in tempfilter
+				p = Pattern.compile("([0-9]+)");					
+				String prepInsertStatementQuery = "INSERT INTO \"" + TEMPFILTER + "\"(tokenid, projectid) VALUES (?,?)";
+				prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
+					for(String match:matches){
+						m = p.matcher(match);
+						if(m.find()){
+							prepInsertStatement.setInt(1, Integer.parseInt(m.group(1)));
+							prepInsertStatement.setInt(2, projectid);
+							prepInsertStatement.execute();
+						}
+					}			
+				prepInsertStatement.close();
+			}
+			
+			//Save result			
+			stmt.execute( "CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS SELECT "
+						+ "TOKENID, PROJECTID, COUNT(ID) AS COUNT FROM \"" + TEMPFILTER + 
+						"\" GROUP BY TOKENID, PROJECTID ORDER BY COUNT DESC");		
+			stmt.close();
+	}
+	
+	// TODO OUTPUT
+//	//For each pattern extract Token	
+//	try {
+//        BufferedWriter out = new BufferedWriter(new FileWriter("../AuToCa/resources/output.txt", false));
+//        	
+//            for (String match: matches) {
+//                out.write(match + " ");
+//            }
+//            out.close();
+//    } catch (IOException e) {}
+	
 	/**
 	 * 
 	 * @param languageName
@@ -386,7 +478,10 @@ public class DB {
 		rs.next();
 		double count = rs.getInt(1);
 		rs.close();
-		stmt.execute("INSERT INTO \"" + RESULTTABLE + "\"(filter, precision, recall) VALUES ('" + srcTable + "'," + (double)(count/countFoundAll) + "," + (double)(count/countAllRelevant)+ ")");
+		stmt.execute("INSERT INTO \"" + RESULTTABLE + "\"(filter, precision, recall) VALUES ('" + 
+					 srcTable + "'," + 
+					 (double)(count/countFoundAll) + "," + 
+					 (double)(count/countAllRelevant)+ ")");
 		stmt.close();
 		return (double)(count/countAllRelevant);
 	}

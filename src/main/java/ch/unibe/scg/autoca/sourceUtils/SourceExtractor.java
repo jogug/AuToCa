@@ -19,11 +19,7 @@ public class SourceExtractor {
 	private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
 
 	private String outputExtractedSource;
-
-	
-	public static void main(String[] args) {
-		// TODO:
-	}
+	private static String DEFAULT_OUTPUT = "\\Extracted";
 	
 	/**
 	 * Extracts only the files affected by a scan from all the project
@@ -82,7 +78,7 @@ public class SourceExtractor {
 	}
 
 	private static String createExtractFolder(JSONInterface data) {
-		String outputExtractedSource = data.getOutputLocation().toString() + "\\Extracted"
+		String outputExtractedSource = data.getOutputLocation().toString() + DEFAULT_OUTPUT
 				+ data.getOutputLocation().getFileName().toString();
 		return outputExtractedSource;
 	}
