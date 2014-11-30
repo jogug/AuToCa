@@ -40,9 +40,8 @@ public final class AnalyzeMode implements IOperationMode {
 	@Override
 	public void execute() {
 		logger.info("Starting AnalyzeMode: ");
-		analyzeDataSet();	
 		loadActualTokens();
-		calculateStatisticsOnOutputTable();
+		analyzeDataSet();	
 		logger.info("Finished AnalyzeMode");
 	}
 
@@ -54,30 +53,6 @@ public final class AnalyzeMode implements IOperationMode {
 				db.analyzeLanguageFinished();
 			} catch (ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
-			}
-		}	
-	}
-
-	public void calculateStatisticsOnOutputTable(){
-		try {
-			db.newLanguageStatistics();
-			db.dropTableIfExists(dataset.getRESULTTABLE());
-			db.createResulttable();
-			db.LanguageStatisticsFinished();
-		} catch (ClassNotFoundException | SQLException e1) {
-			//TODO
-		}
-
-		for(FilterChain filterChain: dataset.getFilterChain()){
-			for(String languageName: filterChain.getLanguageNames()){
-				try {
-					db.newLanguageStatistics();
-					double result = db.calculateStatistics(languageName,languageName+filterChain.getResultName());
-					logger.info("Percentage right keywords identified in top #of actual tokens from " + languageName+filterChain.getResultName() +": " + result);
-					db.LanguageStatisticsFinished();
-				} catch (SQLException | ClassNotFoundException e) {
-					e.printStackTrace();
-				}
 			}
 		}	
 	}
@@ -96,5 +71,6 @@ public final class AnalyzeMode implements IOperationMode {
 				logger.info("Couldnt load actual Token of: " + language.getName(), e);
 			}
 		}	
-	}	
+	}
+
 }

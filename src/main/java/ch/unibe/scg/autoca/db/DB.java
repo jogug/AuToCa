@@ -3,9 +3,7 @@
  */
 package ch.unibe.scg.autoca.db;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,7 +28,6 @@ import ch.unibe.scg.autoca.JSONInterface;
  * 
  */
 
-//TODO FIX INCONSISTENCY WITH QUOTES "TableName" or just TableName
 public class DB {
 	private static final Logger logger = LoggerFactory.getLogger(DB.class);
 	
@@ -185,8 +182,10 @@ public class DB {
 	}
 
 	private void closeConnection() throws SQLException {
-		connection.close();
-		connection = null;
+		if (connection == null) {
+			connection.close();
+			connection = null;
+		}
 	}
 
 	/*
@@ -298,16 +297,21 @@ public class DB {
 			List<String> projects = new ArrayList<>();
 			List<String> matches = new ArrayList<>();
 			Statement stmt = connection.createStatement();	
+			dropTableIfExists(TEMPFILTER); //TODO DELETE THIS LINE 
 			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
 					"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL)");
+			String prepInsertStatementQuery = "INSERT INTO \"" + TEMPFILTER + "\"(tokenid, projectid) VALUES (?,?)";
+			prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
 			
 			ResultSet rs = stmt.executeQuery("SELECT * FROM \"" + PROJECT + "\" WHERE languageid = " + languageID);
 			while(rs.next()){
 				projects.add(rs.getString(2));
 			}
-			
+			System.out.println("Projects finished: ");
 			for(String project: projects){
-				projectid = getProjectId(project);			
+				projectid = getProjectId(project);	
+				System.out.print(projectid+",");
+				
 				//Fetch occurences from DB for project
 				rs = stmt.executeQuery("SELECT GROUP_CONCAT(tokenid separator ' ') FROM " +
 						 "(SELECT TOKENID, ORDERID FROM \""+OCCURENCE+"\" OCCURENCES " + 
@@ -316,16 +320,7 @@ public class DB {
 				
 				rs.next();
 				String tokenOcc = rs.getString(1);
-				rs.close();			
-				
-				//For each pattern extract Token	
-				try {
-			        BufferedWriter out = new BufferedWriter(new FileWriter("../AuToCa/resources/output.txt", false));
-
-			                out.write(tokenOcc);
-			            
-			            out.close();
-			    } catch (IOException e) {}
+				rs.close();							
 				
 				//Prepare string for pattern extraction		
 				tokenOcc = tokenOcc.replace(""+newlineID, newlineID + " \n");
@@ -344,8 +339,7 @@ public class DB {
 				
 				//Find first number on matches save in tempfilter
 				p = Pattern.compile("([0-9]+)");					
-				String prepInsertStatementQuery = "INSERT INTO \"" + TEMPFILTER + "\"(tokenid, projectid) VALUES (?,?)";
-				prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
+
 					for(String match:matches){
 						m = p.matcher(match);
 						if(m.find()){
@@ -354,26 +348,23 @@ public class DB {
 							prepInsertStatement.execute();
 						}
 					}			
-				prepInsertStatement.close();
+					
+				//finalize project
+				stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPORARY + "\" AS SELECT " +
+					 "TOKENID, PROJECTID, COUNT(ID) AS COUNT FROM \"" + TEMPFILTER + 
+					"\" GROUP BY TOKENID, PROJECTID");
+				dropTableIfExists(TEMPFILTER);
+				stmt.execute("ALTER TABLE \"" + TEMPORARY + "\" ADD id INT NOT NULL AUTO_INCREMENT");
+				renameTable(TEMPORARY, TEMPFILTER);
+				dropTableIfExists(TEMPORARY);
 			}
-			
-			//Save result			
-			stmt.execute( "CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS SELECT "
-						+ "TOKENID, PROJECTID, COUNT(ID) AS COUNT FROM \"" + TEMPFILTER + 
-						"\" GROUP BY TOKENID, PROJECTID ORDER BY COUNT DESC");		
+			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS (SELECT " +
+					 "TOKENID, PROJECTID, COUNT FROM \"" + TEMPFILTER + "\" ORDER BY COUNT DESC)");
+			prepInsertStatement.close();
 			stmt.close();
 	}
 	
-	// TODO OUTPUT
-//	//For each pattern extract Token	
-//	try {
-//        BufferedWriter out = new BufferedWriter(new FileWriter("../AuToCa/resources/output.txt", false));
-//        	
-//            for (String match: matches) {
-//                out.write(match + " ");
-//            }
-//            out.close();
-//    } catch (IOException e) {}
+
 	
 	/**
 	 * 
@@ -440,17 +431,6 @@ public class DB {
 				"ALTER TABLE \"" + TEMPORARY + "\" RENAME TO \"" + resultTable + "\"");
 		stmt.close();
 	}
-	
-	//TODO
-	public void intersectTables(String[] tables, String table) throws SQLException{
-		Statement stmt = connection.createStatement();
-		String statement = "SELECT * FROM \"" + table + "\" a";
-		for(String string: tables){
-			statement+= " INNER JOIN " + string + "b ON a.TOKEN = b.TOKEN";
-		}
-		stmt.execute(statement);
-		stmt.close();
-	}
 
 	public void newAnalyzeLanguage() throws ClassNotFoundException, SQLException {
 		openConnection();
@@ -460,30 +440,59 @@ public class DB {
 		closeConnection();
 	}	
 	
-	public void newLanguageStatistics() throws ClassNotFoundException, SQLException {
-		openConnection();
-	}
-
-	public void LanguageStatisticsFinished() throws SQLException {
-		closeConnection();
-	}	
-		
-	public double calculateStatistics(String langName, String srcTable) throws SQLException{
-		Statement stmt = connection.createStatement();
+	// TODO OUTPUT
+//	//For each pattern extract Token	
+//	try {
+//        BufferedWriter out = new BufferedWriter(new FileWriter("../AuToCa/resources/output.txt", false));
+//        	
+//            for (String match: matches) {
+//                out.write(match + " ");
+//            }
+//            out.close();
+//    } catch (IOException e) {}	
+	
+//	public double calculateStatistics(String langName, String srcTable) throws SQLException{
+//		Statement stmt = connection.createStatement();
+//		double countAllRelevant = getTableCount(langName);
+//		double countFoundAll = countAllRelevant; 	//TODO CountFoundAll
+//		ResultSet rs = stmt.executeQuery("SELECT COUNT(SRC.TOKEN) FROM "
+//				+ "(SELECT TOP " + countFoundAll + " TOKEN FROM \"" + srcTable + "\" ORDER BY COUNT DESC) SRC "
+//				+ "INNER JOIN \"" +  langName + "\" DST ON SRC.TOKEN = DST.TOKEN" );
+//		rs.next();
+//		double count = rs.getInt(1);
+//		rs.close();
+//		stmt.execute("INSERT INTO \"" + RESULTTABLE + "\"(filter, precision, recall) VALUES ('" + 
+//					 srcTable + "'," + 
+//					 (double)(count/countFoundAll) + "," + 
+//					 (double)(count/countAllRelevant)+ ")");
+//		stmt.close();
+//		return (double)(count/countAllRelevant);
+//	}
+	
+	public void calculateStatisticsPerLanguage(String langName, String srcTable, String resultTable) throws SQLException{
+		Statement stmt = connection.createStatement();	
 		double countAllRelevant = getTableCount(langName);
-		double countFoundAll = countAllRelevant; 	//TODO CountFoundAll
-		ResultSet rs = stmt.executeQuery("SELECT COUNT(SRC.TOKEN) FROM "
-				+ "(SELECT TOP " + countFoundAll + " TOKEN FROM \"" + srcTable + "\" ORDER BY COUNT DESC) SRC "
-				+ "INNER JOIN \"" +  langName + "\" DST ON SRC.TOKEN = DST.TOKEN" );
-		rs.next();
-		double count = rs.getInt(1);
-		rs.close();
-		stmt.execute("INSERT INTO \"" + RESULTTABLE + "\"(filter, precision, recall) VALUES ('" + 
-					 srcTable + "'," + 
-					 (double)(count/countFoundAll) + "," + 
-					 (double)(count/countAllRelevant)+ ")");
+		double sumToken = getCountSum(srcTable);
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
+					 "(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, count INT NOT NULL)");
+		stmt.execute("INSERT INTO \"" + TEMPFILTER + "\" (tokenid,count) " +
+					 "SELECT tokenid, SUM(count) as count FROM \""+ srcTable + "\" GROUP BY TOKENID ORDER BY COUNT DESC");
+		//stmt.execute("ALTER TABLE \"" + srcTable + "\" ADD id INT NOT NULL AUTO_INCREMENT");
+		
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS "+
+					"(SELECT a.TOKEN, COUNT, b.ID FROM \"" +  langName + "\" a "+
+					"LEFT JOIN " + 
+					"(SELECT TOKENID, SUM(COUNT) AS COUNT, ID FROM \""+ TEMPFILTER + "\" "+
+					"GROUP BY TOKENID) b " +
+					"ON a.ID = b.TOKENID ORDER BY COUNT DESC)");
+		
+		// GET TP TN FN FP, TOP FOUND
+		
+		//FALSE NEGATIVES TODO
+//		stmt.execute("SELECT a.TOKEN, COUNT, ID AS ORDERID FROM \"" + srcTable + "\"  a " +
+//					"WHERE a.TOKEN NOT IN (SELECT TOKEN FROM \"" +  langName + "\")");
+		//stmt.execute("ALTER TABLE \"" + srcTable + "\" DROP COLUMN ID");
 		stmt.close();
-		return (double)(count/countAllRelevant);
 	}
 	
 	/*
@@ -502,8 +511,8 @@ public class DB {
 		Statement stmt = connection.createStatement();
 		stmt.execute("CREATE TABLE IF NOT EXISTS \"" + RESULTTABLE + "\" ("
 				+ "filter VARCHAR(100) NOT NULL, "
-				+ "precision DECIMAL NOT NULL,"
-				+ "recall DECIMAL NOT NULL,"
+				+ "TP DECIMAL NOT NULL,"
+				+ "FN DECIMAL NOT NULL,"
 				+ "PRIMARY KEY (filter));");
 		stmt.close();
 	}
@@ -522,7 +531,8 @@ public class DB {
 	
 	public void renameTable(String currentName, String newName) throws SQLException{
 		Statement stmt = connection.createStatement();
-		stmt.execute("RENAME TABLE \"" + currentName + "\" TO \"" + newName + "\"");
+		//stmt.execute("RENAME TABLE \"" + currentName + "\" TO \"" + newName + "\"");
+		stmt.execute("ALTER TABLE \"" + currentName + "\" RENAME TO \"" + newName + "\"");
 		stmt.close();
 	}
 	
@@ -542,8 +552,10 @@ public class DB {
 		dropTableIfExists(resultTableName);		
 		Statement stmt = connection.createStatement();
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTableName + "\" AS "+
-				"SELECT TOKEN FROM \"" + TEMPORARY + "\"");
+				"(SELECT a.TOKEN, b.ID FROM \"" + TEMPORARY + "\"  a " +
+				"LEFT JOIN \"" + TOKEN + "\" b ON a.TOKEN = b.TOKEN)");
 		prepInsertStatement.close();
+		dropTableIfExists(TEMPORARY);
 		stmt.close();			
 		closeConnection();
 	}
@@ -572,6 +584,16 @@ public class DB {
 	public int getTableCount(String tableName) throws SQLException{
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"" + tableName + "\"");
+		rs.next();
+		int count = rs.getInt(1);
+		rs.close();
+		stmt.close();
+		return count;
+	}
+	
+	public int getCountSum(String tableName) throws SQLException{
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT SUM(COUNT) FROM \"" + tableName + "\"");
 		rs.next();
 		int count = rs.getInt(1);
 		rs.close();

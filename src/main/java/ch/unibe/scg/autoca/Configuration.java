@@ -18,17 +18,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.filter.CoverageFilter;
-import ch.unibe.scg.autoca.filter.Filter;
-import ch.unibe.scg.autoca.filter.FilterChain;
-import ch.unibe.scg.autoca.filter.GlobalFilter;
-import ch.unibe.scg.autoca.filter.IndentFilter;
-import ch.unibe.scg.autoca.filter.IntersectFilter;
-import ch.unibe.scg.autoca.filter.NewlineFilter;
-import ch.unibe.scg.autoca.filter.Output;
-import ch.unibe.scg.autoca.filter.RealIndentFilter;
-import ch.unibe.scg.autoca.filter.SubStringFilter;
-import ch.unibe.scg.autoca.filter.UpCaseFilter;
+import ch.unibe.scg.autoca.filter.*;
 import ch.unibe.scg.autoca.mode.AnalyzeMode;
 import ch.unibe.scg.autoca.mode.ScanMode;
 import ch.unibe.scg.autoca.sourceUtils.SourceExtractor;
@@ -182,7 +172,9 @@ public final class Configuration {
 		List<Filter> active = new ArrayList<>();
 		for(int i=0; i<plainFilters.length();i++){
 			switch(plainFilters.getJSONObject(i).getString("name")){
-				case "Output":			active.add(new Output(null, true));
+				case "Output":			active.add(new Output(true, 
+													plainFilters.getJSONObject(i).getString("langPreFix"),
+													plainFilters.getJSONObject(i).getString("projPreFix")));
 										break;
 				case "UpCaseFilter": 	active.add(new UpCaseFilter());
 										break;
