@@ -2,7 +2,7 @@
  ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
  */
 
-package ch.unibe.scg.autoca;
+package ch.unibe.scg.autoca.config;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -10,6 +10,8 @@ import java.util.List;
 import org.json.JSONObject;
 
 import ch.unibe.scg.autoca.filter.FilterChain;
+import ch.unibe.scg.autoca.structure.Language;
+import ch.unibe.scg.autoca.structure.Project;
 
 /**
  * Holds settings for the scan and analysis modes, data input and the output locations

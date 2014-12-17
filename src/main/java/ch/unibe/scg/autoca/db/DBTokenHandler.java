@@ -2,7 +2,7 @@ package ch.unibe.scg.autoca.db;
 
 import java.sql.SQLException;
 
-import ch.unibe.scg.autoca.JSONInterface;
+import ch.unibe.scg.autoca.config.JSONInterface;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
 

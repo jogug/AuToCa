@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.unibe.scg.autoca.db.DB;
 
-public class RealIndentFilter extends Filter {
+public class RealIndentFilter extends AbstractFilter {
     private static final Logger logger = LoggerFactory.getLogger(RealIndentFilter.class);	
 	
 	@Override

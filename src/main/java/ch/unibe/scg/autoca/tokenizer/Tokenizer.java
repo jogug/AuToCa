@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.unibe.scg.autoca.JSONInterface;
+import ch.unibe.scg.autoca.config.JSONInterface;
 
 public class Tokenizer {
 	public final String DEFAULT_LS;

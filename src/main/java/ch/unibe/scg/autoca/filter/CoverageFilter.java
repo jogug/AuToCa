@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.unibe.scg.autoca.db.DB;
 
-public class CoverageFilter extends Filter {
+public class CoverageFilter extends AbstractFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(CoverageFilter.class);	
 	

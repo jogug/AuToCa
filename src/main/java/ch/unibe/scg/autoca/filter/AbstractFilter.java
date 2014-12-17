@@ -7,14 +7,14 @@ import ch.unibe.scg.autoca.db.DB;
  * @author Joel
  *
  */
-public abstract class Filter {
-	private Filter next;
+public abstract class AbstractFilter {
+	private AbstractFilter next;
 	
-	public void setNext(Filter next){
+	public void setNext(AbstractFilter next){
 		this.next = next;
 	}
 	
-	public Filter getNext(){
+	public AbstractFilter getNext(){
 		return next;
 	}
 	

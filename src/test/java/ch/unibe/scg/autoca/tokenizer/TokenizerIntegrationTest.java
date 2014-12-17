@@ -8,8 +8,8 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.Configuration;
-import ch.unibe.scg.autoca.JSONInterface;
+import ch.unibe.scg.autoca.config.Configuration;
+import ch.unibe.scg.autoca.config.JSONInterface;
 import ch.unibe.scg.autoca.tokenizer.MockHandler;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 

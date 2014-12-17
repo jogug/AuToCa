@@ -8,11 +8,11 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.JSONInterface;
-import ch.unibe.scg.autoca.Language;
+import ch.unibe.scg.autoca.config.JSONInterface;
 import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.db.DefaultTokenHandler;
 import ch.unibe.scg.autoca.filter.FilterChain;
+import ch.unibe.scg.autoca.structure.Language;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
@@ -46,6 +46,16 @@ public final class AnalyzeMode implements IOperationMode {
 	}
 
 	private void analyzeDataSet() {
+		//clear resulttable
+		try {
+			db.newAnalyzeLanguage();
+			db.dropTableIfExists(dataset.getRESULTTABLE());
+			db.createResulttable();
+			db.analyzeLanguageFinished();
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
+		
 		for(FilterChain filterChain: dataset.getFilterChain()){
 			try {
 				db.newAnalyzeLanguage();

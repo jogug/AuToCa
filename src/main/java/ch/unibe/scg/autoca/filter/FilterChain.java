@@ -13,10 +13,10 @@ public class FilterChain {
     private static final Logger logger = LoggerFactory.getLogger(FilterChain.class);	
 	
 	private String resultName;
-	private Filter start;
+	private AbstractFilter start;
 	private List<String> languageNames;
 	
-	public FilterChain(String resultName, List<String> languageNames, Filter start){
+	public FilterChain(String resultName, List<String> languageNames, AbstractFilter start){
 		this.resultName = resultName;
 		this.start = start;
 		this.languageNames = languageNames;

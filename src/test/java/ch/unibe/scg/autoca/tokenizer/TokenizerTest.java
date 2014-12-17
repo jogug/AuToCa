@@ -5,8 +5,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.Configuration;
-import ch.unibe.scg.autoca.JSONInterface;
+import ch.unibe.scg.autoca.config.Configuration;
+import ch.unibe.scg.autoca.config.JSONInterface;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 

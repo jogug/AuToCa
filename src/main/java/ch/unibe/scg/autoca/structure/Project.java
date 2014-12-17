@@ -1,4 +1,4 @@
-package ch.unibe.scg.autoca;
+package ch.unibe.scg.autoca.structure;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -14,6 +14,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.config.JSONInterface;
+
 /**
  * Holds the name of the projects and the paths to its files 
  * @author Joel
@@ -27,15 +29,13 @@ public class Project {
 	private Language language;
 	private List<Path> filePaths = new ArrayList<>();
 	
-	
 	public Project(Path projectPath, Language language){
 		this.language = language;
 		this.projectPath = projectPath;
 		this.name = projectPath.getFileName().toString();
 		
 		loadFilePaths();
-	}
-	
+	}	
 	
 	public List<Path> getProjectFilePaths(){
 		return filePaths;

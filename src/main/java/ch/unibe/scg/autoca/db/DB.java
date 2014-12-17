@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.JSONInterface;
+import ch.unibe.scg.autoca.config.JSONInterface;
 
 /**
  * Handles connections and code links to H2DB.
@@ -159,7 +159,7 @@ public class DB {
 		createTempTable();		
 		Statement stmt = connection.createStatement();
 		stmt.execute("INSERT INTO \"" + FILE + "\"(file, projectid) VALUES ('" + file + "'," + projId + ")");
-		currentFileId = getCurrentFileId(file);
+		currentFileId = getFileId(file);
 		stmt.close();
 	}
 	
@@ -469,16 +469,15 @@ public class DB {
 //		return (double)(count/countAllRelevant);
 //	}
 	
+/*
+ * Statistics 
+ */
 	public void calculateStatisticsPerLanguage(String langName, String srcTable, String resultTable) throws SQLException{
 		Statement stmt = connection.createStatement();	
-		double countAllRelevant = getTableCount(langName);
-		double sumToken = getCountSum(srcTable);
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
 					 "(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, count INT NOT NULL)");
 		stmt.execute("INSERT INTO \"" + TEMPFILTER + "\" (tokenid,count) " +
 					 "SELECT tokenid, SUM(count) as count FROM \""+ srcTable + "\" GROUP BY TOKENID ORDER BY COUNT DESC");
-		//stmt.execute("ALTER TABLE \"" + srcTable + "\" ADD id INT NOT NULL AUTO_INCREMENT");
-		
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS "+
 					"(SELECT a.TOKEN, COUNT, b.ID FROM \"" +  langName + "\" a "+
 					"LEFT JOIN " + 
@@ -486,12 +485,21 @@ public class DB {
 					"GROUP BY TOKENID) b " +
 					"ON a.ID = b.TOKENID ORDER BY COUNT DESC)");
 		
-		// GET TP TN FN FP, TOP FOUND
+		//TODO Cut or Distribution
+		int tp = getFirstReturnedIntOfStatement("SELECT count(*) FROM \"" + resultTable + "\" WHERE ID IS NOT NULL");
+		int lowestFountToken = getFirstReturnedIntOfStatement("SELECT TOP 1 ID FROM \"" + resultTable + "\" ORDER BY ID DESC");
+		int fp = lowestFountToken-tp;
+		//token not in project
+		int tnip = getFirstReturnedIntOfStatement("SELECT count(*) FROM \"" + langName + "\" WHERE ID IS NULL");
+		int fn = getRowCountOfTable(langName)-tnip-tp;
+		//TODO Row count gives false True Negative count for multiple projects
+		int tn = getRowCountOfTable(TOKEN)-lowestFountToken;
 		
-		//FALSE NEGATIVES TODO
+		stmt.execute("INSERT INTO \""+ RESULTTABLE + "\"(filter,TP, FP, TN, FN, TNotInSET) VALUES ('"+resultTable+"',"+tp+","+fp+","+tn+","+fn+","+tnip+")");
+//		double sumToken = getSumOfCountColOfTable(srcTable);					
 //		stmt.execute("SELECT a.TOKEN, COUNT, ID AS ORDERID FROM \"" + srcTable + "\"  a " +
 //					"WHERE a.TOKEN NOT IN (SELECT TOKEN FROM \"" +  langName + "\")");
-		//stmt.execute("ALTER TABLE \"" + srcTable + "\" DROP COLUMN ID");
+//		stmt.execute("ALTER TABLE \"" + langName + "\" DROP COLUMN ID");
 		stmt.close();
 	}
 	
@@ -512,7 +520,10 @@ public class DB {
 		stmt.execute("CREATE TABLE IF NOT EXISTS \"" + RESULTTABLE + "\" ("
 				+ "filter VARCHAR(100) NOT NULL, "
 				+ "TP DECIMAL NOT NULL,"
+				+ "FP DECIMAL NOT NULL,"
+				+ "TN DECIMAL NOT NULL,"
 				+ "FN DECIMAL NOT NULL,"
+				+ "TNotInSET DECIMAL NOT NULL,"
 				+ "PRIMARY KEY (filter));");
 		stmt.close();
 	}
@@ -525,10 +536,10 @@ public class DB {
 		stmt.close();
 	}
 	
+	
 	/*
 	 * RENAME TABLE
 	 */
-	
 	public void renameTable(String currentName, String newName) throws SQLException{
 		Statement stmt = connection.createStatement();
 		//stmt.execute("RENAME TABLE \"" + currentName + "\" TO \"" + newName + "\"");
@@ -538,8 +549,7 @@ public class DB {
 	
 	/*
 	 * LOAD REAL TOKEN OF LANGUAGES
-	 */
-	
+	 */	
 	public void newActualTokenFile() throws SQLException, ClassNotFoundException {		
 		openConnection();
 		dropTableIfExists(TEMPORARY);
@@ -563,25 +573,7 @@ public class DB {
 	/*
 	 * ACCESS IDS
 	 */
-	public int getCurrentFileId(String fileName) throws SQLException {
-		Statement stmt = connection.createStatement();
-		ResultSet rs = 
-						stmt.executeQuery("SELECT TOP 1 ID FROM \"" + FILE + "\" WHERE FILE = '" + 
-						fileName + "' ORDER BY ID DESC");
-		int id = 0;
-		
-		if (rs.next())
-				id = rs.getInt(1);
-		else {
-			logger.error("OUPS, something is wrong couldnt get currentFileId!");
-		}
-		
-		rs.close();
-		stmt.close();
-		return id;
-	}
-	
-	public int getTableCount(String tableName) throws SQLException{
+	public int getRowCountOfTable(String tableName) throws SQLException{
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT count(*) FROM \"" + tableName + "\"");
 		rs.next();
@@ -591,7 +583,7 @@ public class DB {
 		return count;
 	}
 	
-	public int getCountSum(String tableName) throws SQLException{
+	public int getSumOfCountColOfTable(String tableName) throws SQLException{
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT SUM(COUNT) FROM \"" + tableName + "\"");
 		rs.next();
@@ -630,4 +622,25 @@ public class DB {
 		stmt.close();
 		return tokenId;
 	}	
+	
+	public int getFileId(String fileName) throws SQLException {
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT TOP 1 ID FROM \"" + FILE + "\" WHERE FILE = '" + 
+										  fileName + "' ORDER BY ID DESC");
+		rs.next();
+		int id = rs.getInt(1);		
+		rs.close();
+		stmt.close();
+		return id;
+	}
+	
+	private int getFirstReturnedIntOfStatement(String statement) throws SQLException{
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery(statement);
+		rs.next();
+		int value = rs.getInt(1);		
+		rs.close();
+		stmt.close();
+		return value;
+	}
 }

@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.autoca;
+package ch.unibe.scg.autoca.config;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,7 +21,8 @@ import org.slf4j.LoggerFactory;
 import ch.unibe.scg.autoca.filter.*;
 import ch.unibe.scg.autoca.mode.AnalyzeMode;
 import ch.unibe.scg.autoca.mode.ScanMode;
-import ch.unibe.scg.autoca.sourceUtils.SourceExtractor;
+import ch.unibe.scg.autoca.srcUtilities.SourceExtractor;
+import ch.unibe.scg.autoca.structure.Language;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -161,15 +162,15 @@ public final class Configuration {
 			}
 			
 			JSONArray plainFilters = plainChains.getJSONObject(i).getJSONArray("filters");
-			Filter start = processFilters(plainFilters);
+			AbstractFilter start = processFilters(plainFilters);
 			
 			filterChains.add(new FilterChain(resultName, languageNames, start));
 		}
 		return filterChains;
 	}
 	
-	private Filter processFilters(JSONArray plainFilters){
-		List<Filter> active = new ArrayList<>();
+	private AbstractFilter processFilters(JSONArray plainFilters){
+		List<AbstractFilter> active = new ArrayList<>();
 		for(int i=0; i<plainFilters.length();i++){
 			switch(plainFilters.getJSONObject(i).getString("name")){
 				case "Output":			active.add(new Output(true, 
@@ -207,7 +208,7 @@ public final class Configuration {
 	}
 	
 	public JSONInterface  testDataSet(){
-    	JSONObject plainData = loadJSON("resources/default.cfg");
+    	JSONObject plainData = loadJSON("resources/config/default.cfg");
     	return new JSONInterface(plainData, processLanguages(plainData), null);
 	}
 }

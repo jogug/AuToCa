@@ -9,15 +9,15 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.JSONInterface;
-import ch.unibe.scg.autoca.Language;
-import ch.unibe.scg.autoca.Project;
+import ch.unibe.scg.autoca.config.JSONInterface;
 import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.db.DBTokenHandler;
+import ch.unibe.scg.autoca.structure.Language;
+import ch.unibe.scg.autoca.structure.Project;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
- * A scan of a dataSet extracts all possible tokens into a database at the 
+ * A scanmode of a dataSet extracts all possible tokens into a database at the 
  * output location
  * 
  * @author Joel
@@ -35,18 +35,17 @@ public final class ScanMode implements IOperationMode {
 
 	public ScanMode(JSONInterface dataset) {
 		this.dataset = dataset;
-		
 		initializeScanMode(dataset);
 	}
 
 	public void initializeScanMode(JSONInterface dataset) {
 		logger.info("ScanMode Initialization");
 		try {
-			// Create DB
+			//open and clear Database
 			db = new DB(dataset.getOutputLocation(), dataset);
 			db.initialize();
 
-			// Tokenizing & Token Handling
+			//Set tokenizier and tokenhandler properties
 			th = new DBTokenHandler(db, dataset);
 			tk = new Tokenizer(th, dataset);
 			tk.loadDefaults();
@@ -66,19 +65,19 @@ public final class ScanMode implements IOperationMode {
 
 		for (Language language : dataset.getLanguages()) {
 			langCounter++;
-			processLanguage(language);
+			processLanguages(language);
 		}
 		logger.info("\nFinished Scan on dataset");
 	}
 	
 	//TODO move counter dependency to db
-	private void processLanguage(Language language) {
+	private void processLanguages(Language language) {
 		try {
 			db.newLanguage(language.getName());
 
 			for (Project project : language.getProjects()) {
 				projCounter++;
-				processProject(project);
+				processProjects(project);
 			}
 
 			db.languageFinished();
@@ -89,8 +88,8 @@ public final class ScanMode implements IOperationMode {
 	}
 	
 	//TODO move counter dependency to db
-	private void processProject(Project project) {
-		int progressStep = calculateProgressbarStepSize(project);
+	private void processProjects(Project project) {
+		int progressStep = calcOutputProjectProgressStep(project);
 		
 		// Assign each Project an ID;
 		try {
@@ -137,12 +136,11 @@ public final class ScanMode implements IOperationMode {
 		}
 	}
 
-	private int calculateProgressbarStepSize(Project project) {
+	private int calcOutputProjectProgressStep(Project project) {
 		int result = (project.getProjectFilePaths().size()) / dataset.getDEFAULT_PROGRESS_STEPS();
 		if (project.getProjectFilePaths().size() < dataset.getDEFAULT_PROGRESS_STEPS()) {
 			result = 1;
 		}
 		return result;
 	}
-
 }

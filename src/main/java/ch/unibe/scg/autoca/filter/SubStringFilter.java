@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import ch.unibe.scg.autoca.db.DB;
 
-public class SubStringFilter extends Filter {
+public class SubStringFilter extends AbstractFilter {
 	private String subString;
 
 	public SubStringFilter(String subString) {

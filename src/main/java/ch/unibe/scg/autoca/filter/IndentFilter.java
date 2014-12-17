@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.unibe.scg.autoca.db.DB;
 
-public class IndentFilter extends Filter {
+public class IndentFilter extends AbstractFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(IndentFilter.class);	
 	

@@ -1,4 +1,4 @@
-package ch.unibe.scg.autoca.sourceUtils;
+package ch.unibe.scg.autoca.srcUtilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,13 +7,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.JSONInterface;
-import ch.unibe.scg.autoca.Language;
-import ch.unibe.scg.autoca.Project;
+import ch.unibe.scg.autoca.config.JSONInterface;
 import ch.unibe.scg.autoca.mode.ScanMode;
+import ch.unibe.scg.autoca.structure.Language;
+import ch.unibe.scg.autoca.structure.Project;
 
 public class SourceExtractor {
 	private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);

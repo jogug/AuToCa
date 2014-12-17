@@ -5,6 +5,8 @@ package ch.unibe.scg.autoca;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import ch.unibe.scg.autoca.config.Configuration;
+
 public final class AuToCa {
 
 	public AuToCa(String[] args) {
@@ -19,7 +21,8 @@ public final class AuToCa {
 
 	public static void main(String[] args) {
 		//String[] x = {"prep", "path", "resources/prep.cfg"};
-		String[] x = {"analyze", "path", "resources/config/testjava.cfg"};
+		//String[] x = {"both", "path", "resources/config/testjava.cfg"};
+		String[] x = {"analyze", "path", "resources/config/java.cfg"};
 		AuToCa autoca = new AuToCa(x);
 	}
 

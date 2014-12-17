@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.unibe.scg.autoca.db.DB;
 
-public class GlobalFilter extends Filter {
+public class GlobalFilter extends AbstractFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalFilter.class);	
 	
