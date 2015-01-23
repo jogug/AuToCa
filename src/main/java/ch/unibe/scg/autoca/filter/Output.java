@@ -24,20 +24,20 @@ public class Output extends AbstractFilter {
 	//TODO ADD CSV SUPPORT// PER PROJECT PER LANGUAGE
 	@Override
 	void execute(DB db, String languageName, String resultTable) {
+		// Calculate Project and Language Statistics?
 		if(!langPreFix.contains("Null")){
 			try {
 				logger.info("Outputting Stats " + resultTable);
 				db.newFilterTable();
 				db.dropTableIfExists(langPreFix + resultTable);
-				db.calculateStatisticsPerLanguage(languageName,resultTable, langPreFix + resultTable);
+				db.calculateStatisticsPerLanguage(languageName, resultTable, langPreFix + resultTable);
 				db.filterTableFinished();
 			} catch (SQLException | ClassNotFoundException e) {
 				e.printStackTrace();
-			}
-			
+			}			
 		}
 		if(!projPreFix.contains("Null")){
-			
+			//Might be interesting but not really needed
 		}
 		if(save){
 			try {

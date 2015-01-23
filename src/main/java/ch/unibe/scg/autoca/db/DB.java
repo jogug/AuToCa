@@ -373,13 +373,11 @@ public class DB {
 	 * @param if occurs in less than occInProj , removed 
 	 * @throws SQLException
 	 */
-	public void intersectLanguageProjects(String languageName, String resultTable, int occInProj) throws SQLException{
+	public void intersectLanguageProjects(String languageName, String resultTable) throws SQLException{
 		Statement stmt = connection.createStatement();
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" AS " +
 				"SELECT TOKENID, COUNT(PROJECTID) COUNT FROM \"" + resultTable + "\" " +
-				"GROUP BY TOKENID ORDER BY COUNT DESC;" +
-				
-				"DELETE FROM \"" + TEMPFILTER + "\" WHERE COUNT < " + occInProj + "; " +// TODO CONSTANT 
+				"GROUP BY TOKENID ORDER BY COUNT DESC;" +		
 
 				"ALTER TABLE \"" + resultTable + "\" RENAME TO \"" + TEMPORARY + "\" ; " +
 				
@@ -472,34 +470,35 @@ public class DB {
 /*
  * Statistics 
  */
-	public void calculateStatisticsPerLanguage(String langName, String srcTable, String resultTable) throws SQLException{
+	public void calculateStatisticsPerLanguage(String langName, String resultTable, String output) throws SQLException{
 		Statement stmt = connection.createStatement();	
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
 					 "(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, count INT NOT NULL)");
+		
 		stmt.execute("INSERT INTO \"" + TEMPFILTER + "\" (tokenid,count) " +
-					 "SELECT tokenid, SUM(count) as count FROM \""+ srcTable + "\" GROUP BY TOKENID ORDER BY COUNT DESC");
-		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS "+
+					 "SELECT tokenid, SUM(count) as count FROM \""+ resultTable + "\" GROUP BY TOKENID ORDER BY COUNT DESC");
+		
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + output + "\" AS "+
 					"(SELECT a.TOKEN, COUNT, b.ID FROM \"" +  langName + "\" a "+
-					"LEFT JOIN " + 
-					"(SELECT TOKENID, SUM(COUNT) AS COUNT, ID FROM \""+ TEMPFILTER + "\" "+
-					"GROUP BY TOKENID) b " +
-					"ON a.ID = b.TOKENID ORDER BY COUNT DESC)");
+					"LEFT JOIN (SELECT TOKENID, SUM(COUNT) AS COUNT, ID FROM \""+ TEMPFILTER + "\" GROUP BY TOKENID) b " +
+					"ON a.ID = b.TOKENID ORDER BY ID ASC)");
 		
 		//TODO Cut or Distribution
-		int tp = getFirstReturnedIntOfStatement("SELECT count(*) FROM \"" + resultTable + "\" WHERE ID IS NOT NULL");
-		int lowestFountToken = getFirstReturnedIntOfStatement("SELECT TOP 1 ID FROM \"" + resultTable + "\" ORDER BY ID DESC");
-		int fp = lowestFountToken-tp;
+		int tp = getFirstReturnedIntOfStatement("SELECT count(*) FROM \"" + output + "\" WHERE ID IS NOT NULL");
+		int lowestFoundToken = getFirstReturnedIntOfStatement("SELECT TOP 1 ID FROM \"" + output + "\" ORDER BY ID DESC");
+		int fp = lowestFoundToken-tp;
 		//token not in project
 		int tnip = getFirstReturnedIntOfStatement("SELECT count(*) FROM \"" + langName + "\" WHERE ID IS NULL");
-		int fn = getRowCountOfTable(langName)-tnip-tp;
-		//TODO Row count gives false True Negative count for multiple projects
-		int tn = getRowCountOfTable(TOKEN)-lowestFountToken;
+		int fn = getFirstReturnedIntOfStatement("SELECT count(*) FROM \"" + output + "\" WHERE ID IS NULL")-tnip;
+		int tn = getFirstReturnedIntOfStatement("SELECT COUNT(TOKENID) FROM " +
+				"(SELECT DISTINCT TOKENID FROM \""+OCCURENCE+"\" OCCURENCES " +
+				"INNER JOIN \""+FILE+"\" FILES ON OCCURENCES.FILEID = FILES.ID " +
+				"INNER JOIN \""+PROJECT+"\" PROJECTS ON PROJECTS.ID = FILES.PROJECTID WHERE PROJECTS.LANGUAGEID = " + getLanguageId(langName) +")")
+				-lowestFoundToken;
+
 		
-		stmt.execute("INSERT INTO \""+ RESULTTABLE + "\"(filter,TP, FP, TN, FN, TNotInSET) VALUES ('"+resultTable+"',"+tp+","+fp+","+tn+","+fn+","+tnip+")");
-//		double sumToken = getSumOfCountColOfTable(srcTable);					
-//		stmt.execute("SELECT a.TOKEN, COUNT, ID AS ORDERID FROM \"" + srcTable + "\"  a " +
-//					"WHERE a.TOKEN NOT IN (SELECT TOKEN FROM \"" +  langName + "\")");
-//		stmt.execute("ALTER TABLE \"" + langName + "\" DROP COLUMN ID");
+		stmt.execute("INSERT INTO \""+ RESULTTABLE + "\"(filter,TP, FP, TN, FN, TOKnotInSET) VALUES ('"+resultTable+"',"+tp+","+fp+","+tn+","+fn+","+tnip+")");
+
 		stmt.close();
 	}
 	
@@ -523,7 +522,7 @@ public class DB {
 				+ "FP DECIMAL NOT NULL,"
 				+ "TN DECIMAL NOT NULL,"
 				+ "FN DECIMAL NOT NULL,"
-				+ "TNotInSET DECIMAL NOT NULL,"
+				+ "TOKnotInSET DECIMAL NOT NULL,"
 				+ "PRIMARY KEY (filter));");
 		stmt.close();
 	}

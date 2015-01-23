@@ -34,40 +34,42 @@ import joptsimple.OptionSet;
 public final class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);	
 	
-	private enum OperationsMode {SCAN, ANALYZE, BOTH, PREP};
-	private enum ConfigMode {DEF, PATH};
+    private final String defaultConfig = "resources/configuration/default.cfg";
+    
+	private enum OperationMode {SCAN, ANALYZE, BOTH, EXTRACT};
+	private enum ConfigurationMode {DEF, PATH};
 	private String path;
 	
-	public ConfigMode cfMode;
-	public OperationsMode opMode;
+	public ConfigurationMode cfMode;
+	public OperationMode opMode;
 
     public void parseArguments(String[] args) throws IOException, ClassNotFoundException, SQLException {
         Objects.requireNonNull(args);
         
         OptionParser parser = new OptionParser();
-        // Parse the arguments
+        // Parse arguments
         OptionSet options = parser.parse(args);
         List<String> nonOptionArgs = options.nonOptionArguments();
         
-        // Get the configurations mode
+        // Get the configuration mode
         if (nonOptionArgs.get(1).equalsIgnoreCase("default")) {
-            cfMode = ConfigMode.DEF;
+            cfMode = ConfigurationMode.DEF;
          } else if (nonOptionArgs.get(1).equalsIgnoreCase("path")) {
-            cfMode = ConfigMode.PATH;
+            cfMode = ConfigurationMode.PATH;
             path = nonOptionArgs.get(2).toString();
          }else {
-             throw new OptionException("Unknown configurations mode: " + nonOptionArgs.get(1));
+             throw new OptionException("Unknown configuration mode: " + nonOptionArgs.get(1));
          }
         
         // Get the operation mode
         if (nonOptionArgs.get(0).equalsIgnoreCase("scan")) {
-        	opMode = OperationsMode.SCAN;
+        	opMode = OperationMode.SCAN;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
-            opMode = OperationsMode.ANALYZE;
+            opMode = OperationMode.ANALYZE;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("both")) {
-            opMode = OperationsMode.BOTH;
+            opMode = OperationMode.BOTH;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("prep")) {
-            opMode = OperationsMode.PREP;
+            opMode = OperationMode.EXTRACT;
         }else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));
         }
@@ -84,13 +86,13 @@ public final class Configuration {
     	//Load config file from default path or arg
 		switch(cfMode){
 		case DEF:
-			plainData = loadJSON("resources/default.cfg");
+			plainData = loadJSON(defaultConfig);
 	     	break;
 	    case PATH:
 	    	plainData = loadJSON(path);
 	    	 break;   
 	    default: 
-			plainData = loadJSON("resources/default.cfg");
+			plainData = loadJSON(defaultConfig);
 		}
 		
 		//Switch between different operations modes
@@ -112,7 +114,7 @@ public final class Configuration {
     		analyzeMode = new AnalyzeMode(dataset);
     		analyzeMode.execute();
     		break;
-    	case PREP:
+    	case EXTRACT:
     		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
     		SourceExtractor se = new SourceExtractor();
     		se.extractSourceFiles(dataset);
@@ -179,7 +181,7 @@ public final class Configuration {
 										break;
 				case "UpCaseFilter": 	active.add(new UpCaseFilter());
 										break;
-				case "IntersectFilter": active.add(new IntersectFilter(plainFilters.getJSONObject(i).getInt("#occInProj")));
+				case "IntersectFilter": active.add(new IntersectFilter());
 										break;
 				case "GlobalFilter": 	active.add(new GlobalFilter());
 										break;
@@ -208,7 +210,7 @@ public final class Configuration {
 	}
 	
 	public JSONInterface  testDataSet(){
-    	JSONObject plainData = loadJSON("resources/config/default.cfg");
+    	JSONObject plainData = loadJSON("resources/configuration/default.cfg");
     	return new JSONInterface(plainData, processLanguages(plainData), null);
 	}
 }

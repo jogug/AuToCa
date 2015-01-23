@@ -10,10 +10,10 @@ import ch.unibe.scg.autoca.db.DB;
 public class IntersectFilter extends AbstractFilter{
 
     private static final Logger logger = LoggerFactory.getLogger(IntersectFilter.class);	
-    private int occInProj;
+
 	
-	public IntersectFilter(int occInProj) {
-    	this.occInProj = occInProj;
+	public IntersectFilter() {
+
 	}
 
 	@Override
@@ -21,7 +21,7 @@ public class IntersectFilter extends AbstractFilter{
 		logger.info("Intersect filter");
 		try {
 			db.newFilterTable();
-			db.intersectLanguageProjects(languageName, resultTable, occInProj);
+			db.intersectLanguageProjects(languageName, resultTable);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
