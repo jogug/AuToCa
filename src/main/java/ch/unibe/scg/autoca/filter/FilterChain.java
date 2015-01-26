@@ -23,7 +23,7 @@ public class FilterChain {
 	}
 	
 	public void execute(DB db){
-		logger.info("FilterChain: " + resultName);
+		logger.info("Start FilterChain: " + resultName);
 		for(String languageName: languageNames){
 			logger.info("Start on " + languageName+resultName);
 			try {
@@ -32,7 +32,7 @@ public class FilterChain {
 				e.printStackTrace();
 			}
 			start.execute(db, languageName, languageName+resultName);
-			logger.info("Finish");
+			logger.info("Finished FilterChain: " + resultName);
 		}
 	}
 	
