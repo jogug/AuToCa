@@ -9,6 +9,7 @@ import ch.unibe.scg.autoca.config.Configuration;
 
 public final class AuToCa {
 
+
 	public AuToCa(String[] args) {
 		Configuration config = new Configuration();
 			try {

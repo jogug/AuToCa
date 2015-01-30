@@ -5,6 +5,7 @@ package ch.unibe.scg.autoca.db;
 
 
 import java.nio.file.Path;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -294,24 +295,31 @@ public class DB {
 			int indentID = getTokenId(INDENT);
 			int languageID = getLanguageId(languageName);
 			int projectid;
+			Matcher m;
+			Pattern p1 = Pattern.compile("(.*?)(?:\\s*" + newlineID + "\\s*)*(?:" + indentID + ")");
+			Pattern p2 = Pattern.compile("([0-9]+)");	
 			List<String> projects = new ArrayList<>();
 			List<String> matches = new ArrayList<>();
 			Statement stmt = connection.createStatement();	
-			dropTableIfExists(TEMPFILTER); //TODO DELETE THIS LINE 
 			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
-					"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL)");
-			String prepInsertStatementQuery = "INSERT INTO \"" + TEMPFILTER + "\"(tokenid, projectid) VALUES (?,?)";
-			prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
+					"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL, count INT NOT NULL, "
+					+ "PRIMARY KEY (id))");
+
+			String prepInsertStatementQuery = "INSERT INTO \"" + TEMPORARY + "\"(tokenid, projectid) VALUES (?,?)";
+
 			
 			ResultSet rs = stmt.executeQuery("SELECT * FROM \"" + PROJECT + "\" WHERE languageid = " + languageID);
 			while(rs.next()){
 				projects.add(rs.getString(2));
 			}
+			rs.close();
+			
 			System.out.println("Projects finished: ");
-			for(String project: projects){
+			
+			
+			for(String project: projects){			
 				projectid = getProjectId(project);	
-				System.out.print(projectid+",");
-				
+	
 				//Fetch occurences from DB for project
 				rs = stmt.executeQuery("SELECT GROUP_CONCAT(tokenid separator ' ') FROM " +
 						 "(SELECT TOKENID, ORDERID FROM \""+OCCURENCE+"\" OCCURENCES " + 
@@ -320,46 +328,66 @@ public class DB {
 				
 				rs.next();
 				String tokenOcc = rs.getString(1);
-				rs.close();							
+				rs.close();				
 				
-				//Prepare string for pattern extraction		
-				tokenOcc = tokenOcc.replace(""+newlineID, newlineID + " \n");
-				Pattern p = Pattern.compile("(.*?)(?:\\s*" + newlineID + "\\s*)*(?:" + indentID + ")");
-				
-				//Find Patterns	\n <?>	\n indent	
-				//TODO FIXABLE couldnt find the solution http://regex101.com/r/gE5dM9/2
-				//Pattern p = Pattern.compile("(.+?(?=" + newlineID + "))(?:\\s*" + newlineID + "\\s*)*(?:" + indentID + ")");				
-				Matcher m = p.matcher(tokenOcc);
-				
-				while (m.find()) {
-					if(!m.group(1).isEmpty()){
-						matches.add(m.group(1));
-					}
-				}
-				
-				//Find first number on matches save in tempfilter
-				p = Pattern.compile("([0-9]+)");					
+//					Added since its pssible that there are empty projects
+				if(tokenOcc!=null){
+					stmt.execute("CREATE MEMORY TABLE \"" + TEMPORARY + "\" " +
+							"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL)");
+					prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
+//					Prepare string for pattern extraction		
+					tokenOcc = tokenOcc.replace(""+newlineID, newlineID + " \n");
 
+					
+//					Find Patterns	\n <?>	\n indent	
+//					TODO FIXABLE couldnt find the solution http://regex101.com/r/gE5dM9/2
+//					Pattern p = Pattern.compile("(.+?(?=" + newlineID + "))(?:\\s*" + newlineID + "\\s*)*(?:" + indentID + ")");
+					m = p1.matcher(tokenOcc);
+				
+					while (m.find()) {
+						if(!m.group(1).isEmpty()){
+							matches.add(m.group(1));
+						}
+					}
+					
+					//Find first number on matches insert into tempfilter
+									
+					int tokenInserted = 0;
 					for(String match:matches){
-						m = p.matcher(match);
+						m = p2.matcher(match);
 						if(m.find()){
 							prepInsertStatement.setInt(1, Integer.parseInt(m.group(1)));
 							prepInsertStatement.setInt(2, projectid);
 							prepInsertStatement.execute();
+							tokenInserted++;
 						}
-					}			
-					
-				//finalize project
-				stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPORARY + "\" AS SELECT " +
-					 "TOKENID, PROJECTID, COUNT(ID) AS COUNT FROM \"" + TEMPFILTER + 
-					"\" GROUP BY TOKENID, PROJECTID");
-				dropTableIfExists(TEMPFILTER);
-				stmt.execute("ALTER TABLE \"" + TEMPORARY + "\" ADD id INT NOT NULL AUTO_INCREMENT");
-				renameTable(TEMPORARY, TEMPFILTER);
-				dropTableIfExists(TEMPORARY);
+					}		
+				
+					System.out.print(project + ", " + projectid + ", tokens inserted:" + tokenInserted + "\n");
+					stmt.execute("INSERT INTO \"" + TEMPFILTER + "\"(tokenid, projectid, count) "
+							+ "(SELECT tokenid, projectid, COUNT(ID) AS count FROM \"" + TEMPORARY + "\" "
+							+ "GROUP BY TOKENID, PROJECTID)");
+					//delete stuff used for this project
+					matches.clear();
+					m.reset();	
+					dropTableIfExists(TEMPORARY);
+					prepInsertStatement.close();
+				}
 			}
-			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS (SELECT " +
-					 "TOKENID, PROJECTID, COUNT FROM \"" + TEMPFILTER + "\" ORDER BY COUNT DESC)");
+			
+			//finalize 
+			
+			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS SELECT " +
+				 "TOKENID, PROJECTID, COUNT FROM \"" + TEMPFILTER + "\" ORDER BY COUNT DESC");
+			
+			stmt.execute("ALTER TABLE \"" + resultTable + "\" ADD id INT NOT NULL AUTO_INCREMENT");
+			
+//			renameTable(TEMPORARY, resultTable);;	
+//			
+//			
+//			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS (SELECT " +
+//					 "TOKENID, PROJECTID, COUNT FROM \"" + TEMPFILTER + "\" ORDER BY COUNT DESC)");
+			
 			prepInsertStatement.close();
 			stmt.close();
 	}
