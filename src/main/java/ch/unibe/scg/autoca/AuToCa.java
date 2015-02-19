@@ -25,7 +25,8 @@ public final class AuToCa {
 		//String[] x = {"both", "path", "resources/configuration/cpp.cfg"};
 		//String[] x = {"both", "path", "resources/configuration/python.cfg"};
 		//String[] x = {"both", "path", "resources/configuration/c.cfg"};
-		String[] x = {"analyze", "path", "resources/configuration/java.cfg"};
+		
+		String[] x = {"both", "path", "resources/testing/configuration/test2.cfg"};
 		AuToCa autoca = new AuToCa(x);
 	}
 

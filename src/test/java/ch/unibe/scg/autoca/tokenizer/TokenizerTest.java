@@ -17,7 +17,7 @@ public class TokenizerTest {
 	@Before
 	public void setUp() {
 		Configuration config = new Configuration();
-		JSONInterface dataset = config.testDataSet();
+		JSONInterface dataset = config.testDataSet("resources/testing/configuration/test1.cfg");
 		mh = new MockHandler();
 		tokenizer = new Tokenizer(mh, dataset);
 		tokenizer.loadDefaults();
@@ -29,6 +29,29 @@ public class TokenizerTest {
 		mh = null;
 	}
 
+/*	
+	@Test
+	public void testIndent3() {
+		// FAILS, INDENT is returned even if followed by a new line
+		// TODO: Needs to be fixed in tokenizer, JAN
+		tokenizer.tokenize("hello		\n 		\n		world");
+
+		assertEquals(5, mh.tokens.size());
+		
+		assertEquals("hello", mh.tokens.get(0));
+		assertEquals(TokenType.WORD, mh.types.get(0));
+
+		assertEquals(TokenType.NEWLINE, mh.types.get(1));
+		assertEquals(TokenType.NEWLINE, mh.types.get(1));
+
+		assertEquals(TokenType.INDENT, mh.types.get(3));
+
+		assertEquals("world", mh.tokens.get(4));
+		assertEquals(TokenType.WORD, mh.types.get(4));
+
+	}	
+*/
+	
 	@Test
 	public void testWord() {
 		tokenizer.tokenize("hello");
@@ -84,7 +107,6 @@ public class TokenizerTest {
 		assertEquals("word", mh.tokens.get(2));
 		assertEquals(TokenType.WORD, mh.types.get(2));
 	}
-
 	
 	@Test
 	public void testIndent() {
@@ -98,8 +120,6 @@ public class TokenizerTest {
 		assertEquals(TokenType.WORD, mh.types.get(1));
 
 	}
-
-	
 	
 	@Test
 	public void testIndent2() {
@@ -117,29 +137,7 @@ public class TokenizerTest {
 		assertEquals(TokenType.WORD, mh.types.get(3));
 
 	}
-
-	/*
-	@Test
-	public void testIndent3() {
-		// FAILS, INDENT is returned even if followed by a new line
-		// TODO: Needs to be fixed in tokenizer, JAN
-		tokenizer.tokenize("hello		\n 		\n		world");
-
-		assertEquals(5, mh.tokens.size());
-		
-		assertEquals("hello", mh.tokens.get(0));
-		assertEquals(TokenType.WORD, mh.types.get(0));
-
-		assertEquals(TokenType.NEWLINE, mh.types.get(1));
-		assertEquals(TokenType.NEWLINE, mh.types.get(1));
-
-		assertEquals(TokenType.INDENT, mh.types.get(3));
-
-		assertEquals("world", mh.tokens.get(4));
-		assertEquals(TokenType.WORD, mh.types.get(4));
-
-	}	
-	*/
+	
 	@Test
 	public void testDedent() {
 		tokenizer.tokenize("hello  \n  world\nthere");
@@ -165,7 +163,6 @@ public class TokenizerTest {
 	
 	@Test
 	public void testMultiComment1() {
-		//TODO: 
 		tokenizer.tokenize("/* how are you \n today? */");
 
 		assertEquals(1, mh.tokens.size());
@@ -175,7 +172,6 @@ public class TokenizerTest {
 	
 	@Test
 	public void testMultiComment2() {
-		//TODO: 
 		tokenizer.tokenize("hello  /* how are you \n today? */ \n  world\nthere");
 
 		assertEquals(8, mh.tokens.size());
@@ -218,9 +214,6 @@ public class TokenizerTest {
 		
 		assertEquals("today", mh.tokens.get(1));
 		assertEquals(TokenType.WORD, mh.types.get(1));
-		
 	}
-
-	
 }
 

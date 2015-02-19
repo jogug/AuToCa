@@ -6,6 +6,7 @@ public class TokenPositions {
 	private static final int NOT_FOUND = -1;
 	private Matcher m;
 	private boolean found;
+	@SuppressWarnings("unused")
 	private int position;
 
 	public TokenPositions(String word, String s) {

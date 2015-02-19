@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 public class Language {
     private static final Logger logger = LoggerFactory.getLogger(Language.class);	
 	
+    private int id;
 	private String name; 
 	private String filePattern;
 	private Path tokenPath;
@@ -79,5 +80,13 @@ public class Language {
 	 */
 	public Path getTokenPath(){
 		return tokenPath;
+	}
+	
+	public void setId(int argId){
+		id = argId;
+	}
+	
+	public int getId(){
+		return id;
 	}
 }

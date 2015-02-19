@@ -2,7 +2,6 @@ package ch.unibe.scg.autoca.db;
 
 import static org.junit.Assert.*;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,20 +15,21 @@ import org.junit.Test;
 
 import ch.unibe.scg.autoca.config.Configuration;
 import ch.unibe.scg.autoca.config.JSONInterface;
+import ch.unibe.scg.autoca.structure.Language;
+import ch.unibe.scg.autoca.structure.Project;
 
 public class TestDB {
 	private DB db;
 	private Connection conn;
 	private JSONInterface dataset;
-	Path path = Paths.get("test-db");
 	private PreparedStatement stmt;
 	private ResultSet res;
 	
 	@Before
 	public void setUp() throws ClassNotFoundException, SQLException {
 		Configuration config = new Configuration();
-		dataset = config.testDataSet();
-    	db = new DB(path, dataset);
+		dataset = config.testDataSet("resources/testing/configuration/test1.cfg");
+    	db = new DB(dataset.getOutputLocation(), dataset);
 		db.initialize();
 		
 		openConnection();
@@ -52,8 +52,10 @@ public class TestDB {
 	
 	@Test
 	public void testToken() throws SQLException, ClassNotFoundException {
-		db.newLanguage("LangA");
-		db.newProject("Project", 1);
+		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		db.newLanguage(langA);
+		Project project = new Project(Paths.get("../AuToCa/resources/testing/testprojects/empty/"), "Project" , langA);
+		db.newProject(project);
 		db.newFile("File1",11);
 		
 		db.newToken("FOO");
@@ -83,8 +85,10 @@ public class TestDB {
 
 	@Test
 	public void testToken2() throws SQLException, ClassNotFoundException {
-		db.newLanguage("LangA");
-		db.newProject("Project", 1);
+		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		db.newLanguage(langA);
+		Project project = new Project(Paths.get("../AuToCa/resources/testing/testprojects/empty/"), "Project" , langA);
+		db.newProject(project);
 		db.newFile("File1",11);
 		
 		db.newToken("FOO");
@@ -142,8 +146,10 @@ public class TestDB {
 	
 	@Test
 	public void testToken3() throws SQLException, ClassNotFoundException {
-		db.newLanguage("LangA");
-		db.newProject("Project", 1);
+		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		db.newLanguage(langA);
+		Project project = new Project(Paths.get("../AuToCa/resources/testing/testprojects/empty/"), "Project" , langA);
+		db.newProject(project);
 		db.newFile("File1",11);
 		
 		db.newToken("FOO");
@@ -196,19 +202,19 @@ public class TestDB {
 	}		
 	
 	private ResultSet getOccurences() throws SQLException {
-		stmt = conn.prepareStatement("SELECT * FROM " + dataset.getOCCURENCE());
+		stmt = conn.prepareStatement("SELECT * FROM \"" + dataset.getOCCURENCE() + "\"");
 		return stmt.executeQuery();
 	}	
 
 	private ResultSet getTempTokens() throws SQLException {
-		stmt = conn.prepareStatement("SELECT * FROM " + dataset.getTEMPORARY());
+		stmt = conn.prepareStatement("SELECT * FROM \"" + dataset.getTEMPORARY() + "\"");
 		return stmt.executeQuery();
 	}
 	
 	private void openConnection() throws ClassNotFoundException, SQLException {
 		if (conn == null) {
 			Class.forName("org.h2.Driver");
-			conn = DriverManager.getConnection("jdbc:h2:" + path.resolve(dataset.getFilename()).toString(), "sa", "");
+			conn = DriverManager.getConnection("jdbc:h2:" + dataset.getOutputLocation().resolve(dataset.getFilename()).toString(), "sa", "");
 		}
 	}
 }

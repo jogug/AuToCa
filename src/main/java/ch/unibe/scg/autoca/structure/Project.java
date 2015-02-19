@@ -37,12 +37,24 @@ public class Project {
 		loadFilePaths();
 	}	
 	
+	public Project(Path projectPath,String projectName, Language language){
+		this.language = language;
+		this.projectPath = projectPath;
+		this.name = projectName;
+		
+		loadFilePaths();
+	}
+	
 	public List<Path> getProjectFilePaths(){
 		return filePaths;
 	}
 	
 	public int getId(){
 		return id;
+	}
+	
+	public void setId(int argId){
+		id = argId;
 	}
 	
 	public Path getProjectPath(){

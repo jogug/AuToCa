@@ -209,8 +209,10 @@ public final class Configuration {
 		    return s.hasNext() ? s.next() : "";
 	}
 	
-	public JSONInterface  testDataSet(){
-    	JSONObject plainData = loadJSON("resources/configuration/default.cfg");
-    	return new JSONInterface(plainData, processLanguages(plainData), null);
+	public JSONInterface testDataSet(String path){
+    	JSONObject plainData = loadJSON(path);
+    	return new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
 	}
+	
+	
 }

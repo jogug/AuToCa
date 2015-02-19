@@ -28,8 +28,6 @@ public final class ScanMode implements IOperationMode {
 	private DB db;
 	private DBTokenHandler th;
 	private Tokenizer tk;
-	private int langCounter;
-	private int projCounter;
 
 	private JSONInterface dataset;
 
@@ -60,23 +58,18 @@ public final class ScanMode implements IOperationMode {
 	@Override
 	public void execute() {
 		logger.info("Starting Scan on dataset");
-		langCounter = 0;
-		projCounter = 0;
 
 		for (Language language : dataset.getLanguages()) {
-			langCounter++;
 			processLanguages(language);
 		}
 		logger.info("\nFinished Scan on dataset");
 	}
 	
-	//TODO move counter dependency to db
 	private void processLanguages(Language language) {
 		try {
-			db.newLanguage(language.getName());
-
+			db.newLanguage(language);
+			
 			for (Project project : language.getProjects()) {
-				projCounter++;
 				processProjects(project);
 			}
 
@@ -87,25 +80,27 @@ public final class ScanMode implements IOperationMode {
 
 	}
 	
-	//TODO move counter dependency to db
 	private void processProjects(Project project) {
 		int progressStep = calcOutputProjectProgressStep(project);
 		
 		// Assign each Project an ID;
 		try {
-			db.newProject(project.getName(), langCounter);
-			logger.info(project.getLanguage().getName() + " " + (langCounter) + ", " + project.getName() + " "
-					+ (projCounter) + "/" + project.getLanguage().getProjects().size() + ", files: "
-					+ project.getProjectFilePaths().size());
+			db.newProject(project);
+			
+			logger.info(project.getLanguage().getName() + " " 
+					+ (project.getLanguage().getId()) + ", " 
+					+ project.getName() + " "
+					+ (project.getId()) + "/" + project.getLanguage().getProjects().size() 
+					+ ", files: " + project.getProjectFilePaths().size());
 			
 			double before = System.currentTimeMillis();
 			processFiles(project, progressStep);
 			System.out.println("		Average Time/File: " 
-								+ (System.currentTimeMillis()-before)/project.getFileCount());
+										+ (System.currentTimeMillis()-before)/project.getFileCount());
 			
 			db.projectFinished();
 		} catch (SQLException e1) {
-			logger.error("scan project errore: ", e1);
+			logger.error("Error while processing project", e1);
 		}
 	}
 
@@ -115,7 +110,7 @@ public final class ScanMode implements IOperationMode {
 		for (Path path : project.getProjectFilePaths()) {
 			try {
 				// Assign File ID
-				db.newFile(path.getFileName().toString(), projCounter);
+				db.newFile(path.getFileName().toString(), project.getId());
 				// Tokenize & Insert Tokens
 				tk.tokenize(path.toFile());
 				db.fileFinished();											
@@ -124,7 +119,6 @@ public final class ScanMode implements IOperationMode {
 				e.printStackTrace();
 			}
 			
-			//
 			fileCounter++;
 			if (fileCounter % progressStep == 0) {
 				lastPrint = fileCounter * 100 / project.getFileCount();
