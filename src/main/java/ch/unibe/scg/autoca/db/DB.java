@@ -5,6 +5,7 @@ package ch.unibe.scg.autoca.db;
 
 
 import java.nio.file.Path;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 
 
@@ -55,6 +57,7 @@ public class DB {
 	private final String NEWLINE;
 	private final String INDENT;
 	private final String DEDENT;
+	private final String DELIMITER;
 	
 	private Connection connection;
 	private Path pathDb;
@@ -81,6 +84,7 @@ public class DB {
 		NEWLINE = dataset.getDBNEWLINE();
 		INDENT = dataset.getINDENT();
 		DEDENT = dataset.getDEDENT();
+		DELIMITER = dataset.getDELIMITER();
 		
 		pathDb = path.resolve(FILENAME);
 	}
@@ -278,6 +282,7 @@ public class DB {
 		int indentId = getTokenId(INDENT);
 		int dedentId = getTokenId(DEDENT);
 		int newlineId = getTokenId(NEWLINE);
+		int delimiterId = getTokenId(DELIMITER);
 		int languageId = getLanguageId(languageName);
 		Statement stmt = connection.createStatement();
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER  + "\" (" 
@@ -287,7 +292,7 @@ public class DB {
 					+ "PRIMARY KEY (orderid))");
 		stmt.execute("INSERT INTO \"" + TEMPFILTER  + "\" ( TOKENID , FILEID) "
 					+ "SELECT TOKENID, FILEID  FROM \"" + OCCURENCE + "\" "
-					+ "WHERE TOKENID != " + indentId + " AND TOKENID != " + dedentId
+					+ "WHERE TOKENID != " + indentId + " AND TOKENID != " + dedentId  + " AND TOKENID != " + delimiterId 
 					+ " ORDER BY ORDERID ASC");
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS " +
 				"SELECT TOKENID, PROJECTID, COUNT(TOKENID) COUNT FROM " +
@@ -299,6 +304,7 @@ public class DB {
 		stmt.close();
 	}
 	
+	/*
 	public void realIndentKeywordMethod(String languageName, String resultTable) throws SQLException{
 			int newlineID = getTokenId(NEWLINE);
 			int indentID = getTokenId(INDENT);
@@ -397,11 +403,131 @@ public class DB {
 			
 			prepInsertStatement.close();
 			stmt.close();
-	}
+	}*/
 	
+	public void realIndentKeywordMethod(String languageName, String resultTable) throws SQLException{
+		int newlineID = getTokenId(NEWLINE);
+		int indentID = getTokenId(INDENT);
+		int dedentID = getTokenId(DEDENT);
+		int delimID = getTokenId(DELIMITER);
+		int languageID = getLanguageId(languageName);
+		int savePos;
+		PreparedStatement fetchFilePrepStatement;
+		ResultSet rs;
+		List<String> projects = new ArrayList<>();
+		List<Integer> files;
+		List<Integer> keywords;
+		Statement stmt = connection.createStatement();	
+		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +
+				"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL, count INT NOT NULL, "
+				+ "PRIMARY KEY (id))");
+
+		String prepInsertStatementQuery = "INSERT INTO \"" + TEMPORARY + "\"(tokenid, projectid) VALUES (?,?)";
+		
+		String prepFetchFileStatementQuery = "SELECT * FROM \"" + OCCURENCE + "\" WHERE fileid = ? AND tokenid !=" + delimID;
+		fetchFilePrepStatement = connection.prepareStatement(prepFetchFileStatementQuery,
+				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
 
-	public void intersectLanguageProjects(String languageName, String resultTable) throws SQLException{
+																//Get project ids
+		rs = stmt.executeQuery("SELECT * FROM \"" + PROJECT + "\" WHERE languageid = " + languageID);
+		while(rs.next()){
+			projects.add(rs.getString(2));
+		}
+		rs.close();			
+		
+		for(String project: projects){							//In each Project
+			int projectId = getProjectId(project);	
+			logger.info("Working on project:" + project + "," + projectId +"/"+ projects.size());
+			
+																// Get ids of the files in the project
+			rs = stmt.executeQuery("SELECT * FROM \"" + FILE + "\" WHERE projectid = " + projectId);
+			files = new ArrayList<Integer>();
+			while(rs.next()){
+				files.add(rs.getInt(1));
+			}
+			rs.close();
+			
+			for(Integer fileId: files){							//In each File
+				keywords = new ArrayList<Integer>();			//stores found Keywords
+				stmt.execute("CREATE MEMORY TABLE \"" + TEMPORARY + "\" " +
+						"(id MEDIUMINT NOT NULL AUTO_INCREMENT, tokenid INT NOT NULL, projectid INT NOT NULL)");
+				
+				fetchFilePrepStatement.setInt(1, fileId);		//Fetch file in DB
+				rs = fetchFilePrepStatement.executeQuery();
+				
+
+				while(rs.next()){								//Search through file
+						//System.out.println(rs.getInt(1));
+					if(rs.getInt(1) == indentID){				//Find Indents
+						savePos = rs.getRow(); 					//Save Row position to later skip back to it
+						
+						int newlCount = 0;
+						boolean stage1 = false;
+						boolean check = false;
+						boolean found  = false;
+						while(!found){ //find 2/n$
+							rs.previous();						//Search the file backwards for newlines
+								//System.out.println("back "+rs.getInt(1));
+							if(rs.getInt(1)==newlineID){
+								if(!stage1){					//Stage 0: find 2 newlines for a check
+									newlCount++;	
+									if(newlCount==2){
+										stage1 = true;
+										check = true;	
+									}
+								}else {							//Stage 1: only find 1 newline for a check
+									check = true;
+								}
+							}
+							
+							if(check){								//Check try to find token
+								rs.next();
+								if(rs.getInt(1)==newlineID||rs.getInt(1)==dedentID){																		
+									rs.previous();					//found token is newline or dedent ->empty line keep going back
+									check = false;					//keep on looking
+								}else if(rs.getInt(1)==indentID){	//Found another indent skip it and add next to keyword
+									rs.next();
+									keywords.add(rs.getInt(1));
+									found = true;
+									rs.absolute(savePos);			//jump back
+								}else{								// Found a possible token
+										//System.out.println(rs.getInt(1));
+									keywords.add(rs.getInt(1));
+									found = true;
+									rs.absolute(savePos);			//jump back			
+								}
+							}
+						}
+					}
+				}
+				prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
+				for(Integer keyword: keywords){
+					prepInsertStatement.setInt(1, keyword);
+					prepInsertStatement.setInt(2, projectId);
+					prepInsertStatement.execute();
+				}
+				//Finalize File
+				stmt.execute("INSERT INTO \"" + TEMPFILTER + "\"(tokenid, projectid, count) "
+						+ "(SELECT tokenid, projectid, COUNT(ID) AS count FROM \"" + TEMPORARY + "\" "
+						+ "GROUP BY TOKENID, PROJECTID)");
+				dropTableIfExists(TEMPORARY);
+				prepInsertStatement.close();
+				rs.close();
+			}
+
+			//finalize 			
+			stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + resultTable + "\" AS SELECT " +
+				 "TOKENID, PROJECTID, COUNT FROM \"" + TEMPFILTER + "\" ORDER BY COUNT DESC");
+			
+			stmt.execute("ALTER TABLE \"" + resultTable + "\" ADD id INT NOT NULL AUTO_INCREMENT");			
+		
+			stmt.close();
+		}
+	}
+
+
+	public void intersectLanguageProjects(String languageName, String resultTable, int minOccInProjects) throws SQLException{
 		Statement stmt = connection.createStatement();
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" AS " +
 				"SELECT TOKENID, COUNT(PROJECTID) COUNT FROM \"" + resultTable + "\" " +

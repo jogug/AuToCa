@@ -42,7 +42,16 @@ public final class AnalyzeMode implements IOperationMode {
 		logger.info("Starting AnalyzeMode: ");
 		loadActualTokens();
 		analyzeDataSet();	
+		summarize();
 		logger.info("Finished AnalyzeMode");
+	}
+
+	private void summarize() {
+		for(Language language:dataset.getLanguages()){
+			int tokenCount = db.getActualTokenCount(language.getName());
+			db.createSummaryTable()
+			
+		}
 	}
 
 	private void analyzeDataSet() {

@@ -167,8 +167,8 @@ public class JSONInterface {
 	}
 
 
-	public String getUNKNOWN() {
-		return plainData.getJSONObject("DBTokenHandler").getString("UNKNOWN");
+	public String getDELIMITER() {
+		return plainData.getJSONObject("DBTokenHandler").getString("DELIMITER");
 	}
 
 

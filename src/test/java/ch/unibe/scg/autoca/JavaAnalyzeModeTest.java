@@ -71,7 +71,7 @@ public class JavaAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_RealIndent");
-		int[] actual={6,6};
+		int[] actual={6,2,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -86,7 +86,7 @@ public class JavaAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_Newline");
 		//Occurence vector expected
-		int[] actual={11,11,8,6,2,2,1,1,1,1,1};
+		int[] actual={17,8,6,4,2,2,1,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

@@ -21,7 +21,6 @@ public class Output extends AbstractFilter {
 		this.save = save;
 	}
 	
-	//TODO ADD CSV SUPPORT// PER PROJECT PER LANGUAGE
 	@Override
 	void execute(DB db, String languageName, String resultTable) {
 		// Calculate Project and Language Statistics?

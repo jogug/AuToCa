@@ -181,7 +181,7 @@ public final class Configuration {
 										break;
 				case "UpCaseFilter": 	active.add(new UpCaseFilter());
 										break;
-				case "IntersectFilter": active.add(new IntersectFilter());
+				case "IntersectFilter": active.add(new IntersectFilter(plainFilters.getJSONObject(i).getInt("minOccInProject")));
 										break;
 				case "GlobalFilter": 	active.add(new GlobalFilter());
 										break;

@@ -13,7 +13,7 @@ public class DBTokenHandler implements TokenizerHandler {
 	private final String INDENT;
 	private final String STRING;
 	private final String COMMENT;
-	private final String UNKNOWN;
+	private final String DELIMITER;
 	private final String LONGWORD;
 	
 	private DB db;
@@ -29,7 +29,7 @@ public class DBTokenHandler implements TokenizerHandler {
 		INDENT = dataset.getINDENT();
 		STRING = dataset.getSTRING();
 		COMMENT = dataset.getCOMMENT();
-		UNKNOWN = dataset.getUNKNOWN();
+		DELIMITER = dataset.getDELIMITER();
 		LONGWORD = dataset.getLONGWORD();
 	}
 
@@ -92,7 +92,7 @@ public class DBTokenHandler implements TokenizerHandler {
 			break;
 		case UNKNOWN:
 			try {
-				db.newToken(UNKNOWN);
+				db.newToken(DELIMITER);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
