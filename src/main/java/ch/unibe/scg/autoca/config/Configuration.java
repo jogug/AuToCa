@@ -68,7 +68,7 @@ public final class Configuration {
             opMode = OperationMode.ANALYZE;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("both")) {
             opMode = OperationMode.BOTH;
-        } else if (nonOptionArgs.get(0).equalsIgnoreCase("prep")) {
+        } else if (nonOptionArgs.get(0).equalsIgnoreCase("extract")) {
             opMode = OperationMode.EXTRACT;
         }else {
             throw new OptionException("Unknown operation mode: " + nonOptionArgs.get(0));

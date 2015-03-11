@@ -47,10 +47,20 @@ public final class AnalyzeMode implements IOperationMode {
 	}
 
 	private void summarize() {
-		for(Language language:dataset.getLanguages()){
-			int tokenCount = db.getActualTokenCount(language.getName());
-			db.createSummaryTable()
+		try {
+			for(Language language:dataset.getLanguages()){
+				db.dropTableIfExists(dataset.getSUMMARY()+language.getName());
+				db.createSummaryTable(language.getName(), db.getRowCountOfTable(language.getName()));
+			}
 			
+			for(FilterChain chain: dataset.getFilterChain()){
+				for(String language: chain.getLanguageNames()){
+					db.insertStatisticsInSummary(chain.getResultName(), language, chain.getResultName(),db.getRowCountOfTable(language));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

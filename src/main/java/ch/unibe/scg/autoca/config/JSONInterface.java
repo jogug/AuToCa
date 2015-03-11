@@ -91,6 +91,10 @@ public class JSONInterface {
 	public String getRESULTTABLE() {
 		return plainData.getJSONObject("Tables").getString("RESULTTABLE");
 	}
+	
+	public String getSUMMARY() {
+		return plainData.getJSONObject("Tables").getString("SUMMARY");
+	}	
 
 	public String getLoginprefix() {
 		return plainData.getJSONObject("DB").getString("LOGINPREFIX");
@@ -156,7 +160,6 @@ public class JSONInterface {
 		return plainData.getJSONObject("DBTokenHandler").getString("INDENT");
 	}
 
-
 	public String getSTRING() {
 		return plainData.getJSONObject("DBTokenHandler").getString("STRING");
 	}
@@ -175,7 +178,7 @@ public class JSONInterface {
 	public String getLONGWORD() {
 		return plainData.getJSONObject("DBTokenHandler").getString("LONGWORD");
 	}
-
+	
 	public int getFileCount(){
 		int count = 0;
 		for(Language i: languages){
@@ -192,7 +195,5 @@ public class JSONInterface {
 			count += i.getProjects().size();
 		}
 		return count;
-	}	
-	
-
+	}
 }

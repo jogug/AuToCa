@@ -5,7 +5,6 @@ package ch.unibe.scg.autoca.db;
 
 
 import java.nio.file.Path;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,11 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,12 +46,17 @@ public class DB {
 	private final String PROJECT;
 	private final String LANGUAGE;
 	private final String RESULTTABLE;
+	private final String SUMMARY;
+	
+	//prefix
+	//private final String LANGPREFIX;
 	
 	//Parser
 	private final String NEWLINE;
 	private final String INDENT;
 	private final String DEDENT;
 	private final String DELIMITER;
+	private final String COMMENT;
 	
 	private Connection connection;
 	private Path pathDb;
@@ -80,11 +79,15 @@ public class DB {
 		PROJECT = dataset.getPROJECT();
 		LANGUAGE = dataset.getLANGUAGE();
 		RESULTTABLE = dataset.getRESULTTABLE();
+		SUMMARY = dataset.getSUMMARY();
 		
 		NEWLINE = dataset.getDBNEWLINE();
 		INDENT = dataset.getINDENT();
 		DEDENT = dataset.getDEDENT();
 		DELIMITER = dataset.getDELIMITER();
+		COMMENT = dataset.getCOMMENT();
+		
+		//TODO LANGPREFIX = dataset.getlangPreFix;
 		
 		pathDb = path.resolve(FILENAME);
 	}
@@ -410,6 +413,7 @@ public class DB {
 		int indentID = getTokenId(INDENT);
 		int dedentID = getTokenId(DEDENT);
 		int delimID = getTokenId(DELIMITER);
+		int commentID = getTokenId(COMMENT);
 		int languageID = getLanguageId(languageName);
 		int savePos;
 		PreparedStatement fetchFilePrepStatement;
@@ -491,6 +495,8 @@ public class DB {
 									keywords.add(rs.getInt(1));
 									found = true;
 									rs.absolute(savePos);			//jump back
+								}else if(rs.getInt(1)==commentID){
+									rs.next();
 								}else{								// Found a possible token
 										//System.out.println(rs.getInt(1));
 									keywords.add(rs.getInt(1));
@@ -628,6 +634,59 @@ public class DB {
 
 		stmt.close();
 	}	
+	
+	/*
+	 * SUMMARY
+	 */
+	public void newSummary() throws ClassNotFoundException, SQLException {
+		openConnection();
+	}
+
+	public void SummaryFinished() throws SQLException {
+		closeConnection();
+	}	
+	
+	public void createSummaryTable(String language, int numberOfToken) throws SQLException {
+		Statement stmt = connection.createStatement();
+		String sql = "CREATE TABLE IF NOT EXISTS \"" + SUMMARY+ language + "\" ("
+				+ "filtername VARCHAR(30) NOT NULL ";
+		for(int i = 0; i < numberOfToken; i++){
+			sql += ",token"+ i + " DECIMAL(5,3)";
+		}		
+		sql += ",PRIMARY KEY (filtername));";
+		
+		stmt.execute(sql);
+		stmt.close();
+	}
+	
+
+	public void insertStatisticsInSummary(String resultName, String language, String filterName, int numberOfToken) throws SQLException {
+		Statement stmt = connection.createStatement();
+		//TODO change const LStat
+		ResultSet rs = stmt.executeQuery("SELECT * FROM "+ "\"LStat"+language+filterName+"\"");
+		List<Double> numbers = new ArrayList<Double>();
+		List<Double> precision = new ArrayList<Double>();
+		while(rs.next()){
+			numbers.add((double)rs.getInt(3));
+		}
+		int j = 1;
+		for(int i = 1; i<numbers.size()+1;i++){
+			if(numbers.get(i-1)==null||numbers.get(i-1)==0){
+				precision.add((double) 0);
+			}else{
+				precision.add(j/numbers.get(i-1));
+				j++;
+			}
+		}
+		String sql = "INSERT INTO \"" +SUMMARY+language+"\" VALUES('" + filterName+"'";
+		for(Double i: precision){
+			sql += ", "+i;
+		}
+		sql+=")";
+		
+		stmt.execute(sql);
+		stmt.close();
+	}
 
 	/*
 	 * LOAD REAL TOKEN OPEN&CLOSE

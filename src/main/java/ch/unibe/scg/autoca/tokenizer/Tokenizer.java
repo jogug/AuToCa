@@ -98,6 +98,8 @@ public class Tokenizer {
 			oldIndent = indent;
 			oldPosition = position;
 
+			if (tryNewline()) 
+				continue;
 			if (tryIndent())
 				continue;
 			if (tryDedent())
@@ -109,8 +111,6 @@ public class Tokenizer {
 			if (tryWords())
 				continue;
 			if (tryStrings())
-				continue;
-			if (tryNewline()) 
 				continue;
 			if (tryAny(s))
 				continue;

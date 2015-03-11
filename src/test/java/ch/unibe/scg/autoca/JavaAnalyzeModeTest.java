@@ -57,9 +57,9 @@ public class JavaAnalyzeModeTest {
 		assertEquals(db.getRowCountOfTable("Java_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={103,46,13,12,8,7,6,6,5,5,4,4,4,4,3,3,3,
+		int[] actual={103,54,16,13,8,7,6,6,5,5,4,4,4,4,4,3,3,3,
 					  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,
-					  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+					  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
