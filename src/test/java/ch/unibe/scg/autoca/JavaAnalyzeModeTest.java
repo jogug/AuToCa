@@ -57,7 +57,7 @@ public class JavaAnalyzeModeTest {
 		assertEquals(db.getRowCountOfTable("Java_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={103,54,16,13,8,7,6,6,5,5,4,4,4,4,4,3,3,3,
+		int[] actual={103,54,10,8,7,7,6,6,5,5,4,4,4,4,4,3,3,3,
 					  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,
 					  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
@@ -71,7 +71,7 @@ public class JavaAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_RealIndent");
-		int[] actual={6,2,1,1,1,1};
+		int[] actual={5,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -86,7 +86,7 @@ public class JavaAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_Newline");
 		//Occurence vector expected
-		int[] actual={17,8,6,4,2,2,1,1,1,1,1,1};
+		int[] actual={22,8,6,4,3,2,2,1,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

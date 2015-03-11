@@ -490,13 +490,8 @@ public class DB {
 								if(rs.getInt(1)==newlineID||rs.getInt(1)==dedentID){																		
 									rs.previous();					//found token is newline or dedent ->empty line keep going back
 									check = false;					//keep on looking
-								}else if(rs.getInt(1)==indentID){	//Found another indent skip it and add next to keyword
-									rs.next();
-									keywords.add(rs.getInt(1));
-									found = true;
-									rs.absolute(savePos);			//jump back
-								}else if(rs.getInt(1)==commentID){
-									rs.next();
+								}else if(rs.getInt(1)==commentID||rs.getInt(1)==indentID){
+									rs.next();						//skip indents and comments while searching for first on newline
 								}else{								// Found a possible token
 										//System.out.println(rs.getInt(1));
 									keywords.add(rs.getInt(1));
