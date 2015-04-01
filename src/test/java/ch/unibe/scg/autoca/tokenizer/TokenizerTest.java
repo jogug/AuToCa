@@ -1,6 +1,10 @@
 package ch.unibe.scg.autoca.tokenizer;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +33,6 @@ public class TokenizerTest {
 		mh = null;
 	}
 
-/*	
 	@Test
 	public void testIndent3() {
 		// FAILS, INDENT is returned even if followed by a new line
@@ -42,7 +45,8 @@ public class TokenizerTest {
 		assertEquals(TokenType.WORD, mh.types.get(0));
 
 		assertEquals(TokenType.NEWLINE, mh.types.get(1));
-		assertEquals(TokenType.NEWLINE, mh.types.get(1));
+
+		assertEquals(TokenType.NEWLINE, mh.types.get(2));
 
 		assertEquals(TokenType.INDENT, mh.types.get(3));
 
@@ -50,7 +54,40 @@ public class TokenizerTest {
 		assertEquals(TokenType.WORD, mh.types.get(4));
 
 	}	
-*/
+	
+
+	@Test
+	public void testIndent4() {
+		tokenizer.tokenize(
+				  "foo\n"
+				+ "   bar\n"
+				+ "baz\n"
+				+ "   quak");
+
+		assertEquals(10, mh.tokens.size());
+		
+		assertEquals("foo", mh.tokens.get(0));
+		//NEWLINE
+		assertEquals(TokenType.INDENT, mh.types.get(2));
+		assertEquals("bar", mh.tokens.get(3));
+		//NEWLINE
+		assertEquals(TokenType.DEDENT, mh.types.get(5));
+		assertEquals("baz", mh.tokens.get(6));
+		//NEWLINE
+		assertEquals(TokenType.INDENT, mh.types.get(8));
+		assertEquals("quak", mh.tokens.get(9));
+	}	
+	
+
+	@Test
+	public void testIndent5() throws FileNotFoundException {
+		String text = readFile("./resources/testing/testprojects/test2/Project1/VariableMapperImpl2.java");
+				
+		tokenizer.tokenize(text);
+
+		//assertEquals(10, mh.tokens.size());
+	}	
+	
 	
 	@Test
 	public void testWord() {
@@ -214,6 +251,11 @@ public class TokenizerTest {
 		
 		assertEquals("today", mh.tokens.get(1));
 		assertEquals(TokenType.WORD, mh.types.get(1));
+	}
+
+	@SuppressWarnings("resource")
+	public String readFile(String filename) throws FileNotFoundException {
+		return new Scanner(new File(filename)).useDelimiter("\\Z").next();
 	}
 }
 

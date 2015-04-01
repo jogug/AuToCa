@@ -21,6 +21,7 @@ public class Tokenizer {
 	private final String WHITESPACE;
 	private final String START_OF_LINE;
 	private final String NEWLINE;
+	private final String EMPTYLINE;
 
 	private TokenizerHandler th;
 	private String ls;
@@ -36,6 +37,7 @@ public class Tokenizer {
 	private TokenPositions tpStartOfLine;
 	private TokenPositions tpWhitespace;
 	private TokenPositions tpNewline;
+	private TokenPositions tpEmptyline;
 	
 	private int position;
 	private int indent;
@@ -53,6 +55,7 @@ public class Tokenizer {
 		WHITESPACE = dataset.getWHITESPACE();
 		START_OF_LINE = dataset.getSTART_OF_LINE();
 		NEWLINE = dataset.getNEWLINE();
+		EMPTYLINE = "(?m)^[ \t]*\n";
 		ls = DEFAULT_LS;
 	}
 
@@ -98,6 +101,8 @@ public class Tokenizer {
 			oldIndent = indent;
 			oldPosition = position;
 
+			if (tryEmptyline()) 
+				continue;
 			if (tryNewline()) 
 				continue;
 			if (tryIndent())
@@ -136,6 +141,7 @@ public class Tokenizer {
 		tpWhitespace = new TokenPositions(WHITESPACE, s);
 		tpStartOfLine = new TokenPositions(START_OF_LINE, s);
 		tpNewline = new TokenPositions(NEWLINE, s);
+		tpEmptyline = new TokenPositions(EMPTYLINE, s);
 	}
 
 	private void initializeTokenPositions(List<TokenPositions> tps,
@@ -175,13 +181,18 @@ public class Tokenizer {
 	private boolean tryIndent() {
 		if (tpStartOfLine.find(position) == position)
 		{
-			int newIndent = tpStartOfLine.end() - tpStartOfLine.begin();
+			//int newIndent = tpStartOfLine.end() - tpStartOfLine.begin();
+			// TODO:
+			int newIndent = tpStartOfLine.token().replaceAll("\t", "    ").length();
+
+
 			if (indent < newIndent) {
 				th.token("#indent", TokenType.INDENT);
 				
 				position = tpStartOfLine.end();
 				
 				indent = newIndent;
+				System.out.println("!indent, new column: " + newIndent);
 				
 				return true;
 			}
@@ -192,13 +203,17 @@ public class Tokenizer {
 	private boolean tryDedent() {
 		if (tpStartOfLine.find(position) == position)
 		{
-			int newIndent = tpStartOfLine.end() - tpStartOfLine.begin();
+			//int newIndent = tpStartOfLine.end() - tpStartOfLine.begin();
+			// TODO: Make "   " configurable 
+			int newIndent = tpStartOfLine.token().replaceAll("\t", "    ").length();
+			
 			if (indent > newIndent) {
 				th.token("#dedent", TokenType.DEDENT);
 				
 				position = tpStartOfLine.end();
 				
 				indent = newIndent;
+				System.out.println("!dedent, new column: " + newIndent);
 				
 				return true;
 			}
@@ -206,6 +221,11 @@ public class Tokenizer {
 		return false;
 	}
 
+
+	private boolean tryEmptyline() {
+		return tryToken(tpEmptyline, TokenType.NEWLINE);
+	}
+	
 	private boolean tryNewline() {
 		return tryToken(tpNewline, TokenType.NEWLINE);
 	}
@@ -215,6 +235,7 @@ public class Tokenizer {
 			String token = tp.token();
 			position = tp.end();
 
+			System.out.println(token);
 			th.token(token, type);
 			return true;
 		}
