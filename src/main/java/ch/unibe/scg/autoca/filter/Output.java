@@ -12,32 +12,24 @@ public class Output extends AbstractFilter {
     private static final Logger logger = LoggerFactory.getLogger(Output.class);	
 	
 	private boolean save;
-    String langPreFix;
-    String projPreFix;
+    private String PREFIXSTAT;
     
-	public Output(boolean save, String langPreFix, String projPreFix) {
-		this.langPreFix = langPreFix;
-		this.projPreFix = projPreFix;
+	public Output(boolean save, String PREFIXSTAT) {
+		this.PREFIXSTAT = PREFIXSTAT;
 		this.save = save;
 	}
 	
 	@Override
 	void execute(DB db, String languageName, String resultTable) {
-		// Calculate Project and Language Statistics?
-		if(!langPreFix.contains("Null")){
-			try {
-				logger.info("Outputting Stats " + resultTable);
-				db.newFilterTable();
-				db.dropTableIfExists(langPreFix + resultTable);
-				db.calculateStatisticsPerLanguage(languageName, resultTable, langPreFix + resultTable);
-				db.filterTableFinished();
-			} catch (SQLException | ClassNotFoundException e) {
-				e.printStackTrace();
-			}			
-		}
-		if(!projPreFix.contains("Null")){
-			//Might be interesting but not really needed
-		}
+		try {
+			logger.info("Outputting Stats " + resultTable);
+			db.newFilterTable();
+			db.dropTableIfExists(PREFIXSTAT + resultTable);
+			db.calculateStatisticsPerLanguage(languageName, resultTable, PREFIXSTAT + resultTable);
+			db.filterTableFinished();
+		} catch (SQLException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}					
 		if(save){
 			try {
 				logger.info("Outputting " + resultTable);

@@ -22,6 +22,7 @@ public class Tokenizer {
 	private final String START_OF_LINE;
 	private final String NEWLINE;
 	private final String EMPTYLINE;
+	private final String TABSPACE;
 
 	private TokenizerHandler th;
 	private String ls;
@@ -55,6 +56,7 @@ public class Tokenizer {
 		WHITESPACE = dataset.getWHITESPACE();
 		START_OF_LINE = dataset.getSTART_OF_LINE();
 		NEWLINE = dataset.getNEWLINE();
+		TABSPACE = dataset.getTABSPACE();
 		EMPTYLINE = "(?m)^[ \t]*\n";
 		ls = DEFAULT_LS;
 	}
@@ -181,9 +183,7 @@ public class Tokenizer {
 	private boolean tryIndent() {
 		if (tpStartOfLine.find(position) == position)
 		{
-			//int newIndent = tpStartOfLine.end() - tpStartOfLine.begin();
-			// TODO:
-			int newIndent = tpStartOfLine.token().replaceAll("\t", "    ").length();
+			int newIndent = tpStartOfLine.token().replaceAll("\t", TABSPACE).length();
 
 
 			if (indent < newIndent) {
@@ -192,7 +192,7 @@ public class Tokenizer {
 				position = tpStartOfLine.end();
 				
 				indent = newIndent;
-				System.out.println("!indent, new column: " + newIndent);
+				//System.out.println("!indent, new column: " + newIndent);
 				
 				return true;
 			}
@@ -203,9 +203,7 @@ public class Tokenizer {
 	private boolean tryDedent() {
 		if (tpStartOfLine.find(position) == position)
 		{
-			//int newIndent = tpStartOfLine.end() - tpStartOfLine.begin();
-			// TODO: Make "   " configurable 
-			int newIndent = tpStartOfLine.token().replaceAll("\t", "    ").length();
+			int newIndent = tpStartOfLine.token().replaceAll("\t", TABSPACE).length();
 			
 			if (indent > newIndent) {
 				th.token("#dedent", TokenType.DEDENT);
@@ -213,7 +211,7 @@ public class Tokenizer {
 				position = tpStartOfLine.end();
 				
 				indent = newIndent;
-				System.out.println("!dedent, new column: " + newIndent);
+				//System.out.println("!dedent, new column: " + newIndent);
 				
 				return true;
 			}
@@ -235,7 +233,7 @@ public class Tokenizer {
 			String token = tp.token();
 			position = tp.end();
 
-			System.out.println(token);
+			//System.out.println(token);
 			th.token(token, type);
 			return true;
 		}

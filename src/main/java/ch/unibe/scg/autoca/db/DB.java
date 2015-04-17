@@ -46,10 +46,11 @@ public class DB {
 	private final String PROJECT;
 	private final String LANGUAGE;
 	private final String RESULTTABLE;
-	private final String SUMMARY;
+	private final String RANK;
+	private final String PRECISION;
 	
 	//prefix
-	//private final String LANGPREFIX;
+	private final String PREFIXSTAT;
 	
 	//Parser
 	private final String NEWLINE;
@@ -79,15 +80,15 @@ public class DB {
 		PROJECT = dataset.getPROJECT();
 		LANGUAGE = dataset.getLANGUAGE();
 		RESULTTABLE = dataset.getRESULTTABLE();
-		SUMMARY = dataset.getSUMMARY();
+		RANK = dataset.getRANK();
+		PREFIXSTAT = dataset.getPREFIXSTAT();
+		PRECISION = dataset.getPRECISION();
 		
 		NEWLINE = dataset.getDBNEWLINE();
 		INDENT = dataset.getINDENT();
 		DEDENT = dataset.getDEDENT();
 		DELIMITER = dataset.getDELIMITER();
 		COMMENT = dataset.getCOMMENT();
-		
-		//TODO LANGPREFIX = dataset.getlangPreFix;
 		
 		pathDb = path.resolve(FILENAME);
 	}
@@ -462,7 +463,6 @@ public class DB {
 				
 
 				while(rs.next()){								//Search through file
-						//System.out.println(rs.getInt(1));
 					if(rs.getInt(1) == indentID){				//Find Indents
 						savePos = rs.getRow(); 					//Save Row position to later skip back to it
 						
@@ -472,7 +472,6 @@ public class DB {
 						boolean found  = false;
 						while(!found){ //find 2/n$
 							rs.previous();						//Search the file backwards for newlines
-								//System.out.println("back "+rs.getInt(1));
 							if(rs.getInt(1)==newlineID){
 								if(!stage1){					//Stage 0: find 2 newlines for a check
 									newlCount++;	
@@ -493,7 +492,6 @@ public class DB {
 								}else if(rs.getInt(1)==commentID||rs.getInt(1)==indentID){
 									rs.next();						//skip indents and comments while searching for first on newline
 								}else{								// Found a possible token
-										//System.out.println(rs.getInt(1));
 									keywords.add(rs.getInt(1));
 									found = true;
 									rs.absolute(savePos);			//jump back			
@@ -534,7 +532,7 @@ public class DB {
 				"SELECT TOKENID, COUNT(PROJECTID) COUNT FROM \"" + resultTable + "\" " +
 				"GROUP BY TOKENID ORDER BY COUNT DESC;" +		
 				
-				"DELETE FROM \"" + TEMPFILTER + "\" WHERE COUNT < " + 2 + "; " +// TODO CONSTANT 
+				"DELETE FROM \"" + TEMPFILTER + "\" WHERE COUNT < " + minOccInProjects + "; " +
 								
 				"ALTER TABLE \"" + resultTable + "\" RENAME TO \"" + TEMPORARY + "\" ; " +
 				
@@ -641,29 +639,32 @@ public class DB {
 		closeConnection();
 	}	
 	
-	public void createSummaryTable(String language, int numberOfToken) throws SQLException {
+	
+	public void createPrecisionTable(String language) throws SQLException {
 		Statement stmt = connection.createStatement();
-		String sql = "CREATE TABLE IF NOT EXISTS \"" + SUMMARY+ language + "\" ("
-				+ "filtername VARCHAR(30) NOT NULL ";
-		for(int i = 0; i < numberOfToken; i++){
-			sql += ",token"+ i + " DECIMAL(5,3)";
+		int nrOfKeywords = getRowCountOfTable(language);
+		String query = "CREATE TABLE IF NOT EXISTS \"" + PRECISION+ language + "\" ("
+				+ "FILTER VARCHAR(30) ";
+		for(int i = 1; i < nrOfKeywords+1; i++){
+			query += ",\"" + i + "Token\"" + " DECIMAL(5,3)";
 		}		
-		sql += ",PRIMARY KEY (filtername));";
+		query += ",PRIMARY KEY (FILTER));";
 		
-		stmt.execute(sql);
+		stmt.execute(query);
 		stmt.close();
 	}
 	
 
-	public void insertStatisticsInSummary(String resultName, String language, String filterName, int numberOfToken) throws SQLException {
+	public void insertPrecision(String resultName, String language) throws SQLException {
 		Statement stmt = connection.createStatement();
-		//TODO change const LStat
-		ResultSet rs = stmt.executeQuery("SELECT * FROM "+ "\"LStat"+language+filterName+"\"");
+		ResultSet rs = stmt.executeQuery("SELECT * FROM "+ "\""+PREFIXSTAT+language+resultName+"\" ORDER BY ID ASC NULLS LAST");
 		List<Double> numbers = new ArrayList<Double>();
 		List<Double> precision = new ArrayList<Double>();
+		
 		while(rs.next()){
 			numbers.add((double)rs.getInt(3));
 		}
+		
 		int j = 1;
 		for(int i = 1; i<numbers.size()+1;i++){
 			if(numbers.get(i-1)==null||numbers.get(i-1)==0){
@@ -673,7 +674,7 @@ public class DB {
 				j++;
 			}
 		}
-		String sql = "INSERT INTO \"" +SUMMARY+language+"\" VALUES('" + filterName+"'";
+		String sql = "INSERT INTO \"" + PRECISION+language + "\" VALUES('" + resultName+"'";
 		for(Double i: precision){
 			sql += ", "+i;
 		}
@@ -682,7 +683,32 @@ public class DB {
 		stmt.execute(sql);
 		stmt.close();
 	}
-
+	
+	
+	public void summarizeRanks(String language, List<String> filterChains) throws SQLException {
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM "+ "\""+language+"\"");
+		List<String> keywords = new ArrayList<String>();
+		
+		while(rs.next()){
+			keywords.add(rs.getString(1));
+		}
+		
+		rs.close();
+		String query = "CREATE TABLE \"" + RANK + language + "\" AS SELECT " + 
+			"\"" + PREFIXSTAT + language + filterChains.get(0) + "\"" + ".TOKEN AS KEYWORD, " +
+			"\"" + PREFIXSTAT + language + filterChains.get(0) + "\"" +	".ID AS " + filterChains.get(0);
+		for(int i = 1; i < filterChains.size(); i++){
+			query += "," + "\"" + PREFIXSTAT + language + filterChains.get(i) + "\"" + ".ID AS " + filterChains.get(i);			
+		}
+		query += " FROM " + "\"" + PREFIXSTAT + language + filterChains.get(0) + "\"";
+		for(int i = 1; i < filterChains.size(); i++){
+			query += " INNER JOIN " + "\"" + PREFIXSTAT + language + filterChains.get(i) + "\"" + " ON " + 
+					 "\"" + PREFIXSTAT + language + filterChains.get(i) + "\"" + ".TOKEN" + " = " + "\"" + PREFIXSTAT + language + filterChains.get(0) + "\"" + ".TOKEN ";
+		}
+		stmt.execute(query);
+	}
+	
 	/*
 	 * LOAD REAL TOKEN OPEN&CLOSE
 	 */
@@ -825,6 +851,10 @@ public class DB {
 		stmt.close();
 		return value;
 	}
+
+
+
+
 
 	// TODO OUTPUT
 //	//For each pattern extract Token	

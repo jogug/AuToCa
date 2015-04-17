@@ -164,20 +164,19 @@ public final class Configuration {
 			}
 			
 			JSONArray plainFilters = plainChains.getJSONObject(i).getJSONArray("filters");
-			AbstractFilter start = processFilters(plainFilters);
+			AbstractFilter start = processFilters(plainFilters, plainData.getJSONObject("Tables").getString("PREFIXSTAT"));
 			
 			filterChains.add(new FilterChain(resultName, languageNames, start));
 		}
 		return filterChains;
 	}
 	
-	private AbstractFilter processFilters(JSONArray plainFilters){
+	private AbstractFilter processFilters(JSONArray plainFilters, String PREFIXSTAT){
 		List<AbstractFilter> active = new ArrayList<>();
 		for(int i=0; i<plainFilters.length();i++){
 			switch(plainFilters.getJSONObject(i).getString("name")){
-				case "Output":			active.add(new Output(true, 
-													plainFilters.getJSONObject(i).getString("langPreFix"),
-													plainFilters.getJSONObject(i).getString("projPreFix")));
+				case "Output":			boolean out = plainFilters.getJSONObject(i).getBoolean("save");
+										active.add(new Output(out, PREFIXSTAT));
 										break;
 				case "UpCaseFilter": 	active.add(new UpCaseFilter());
 										break;
@@ -212,7 +211,5 @@ public final class Configuration {
 	public JSONInterface testDataSet(String path){
     	JSONObject plainData = loadJSON(path);
     	return new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
-	}
-	
-	
+	}	
 }

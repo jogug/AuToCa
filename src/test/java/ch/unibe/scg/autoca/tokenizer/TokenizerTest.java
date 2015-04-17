@@ -35,8 +35,6 @@ public class TokenizerTest {
 
 	@Test
 	public void testIndent3() {
-		// FAILS, INDENT is returned even if followed by a new line
-		// TODO: Needs to be fixed in tokenizer, JAN
 		tokenizer.tokenize("hello		\n 		\n		world");
 
 		assertEquals(5, mh.tokens.size());

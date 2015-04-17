@@ -4,6 +4,8 @@
 package ch.unibe.scg.autoca.mode;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,16 +49,36 @@ public final class AnalyzeMode implements IOperationMode {
 	}
 
 	private void summarize() {
+
 		try {
 			for(Language language:dataset.getLanguages()){
-				db.dropTableIfExists(dataset.getSUMMARY()+language.getName());
-				db.createSummaryTable(language.getName(), db.getRowCountOfTable(language.getName()));
+				db.dropTableIfExists(dataset.getPRECISION()+language.getName());
+				db.createPrecisionTable(language.getName());
 			}
-			
-			for(FilterChain chain: dataset.getFilterChain()){
-				for(String language: chain.getLanguageNames()){
-					db.insertStatisticsInSummary(chain.getResultName(), language, chain.getResultName(),db.getRowCountOfTable(language));
+			for(FilterChain filter: dataset.getFilterChain()){
+				for(String language: filter.getLanguageNames()){
+					db.insertPrecision(filter.getResultName(), language);
 				}
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+		try {
+			for(Language language:dataset.getLanguages()){
+				List<String> chains = new ArrayList<String>();
+				for(FilterChain chain: dataset.getFilterChain()){
+					for(String languageInChain: chain.getLanguageNames()){
+						if(language.getName().equals(languageInChain)){
+							chains.add(chain.getResultName());
+						}
+					}
+				}
+				db.dropTableIfExists(dataset.getRANK()+language.getName());		
+				db.summarizeRanks(language.getName(), chains);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

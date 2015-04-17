@@ -31,7 +31,6 @@ public class JSONInterface {
 	}
 	
 
-	//TODO TABLE NAMES!!!!!
 	public List<Language> getLanguages() {
 		return languages;
 	}
@@ -92,8 +91,18 @@ public class JSONInterface {
 		return plainData.getJSONObject("Tables").getString("RESULTTABLE");
 	}
 	
-	public String getSUMMARY() {
-		return plainData.getJSONObject("Tables").getString("SUMMARY");
+
+	public String getPREFIXSTAT() {
+		return plainData.getJSONObject("Tables").getString("PREFIXSTAT");
+	}
+	
+
+	public String getPRECISION() {
+		return plainData.getJSONObject("Tables").getString("PRECISION");
+	}
+	
+	public String getRANK() {
+		return plainData.getJSONObject("Tables").getString("RANK");
 	}	
 
 	public String getLoginprefix() {
@@ -148,6 +157,10 @@ public class JSONInterface {
 		return plainData.getJSONObject("Tokenizer").getString("NEWLINE");
 	}
 	
+	public String getTABSPACE() {
+		return plainData.getJSONObject("Tokenizer").getString("TABSPACE");
+	}
+	
 	public String getDBNEWLINE() {
 		return plainData.getJSONObject("DBTokenHandler").getString("DBNEWLINE");
 	}
@@ -196,4 +209,6 @@ public class JSONInterface {
 		}
 		return count;
 	}
+
+
 }
