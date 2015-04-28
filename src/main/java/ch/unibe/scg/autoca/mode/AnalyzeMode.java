@@ -49,7 +49,6 @@ public final class AnalyzeMode implements IOperationMode {
 	}
 
 	private void summarize() {
-
 		try {
 			for(Language language:dataset.getLanguages()){
 				db.dropTableIfExists(dataset.getPRECISION()+language.getName());

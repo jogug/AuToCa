@@ -20,7 +20,7 @@ public final class AuToCa {
 	}
 
 	public static void main(String[] args) {	
-		String[] x = {"extract", "path", "resources/configuration/extract_clojure.cfg"};
+		String[] x = {"analyze", "path", "resources/configuration/java.cfg"};
 		AuToCa autoca = new AuToCa(x);
 	}
 

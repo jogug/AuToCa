@@ -41,25 +41,12 @@ public class JavaAnalyzeModeTest {
 	}
 	
 	@Test
-	public void testCoverage() throws ClassNotFoundException, SQLException{
-		res = getResultTable("Java_Coverage");
-		assertEquals(db.getRowCountOfTable("Java_Coverage"), db.getRowCountOfTable("tokens"));
-		res.first();
-		while(!res.isAfterLast()){
-			assertEquals(1, res.getInt(2));
-			res.next();
-		}		
-	}
-	
-	@Test
 	public void testGlobal() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_Global");
 		assertEquals(db.getRowCountOfTable("Java_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={103,54,10,8,7,7,6,6,5,5,4,4,4,4,4,3,3,3,
-					  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,
-					  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={103,51,9,8,7,6,6,6,5,5,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
@@ -71,7 +58,7 @@ public class JavaAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_RealIndent");
-		int[] actual={5,1,1};
+		int[] actual={6};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -86,7 +73,7 @@ public class JavaAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Java_Newline");
 		//Occurence vector expected
-		int[] actual={22,8,6,4,3,2,2,1,1,1,1,1,1};
+		int[] actual={20,8,6,4,2,2,2,1,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -94,6 +81,16 @@ public class JavaAnalyzeModeTest {
 			assertNotEquals("#indent", res.getString(1));
 			assertNotEquals("#dedent", res.getString(1));
 			i++;
+			res.next();
+		}	
+	}
+	
+	@Test
+	public void testCoverage() throws ClassNotFoundException, SQLException{
+		res = getResultTable("Java_Coverage");
+		res.first();
+		while(!res.isAfterLast()){
+			assertEquals(1, res.getInt(2));
 			res.next();
 		}	
 	}

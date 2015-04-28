@@ -17,7 +17,7 @@ public class NewlineFilter extends AbstractFilter {
 		try {
 			db.newFilterTable();
 			db.dropTableIfExists(resultTable);
-			db.newlineKeywordMethod(languageName, resultTable);
+			db.newlineKeywordMethodSaveRam(languageName, resultTable);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
