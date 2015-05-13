@@ -14,9 +14,6 @@ public class Tokenizer {
 	public final String DEFAULT_STRING;
 	public final String DEFAULT_MULTI_COMMENT;
 	public final String DEFAULT_SINGLE_COMMENT;
-
-	
-	public final String PYTHON_LIKE_COMMENT;
 	
 	private final String WHITESPACE;
 	private final String START_OF_LINE;
@@ -51,7 +48,6 @@ public class Tokenizer {
 		DEFAULT_MULTI_COMMENT = dataset.getDEFAULT_MULTI_COMMENT();
 		DEFAULT_SINGLE_COMMENT = dataset.getDEFAULT_SINGLE_COMMENT();
 		
-		PYTHON_LIKE_COMMENT = dataset.getPYTHON_LIKE_COMMENT();
 		
 		WHITESPACE = dataset.getWHITESPACE();
 		START_OF_LINE = dataset.getSTART_OF_LINE();
@@ -66,9 +62,6 @@ public class Tokenizer {
 		addString(DEFAULT_STRING);
 		addComment(DEFAULT_MULTI_COMMENT);
 		addComment(DEFAULT_SINGLE_COMMENT);
-		
-		// TODO: HACK ALERT?
-		addComment(PYTHON_LIKE_COMMENT);
 	}
 
 	public void addWord(String word) {

@@ -18,7 +18,7 @@ import ch.unibe.scg.autoca.db.DB;
 import ch.unibe.scg.autoca.mode.AnalyzeMode;
 import ch.unibe.scg.autoca.mode.ScanMode;
 
-public class JavaAnalyzeModeTest {
+public class PythonAnalyzeModeTest {
 	private DB db;
 	private Connection conn;
 	private JSONInterface dataset;
@@ -29,7 +29,7 @@ public class JavaAnalyzeModeTest {
 	@Before
 	public void setUp() throws ClassNotFoundException, SQLException {
 		config = new Configuration();
-		dataset = config.testDataSet("resources/testing/configuration/testJava.cfg");
+		dataset = config.testDataSet("resources/testing/configuration/testPython.cfg");
     	db = new DB(dataset.getOutputLocation(), dataset);
 		db.initialize();		
 
@@ -42,11 +42,11 @@ public class JavaAnalyzeModeTest {
 	
 	@Test
 	public void testGlobal() throws ClassNotFoundException, SQLException{
-		res = getResultTable("Java_Global");
-		assertEquals(db.getRowCountOfTable("Java_Global"), db.getRowCountOfTable("tokens"));
+		res = getResultTable("Python_Global");
+		assertEquals(db.getRowCountOfTable("Python_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={103,51,9,8,7,6,6,6,5,5,4,4,4,4,4,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={57,25,8,6,6,5,4,4,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
@@ -57,8 +57,8 @@ public class JavaAnalyzeModeTest {
 	
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
-		res = getResultTable("Java_RealIndent");
-		int[] actual={6};
+		res = getResultTable("Python_RealIndent");
+		int[] actual={4,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -71,9 +71,9 @@ public class JavaAnalyzeModeTest {
 	
 	@Test
 	public void testNewline() throws ClassNotFoundException, SQLException{
-		res = getResultTable("Java_Newline");
+		res = getResultTable("Python_Newline");
 		//Occurence vector expected
-		int[] actual={20,8,6,4,2,2,2,1,1,1,1,1,1};
+		int[] actual={8,4,3,3,2,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -87,7 +87,7 @@ public class JavaAnalyzeModeTest {
 	
 	@Test
 	public void testCoverage() throws ClassNotFoundException, SQLException{
-		res = getResultTable("Java_Coverage");
+		res = getResultTable("Python_Coverage");
 		res.first();
 		while(!res.isAfterLast()){
 			assertEquals(1, res.getInt(2));

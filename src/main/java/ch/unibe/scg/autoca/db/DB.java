@@ -908,11 +908,15 @@ public class DB {
 	public int getTokenId(String tokenName) throws SQLException {
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT ID FROM \"" + TOKEN + "\" WHERE TOKEN = '" + tokenName + "'");
-		rs.next();
-		int tokenId = rs.getInt(1);
-		rs.close();
-		stmt.close();
-		return tokenId;
+		if(rs.next()){
+			int tokenId = rs.getInt(1);
+			rs.close();
+			stmt.close();
+			return tokenId;
+		}else{
+			System.out.println("no " + tokenName + " in database"); //TODO logger
+			return Integer.MAX_VALUE;
+		}
 	}	
 	
 	public int getFileId(String fileName) throws SQLException {

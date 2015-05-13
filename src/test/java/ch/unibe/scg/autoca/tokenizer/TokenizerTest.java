@@ -76,16 +76,6 @@ public class TokenizerTest {
 		assertEquals("quak", mh.tokens.get(9));
 	}	
 	
-
-	@Test
-	public void testIndent5() throws FileNotFoundException {
-		String text = readFile("./resources/testing/testprojects/test2/Project1/VariableMapperImpl2.java");
-				
-		tokenizer.tokenize(text);
-
-		//assertEquals(10, mh.tokens.size());
-	}	
-	
 	
 	@Test
 	public void testWord() {
