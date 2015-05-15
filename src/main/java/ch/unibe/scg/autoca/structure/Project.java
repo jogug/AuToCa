@@ -1,5 +1,6 @@
 package ch.unibe.scg.autoca.structure;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -48,7 +49,7 @@ public class Project {
 	public List<Path> getProjectFilePaths(){
 		return filePaths;
 	}
-	
+
 	public int getId(){
 		return id;
 	}
@@ -72,7 +73,22 @@ public class Project {
 	public int getFileCount() {
 		return filePaths.size();
 	}
+	
+	public long getSize(){
+		return folderSize(new File(projectPath.toString()));
+	}
 
+	public static long folderSize(File directory) {
+	    long length = 0;
+	    for (File file : directory.listFiles()) {
+	        if (file.isFile())
+	            length += file.length();
+	        else
+	            length += folderSize(file);
+	    }
+	    return length;
+	}
+	
 	private void loadFilePaths() {
 		logger.info("Extracting paths form: " + getName());
 		try {

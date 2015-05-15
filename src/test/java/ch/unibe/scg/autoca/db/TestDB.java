@@ -52,7 +52,7 @@ public class TestDB {
 	
 	@Test
 	public void testToken() throws SQLException, ClassNotFoundException {
-		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"),Long.MAX_VALUE, 1);
 		db.newLanguage(langA);
 		Project project = new Project(Paths.get("../AuToCa/resources/testing/testprojects/empty/"), "Project" , langA);
 		db.newProject(project);
@@ -85,7 +85,7 @@ public class TestDB {
 
 	@Test
 	public void testToken2() throws SQLException, ClassNotFoundException {
-		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"), Long.MAX_VALUE,1);
 		db.newLanguage(langA);
 		Project project = new Project(Paths.get("../AuToCa/resources/testing/testprojects/empty/"), "Project" , langA);
 		db.newProject(project);
@@ -146,7 +146,7 @@ public class TestDB {
 	
 	@Test
 	public void testToken3() throws SQLException, ClassNotFoundException {
-		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"));
+		Language langA = new Language("LangA", "*.java", Paths.get("../AuToCa/resources/java_tokens.txt"), Long.MAX_VALUE, 1);
 		db.newLanguage(langA);
 		Project project = new Project(Paths.get("../AuToCa/resources/testing/testprojects/empty/"), "Project" , langA);
 		db.newProject(project);

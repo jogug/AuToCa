@@ -18,7 +18,7 @@ import ch.unibe.scg.autoca.structure.Language;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
- * Analyzes the tokens extracted from the code according to the actual tokesn of a language
+ * Analyzes the tokens extracted from the code according to the actual tokens of a language
  * @author Joel
  *
  */

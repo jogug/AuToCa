@@ -140,9 +140,11 @@ public final class Configuration {
 		
 		JSONArray plainLang = plainData.getJSONArray("DefaultLanguages");
 		for(int i=0; i<plainLang.length();i++){
-			Language language = new Language(	plainLang.getJSONObject(i).getString("name"),
+			Language language = new Language(plainLang.getJSONObject(i).getString("name"),
 											plainLang.getJSONObject(i).getString("filePattern"), 
-											Paths.get(plainLang.getJSONObject(i).getString("tokenPath")));
+											Paths.get(plainLang.getJSONObject(i).getString("tokenPath")),
+											plainLang.getJSONObject(i).getLong("projectSizeLimit"),
+											plainLang.getJSONObject(i).getInt("minAmountOfProjects"));
 			language.addMultipleProjects(Paths.get(plainLang.getJSONObject(i).getString("projectsPath")));												
 			languages.add(language);
 		}

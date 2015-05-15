@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -363,8 +365,15 @@ public class DB {
 		stmt.close();
 	}
 	
-	/*
-	public void realIndentKeywordMethod(String languageName, String resultTable) throws SQLException{
+	
+	/**
+	 * Faster but more unprecise than realIndentMethod
+	 * @param languageName
+	 * @param resultTable
+	 * @throws SQLException
+	 */
+	
+	public void realIndentKeywordMethodRegex(String languageName, String resultTable) throws SQLException{
 			int newlineID = getTokenId(NEWLINE);
 			int indentID = getTokenId(INDENT);
 			int languageID = getLanguageId(languageName);
@@ -462,7 +471,7 @@ public class DB {
 			
 			prepInsertStatement.close();
 			stmt.close();
-	}*/
+	}
 	
 	public void realIndentKeywordMethod(String languageName, String resultTable) throws SQLException{
 		int newlineID = getTokenId(NEWLINE);
@@ -680,7 +689,6 @@ public class DB {
 	/*
 	 * STATISTICS PROCESS 
 	 */
-	
 	public void calculateStatisticsPerLanguage(String langName, String resultTable, String output) throws SQLException{
 		Statement stmt = connection.createStatement();	
 		stmt.execute("CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPFILTER + "\" " +

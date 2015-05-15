@@ -69,6 +69,8 @@ public final class ScanMode implements IOperationMode {
 		try {
 			db.newLanguage(language);
 			
+			//If Data Limit set in config randomly select 
+			
 			for (Project project : language.getProjects()) {
 				processProjects(project);
 			}
