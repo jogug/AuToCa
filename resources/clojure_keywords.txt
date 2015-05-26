@@ -1,1 +1,3 @@
+;; Source: http://travis-whitton.blogspot.ch/2009/10/clojure-syntax.html
+;; no actual reserved words
 :foo

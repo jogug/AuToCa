@@ -46,7 +46,7 @@ public class SchemeAnalyzeModeTest {
 		assertEquals(db.getRowCountOfTable("Scheme_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={81,25,11,9,9,5,5,4,4,3,3,3,2,2,2,2,2,1,1,1,1,1,1,1,1,1};
+		int[] actual={56,24,11,5,5,4,4,3,3,2,2,2,2,2,2,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
@@ -58,7 +58,7 @@ public class SchemeAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Scheme_RealIndent");
-		int[] actual={3};
+		int[] actual={3,3,2,2,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -73,7 +73,7 @@ public class SchemeAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Scheme_Newline");
 		//Occurence vector expected
-		int[] actual={7,4,3,2,2,2,1,1,1,1};
+		int[] actual={6,4,3,2,2,2,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

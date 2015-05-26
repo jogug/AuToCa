@@ -1,55 +1,21 @@
-!
-'
-''
--
---
--<
--<<
-->
-::
-;
-<-
-,
-=
-=>
->
-?
-#
-*
-@
-[|, |]
-\
-_
-`
-{, }
-{-, -}
-|
-~
-as
-case, of
+-- Source: http://blog.codeslower.com/static/CheatSheet.pdf
+case
 class
 data
-data family
-data instance
-default
 deriving
-deriving instance
 do
-forall
-foreign
-hiding
-if, then, else
+else
+if
 import
-infix, infixl, infixr
+in
+infix
+infixl
+infixr
 instance
-let, in
-mdo
+let
+of
 module
 newtype
-proc
-qualified
-rec
+then
 type
-type family
-type instance
 where

@@ -56,9 +56,9 @@ public class ClojureAnalyzeModeTest {
 	}
 	
 	@Test
-	public void testRealIndent() throws ClassNotFoundException, SQLException{
+	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Clojure_RealIndent");
-		int[] actual={2,1,1,1,1};
+		int[] actual={2,1,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

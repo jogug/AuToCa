@@ -46,7 +46,7 @@ public class ShellAnalyzeModeTest {
 		assertEquals(db.getRowCountOfTable("Shell_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={196,48,10,9,9,5,5,5,5,4,4,4,4,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={95,37,11,10,9,9,5,5,5,5,4,4,3,3,3,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
@@ -58,7 +58,7 @@ public class ShellAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Shell_RealIndent");
-		int[] actual={2,2,1,1,1};
+		int[] actual={2,2,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -73,7 +73,7 @@ public class ShellAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Shell_Newline");
 		//Occurence vector expected
-		int[] actual={8,3,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={8,6,3,2,2,2,2,2,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

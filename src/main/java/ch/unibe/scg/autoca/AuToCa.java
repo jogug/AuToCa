@@ -20,7 +20,7 @@ public final class AuToCa {
 	}
 
 	public static void main(String[] args) {	
-		String[] x = {"analyze", "path", "resources/configuration/Java.cfg"};
+		String[] x = {"both", "path", "resources/configuration/Scheme.cfg"};
 		AuToCa autoca = new AuToCa(x);
 	}
 

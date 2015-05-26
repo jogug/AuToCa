@@ -53,6 +53,8 @@ public class Tokenizer {
 		START_OF_LINE = dataset.getSTART_OF_LINE();
 		NEWLINE = dataset.getNEWLINE();
 		TABSPACE = dataset.getTABSPACE();
+		
+		//TODO
 		EMPTYLINE = "(?m)^[ \t]*\n";
 		ls = DEFAULT_LS;
 	}
@@ -139,8 +141,8 @@ public class Tokenizer {
 		tpEmptyline = new TokenPositions(EMPTYLINE, s);
 	}
 
-	private void initializeTokenPositions(List<TokenPositions> tps,
-			List<String> patterns, String s) {
+	private void initializeTokenPositions(List<TokenPositions> tps, 
+										  List<String> patterns, String s) {
 		tps.clear();
 		for (String pattern : patterns) {
 			tps.add(new TokenPositions(pattern, s));

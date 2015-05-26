@@ -742,7 +742,7 @@ public class DB {
 
 		String prepInsertStatementQuery = "INSERT INTO \"" + TEMPORARY + "\"(tokenid, projectid) VALUES (?,?)";
 		
-		String fetchProjectStatementString = "SELECT * FROM \"" + OCCURENCE + "\" WHERE (fileid BETWEEN ? AND ?) AND tokenid !=" + delimID + "AND tokenid !=" + dedentID + "AND tokenid !=" + commentID;
+		String fetchProjectStatementString = "SELECT * FROM \"" + OCCURENCE + "\" WHERE (fileid BETWEEN ? AND ?) AND tokenid !=" + delimID + "AND tokenid !=" + dedentID ;
 		fetchProjectPrepStatement = connection.prepareStatement(fetchProjectStatementString);
 		
 		String fetchFileIdsString = "SELECT * FROM \"" + FILE + "\" WHERE projectid = ? ORDER BY id asc";
@@ -782,28 +782,27 @@ public class DB {
 				fetchProjectPrepStatement.setInt(2, max);
 				rs = fetchProjectPrepStatement.executeQuery();
 					
-				int beforeIndent = Integer.MAX_VALUE;
+				int afterNewline = Integer.MAX_VALUE;
 				int prevToken = Integer.MAX_VALUE;
 					
-				while(rs.next()){								//Search through file		
-					if (rs.getInt(1) == newlineID){
-						prevToken = newlineID;
-					}else if(prevToken == newlineID){
+				while(rs.next()){		
+					//Search through file		
+					if(prevToken == newlineID || prevToken == commentID){
 						if(rs.getInt(1) == indentID){
 							//found, check if there is a token before
-							if(beforeIndent != Integer.MAX_VALUE){
-								keywords.add(beforeIndent);
+							if(afterNewline != Integer.MAX_VALUE){
+								keywords.add(afterNewline);
 							}
-							beforeIndent = Integer.MAX_VALUE;
-							prevToken = rs.getInt(1);
-						}else if(rs.getInt(1) != newlineID){
+							afterNewline = Integer.MAX_VALUE;
+						}else if(rs.getInt(1) != newlineID && rs.getInt(1) != commentID){
 							//save as beforeIndent token
-							beforeIndent = rs.getInt(1);
-							prevToken = rs.getInt(1);
+							afterNewline = rs.getInt(1);
 						}
-					}else{
-						prevToken = rs.getInt(1);
-					}			
+					}else if(prevToken == indentID && rs.getInt(1) != newlineID && rs.getInt(1) != commentID){
+						afterNewline = rs.getInt(1);
+					}
+					prevToken = rs.getInt(1);			
+									
 				}
 				prepInsertStatement = connection.prepareStatement(prepInsertStatementQuery);
 				for(Integer keyword: keywords){

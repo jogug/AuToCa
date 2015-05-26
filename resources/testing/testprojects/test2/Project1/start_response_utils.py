@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-#
+'''stuff
+	n things
+'''
 """Implementations of start_response callables as defined in PEP-333."""
 
 import cStringIO

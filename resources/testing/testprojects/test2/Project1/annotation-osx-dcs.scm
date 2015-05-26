@@ -1,5 +1,5 @@
 ;;; annotation-osx-dcs.scm: OS X Dictionary Services functions for uim
-
+;; comment
 
 (define osx-dcs-ctx #f)
 

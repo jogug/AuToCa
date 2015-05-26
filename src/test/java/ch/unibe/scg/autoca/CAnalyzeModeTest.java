@@ -58,7 +58,7 @@ public class CAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("C_RealIndent");
-		int[] actual={1,1,1};
+		int[] actual={2,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

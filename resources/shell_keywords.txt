@@ -1,3 +1,4 @@
+# Source : http://structure.usc.edu/bash/bashref_14.html
 if
 then
 else
@@ -14,9 +15,4 @@ done
 in
 function
 time
-{
-}
-!
-[[
-]]
 coproc

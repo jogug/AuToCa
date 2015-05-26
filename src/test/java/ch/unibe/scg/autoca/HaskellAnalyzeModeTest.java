@@ -46,7 +46,7 @@ public class HaskellAnalyzeModeTest {
 		assertEquals(db.getRowCountOfTable("Haskell_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={91,39,9,8,6,5,3,3,3,3,3,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={45,33,8,8,7,6,4,3,3,3,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
@@ -73,7 +73,7 @@ public class HaskellAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Haskell_Newline");
 		//Occurence vector expected
-		int[] actual={13,3,3,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={12,5,2,2,2,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

@@ -46,7 +46,7 @@ public class PythonAnalyzeModeTest {
 		assertEquals(db.getRowCountOfTable("Python_Global"), db.getRowCountOfTable("tokens"));
 		//Occurence vector expected
 		res.first();
-		int[] actual={57,25,8,6,6,5,4,4,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+		int[] actual={51,24,9,8,6,6,5,4,4,3,3,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 		int i = 0;
 		while(!res.isAfterLast()){
 			assertEquals(actual[i], res.getInt(2));
@@ -58,7 +58,7 @@ public class PythonAnalyzeModeTest {
 	@Test
 	public void testIndent() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Python_RealIndent");
-		int[] actual={4,1};
+		int[] actual={4,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){
@@ -73,7 +73,7 @@ public class PythonAnalyzeModeTest {
 	public void testNewline() throws ClassNotFoundException, SQLException{
 		res = getResultTable("Python_Newline");
 		//Occurence vector expected
-		int[] actual={8,4,3,3,2,1,1,1,1};
+		int[] actual={7,4,3,3,2,1,1,1,1};
 		int i = 0;
 		res.first();
 		while(!res.isAfterLast()){

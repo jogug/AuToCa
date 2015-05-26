@@ -1,5 +1,6 @@
+;; Source: http://community.schemewiki.org/?scheme-keywords
 case-lambda
-call
+call/cc
 cc
 class
 define-class
@@ -11,7 +12,7 @@ init-field
 interface
 let*-values
 let-values
-let
+let/ec
 ec
 mixin
 opt-lambda
@@ -25,11 +26,12 @@ require-for-syntax
 syntax
 syntax-case
 syntax-error
-unit
+unit/sig
 sig
 unless
 when
 with-syntax
+
 and
 begin
 call-with-current-continuation
