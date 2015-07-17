@@ -78,6 +78,7 @@ public final class AnalyzeMode implements IOperationMode {
 				}
 				db.dropTableIfExists(dataset.getRANK()+language.getName());		
 				db.summarizeRanks(language.getName(), chains);
+				db.summarizeTest(language.getName());
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

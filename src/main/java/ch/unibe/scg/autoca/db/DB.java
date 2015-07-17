@@ -50,7 +50,11 @@ public class DB {
 	private final String RESULTTABLE;
 	private final String RANK;
 	private final String PRECISION;
+	//TODO
+	private final String SUMMARY = "Summary";
 	
+	//token
+	private final int MAXTOKENLENGTH;
 	//prefix
 	private final String PREFIXSTAT;
 	
@@ -92,6 +96,8 @@ public class DB {
 		DELIMITER = dataset.getDELIMITER();
 		COMMENT = dataset.getCOMMENT();
 		
+		MAXTOKENLENGTH = dataset.getDEFAULT_MAX_TOKEN_LENGTH();
+		
 		pathDb = path.resolve(FILENAME);
 	}
 
@@ -104,7 +110,7 @@ public class DB {
 		String query = 
 				"CREATE MEMORY TABLE IF NOT EXISTS \"" + TOKEN + "\" ("
 				+ "id MEDIUMINT NOT NULL AUTO_INCREMENT, "
-				+ "token VARCHAR(30) NOT NULL, "
+				+ "token VARCHAR( " + MAXTOKENLENGTH +" ) NOT NULL, "
 				+ "PRIMARY KEY (id));"
 	
 				+ "CREATE TABLE IF NOT EXISTS \"" + FILE + "\" ("
@@ -946,7 +952,7 @@ public class DB {
 		Statement stmt = connection.createStatement();
 		int nrOfKeywords = getRowCountOfTable(language);
 		String query = "CREATE TABLE IF NOT EXISTS \"" + PRECISION+ language + "\" ("
-				+ "FILTER VARCHAR(30) ";
+				+ "FILTER VARCHAR( " + MAXTOKENLENGTH +" ) ";
 		for(int i = 1; i < nrOfKeywords+1; i++){
 			query += ",\"" + i + "Token\"" + " DECIMAL(5,3)";
 		}		
@@ -997,6 +1003,7 @@ public class DB {
 		}
 		
 		rs.close();
+		//TODO RANK CONST
 		String query = "CREATE TABLE \"" + RANK + language + "\" AS SELECT " + 
 			"\"" + PREFIXSTAT + language + filterChains.get(0) + "\"" + ".TOKEN AS KEYWORD, " +
 			"\"" + PREFIXSTAT + language + filterChains.get(0) + "\"" +	".ID AS " + filterChains.get(0);
@@ -1009,6 +1016,27 @@ public class DB {
 					 "\"" + PREFIXSTAT + language + filterChains.get(i) + "\"" + ".TOKEN" + " = " + "\"" + PREFIXSTAT + language + filterChains.get(0) + "\"" + ".TOKEN ";
 		}
 		stmt.execute(query);
+	}
+	
+	public void summarizeTest(String language) throws SQLException{
+		Statement stmt = connection.createStatement();
+		dropTableIfExists(SUMMARY);
+		String summaryTable = "CREATE MEMORY TABLE IF NOT EXISTS \"" + SUMMARY + "\" ("
+							+ "name VARCHAR( 30 ) NOT NULL, "
+							+ "value MEDIUMINT NOT NULL AUTO_INCREMENT,"
+							+ "PRIMARY KEY (name));";
+		
+		stmt.execute(summaryTable);
+		int keywords = getRowCountOfTable(language);
+		int nrOfOccurences = getRowCountOfTable(OCCURENCE);
+		int files = getRowCountOfTable(FILE);
+		int projects = getRowCountOfTable(PROJECT);
+		int uniqueTokens = getRowCountOfTable(TOKEN);
+		stmt.execute("INSERT INTO \"" + SUMMARY + "\"(name, value) VALUES ('"+language+" Keywords',"+keywords+")");
+		stmt.execute("INSERT INTO \"" + SUMMARY + "\"(name, value) VALUES ('Projects',"+projects+")");
+		stmt.execute("INSERT INTO \"" + SUMMARY + "\"(name, value) VALUES ('Files',"+files+")");
+		stmt.execute("INSERT INTO \"" + SUMMARY + "\"(name, value) VALUES ('Token Occurrences',"+nrOfOccurences+")");
+		stmt.execute("INSERT INTO \"" + SUMMARY + "\"(name, value) VALUES ('Unique Tokens',"+uniqueTokens+")");
 	}
 	
 	/*
@@ -1061,7 +1089,7 @@ public class DB {
 	
 	private void createTempTable() throws SQLException {
 		String query = "CREATE MEMORY TABLE IF NOT EXISTS \"" + TEMPORARY + "\" "
-				+ "(id MEDIUMINT NOT NULL AUTO_INCREMENT, token VARCHAR(30) NOT NULL);";
+				+ "(id MEDIUMINT NOT NULL AUTO_INCREMENT, token VARCHAR( " + MAXTOKENLENGTH +" ) NOT NULL);";
 		Statement stmt = connection.createStatement();
 		stmt.execute(query);
 		stmt.close();
