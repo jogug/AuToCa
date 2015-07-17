@@ -93,8 +93,8 @@ dependencies {
     integrationCompile 'junit:junit:4.+'
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 processResources {
     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
@@ -146,5 +146,5 @@ artifacts {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.8'
+    gradleVersion = '2.5'
 }

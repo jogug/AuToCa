@@ -44,8 +44,6 @@ public class Language {
 	
 	/**
 	 * Adds all subfolders of a folder as Projects to the language
-	 * @param argPath
-	 * @param argLang
 	 */
 	public void addMultipleProjects(Path argPath){
 		logger.info("Adding " + getName() + " projects:");
@@ -116,7 +114,6 @@ public class Language {
 	
 	/**
 	 * Code file pattern e.g ".java"
-	 * @return
 	 */
 	public String getFilePattern(){
 		return filePattern;
@@ -124,7 +121,6 @@ public class Language {
 	
 	/**
 	 * Paths to projects
-	 * @return
 	 */
 	public ArrayList<Project> getProjects(){
 		return projects;
@@ -132,7 +128,6 @@ public class Language {
 	
 	/**
 	 * Path to the actual tokens
-	 * @return
 	 */
 	public Path getTokenPath(){
 		return tokenPath;

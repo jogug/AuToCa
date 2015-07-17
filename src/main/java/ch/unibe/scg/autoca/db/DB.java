@@ -374,9 +374,6 @@ public class DB {
 	
 	/**
 	 * Faster but more unprecise than realIndentMethod
-	 * @param languageName
-	 * @param resultTable
-	 * @throws SQLException
 	 */
 	
 	public void realIndentKeywordMethodRegex(String languageName, String resultTable) throws SQLException{
@@ -1097,9 +1094,6 @@ public class DB {
 	
 /**
  * Rename table from currentName to newName
- * @param currentName
- * @param newName
- * @throws SQLException
  */
 	public void renameTable(String currentName, String newName) throws SQLException{
 		Statement stmt = connection.createStatement();
