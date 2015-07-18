@@ -1,4 +1,3 @@
-# Source: http://zetcode.com/lang/python/keywords/
 and
 del
 from

@@ -9,7 +9,7 @@ apply plugin: 'coveralls'
 description = 'Lexical Analyzer'
 
 group = 'ch.unibe.scg.autoca'
-version = '1.1.0-alpha'
+version = '1'
 ext.releaseBranch = 'master'
 
 if (!hasProperty('buildNumber') || !(hasProperty('branchName') && branchName == releaseBranch)) {
@@ -109,7 +109,7 @@ jar {
         configurations.compile.collect {it.isDirectory() ? it : zipTree(it)}
     }
     manifest {
-        attributes 'Implementation-Title': project.name, 'Implementation-Version': project.version, 'Main-Class': 'ch.unibe.scg.lexica.Lexica'
+        attributes 'Implementation-Title': project.name, 'Implementation-Version': project.version, 'Main-Class': 'ch.unibe.scg.autoca.AuToCa'
     }
 }
 

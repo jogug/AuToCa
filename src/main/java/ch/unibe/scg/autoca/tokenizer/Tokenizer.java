@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.unibe.scg.autoca.config.JSONInterface;
+import ch.unibe.scg.autoca.db.DB;
 
 public class Tokenizer {
 	public final String DEFAULT_LS;
@@ -40,6 +44,8 @@ public class Tokenizer {
 	private int position;
 	private int indent;
 	
+	private static final Logger logger = LoggerFactory.getLogger(Tokenizer.class);
+	
 	public Tokenizer(TokenizerHandler th, JSONInterface dataset) {
 		this.th = th;
 		DEFAULT_LS = dataset.getDEFAULT_LS();
@@ -54,8 +60,7 @@ public class Tokenizer {
 		NEWLINE = dataset.getNEWLINE();
 		TABSPACE = dataset.getTABSPACE();
 		
-		//TODO
-		EMPTYLINE = "(?m)^[ \t]*\n";
+		EMPTYLINE = dataset.getEMPTYLINE();		
 		ls = DEFAULT_LS;
 	}
 
@@ -278,14 +283,15 @@ public class Tokenizer {
 
 			return stringBuilder.toString();
 		} catch (IOException e) {
-			// TODO: Use Logger
+			logger.error("Error in fileToString in Tokenizer");
 			e.printStackTrace();
 		} finally {
 			if (reader != null) {
 				try {
 					reader.close();
 				} catch (IOException e) {
-					// TODO Maybe log it?
+					logger.error("Error in fileToString in Tokenizer");
+					e.printStackTrace();
 				}
 			}
 		}

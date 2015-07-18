@@ -1,4 +1,3 @@
-# Source : http://structure.usc.edu/bash/bashref_14.html
 if
 then
 else

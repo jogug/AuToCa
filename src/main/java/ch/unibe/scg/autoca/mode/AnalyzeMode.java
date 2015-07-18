@@ -61,7 +61,7 @@ public final class AnalyzeMode implements IOperationMode {
 			}
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			logger.error("Database access error in summarize AnalyzeMode 1");
 			e.printStackTrace();
 		}
 		
@@ -81,7 +81,7 @@ public final class AnalyzeMode implements IOperationMode {
 				db.summarizeTest(language.getName());
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			logger.error("Database access error in summarize AnalyzeMode 2");
 			e.printStackTrace();
 		}
 	}

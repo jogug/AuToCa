@@ -1,4 +1,3 @@
-;; Source: http://community.schemewiki.org/?scheme-keywords
 case-lambda
 call/cc
 cc

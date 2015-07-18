@@ -1,4 +1,3 @@
--- Source: http://blog.codeslower.com/static/CheatSheet.pdf
 case
 class
 data

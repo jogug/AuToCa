@@ -105,6 +105,11 @@ public class JSONInterface {
 		return plainData.getJSONObject("Tables").getString("RANK");
 	}	
 
+	public String getSUMMARY() {
+		return plainData.getJSONObject("Tables").getString("SUMMARY");
+	}
+
+	
 	public String getLoginprefix() {
 		return plainData.getJSONObject("DB").getString("LOGINPREFIX");
 	}
@@ -153,6 +158,10 @@ public class JSONInterface {
 		return plainData.getJSONObject("Tokenizer").getString("START_OF_LINE");
 	}
 
+	public String getEMPTYLINE() {
+		return plainData.getJSONObject("Tokenizer").getString("EMPTYLINE");
+	}
+	
 	public String getNEWLINE() {
 		return plainData.getJSONObject("Tokenizer").getString("NEWLINE");
 	}
@@ -209,6 +218,10 @@ public class JSONInterface {
 		}
 		return count;
 	}
+
+
+
+
 
 
 }

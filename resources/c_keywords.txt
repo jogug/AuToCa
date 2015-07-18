@@ -1,4 +1,3 @@
-// Source: http://www.sdlczone.com/complete-list-of-c-keywords/
 auto	
 extern	
 short	
