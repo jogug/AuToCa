@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.autoca.mode;
+package ch.unibe.scg.autoca.executionmode;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,12 +10,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.config.JSONInterface;
-import ch.unibe.scg.autoca.db.DB;
-import ch.unibe.scg.autoca.db.DefaultTokenHandler;
+import ch.unibe.scg.autoca.database.Database;
+import ch.unibe.scg.autoca.datastructure.Dataset;
+import ch.unibe.scg.autoca.datastructure.Language;
 import ch.unibe.scg.autoca.filter.FilterChain;
-import ch.unibe.scg.autoca.structure.Language;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
+import ch.unibe.scg.autoca.utilities.DefaultTokenHandler;
 
 /**
  * Analyzes the tokens extracted from the code according to the actual tokens of a language
@@ -26,14 +26,14 @@ public final class AnalyzeMode implements IOperationMode {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyzeMode.class);
 
-	private DB db;
-	private JSONInterface dataset;
+	private Database db;
+	private Dataset ds;
 
 	
-    public AnalyzeMode(JSONInterface dataset){  	     	
-    	this.dataset = dataset;
+    public AnalyzeMode(Dataset dataset){  	     	
+    	this.ds = dataset;
     	try {
-			this.db = new DB(dataset.getOutputLocation(), dataset);
+			this.db = new Database(dataset.getOutputLocation(), dataset);
 		} catch (ClassNotFoundException | SQLException e) {
 			logger.error("Error in AnalyzeMode creation",e);
 		}
@@ -50,11 +50,11 @@ public final class AnalyzeMode implements IOperationMode {
 
 	private void summarize() {
 		try {
-			for(Language language:dataset.getLanguages()){
-				db.dropTableIfExists(dataset.getPRECISION()+language.getName());
-				db.createPrecisionTable(language.getName());
+			for(Language language:ds.getLanguages()){
+				db.dropTableIfExists(ds.getPRECISION()+language.getName());
+				db.createPrecisionSummaryTable(language.getName());
 			}
-			for(FilterChain filter: dataset.getFilterChain()){
+			for(FilterChain filter: ds.getFilterChain()){
 				for(String language: filter.getLanguageNames()){
 					db.insertPrecision(filter.getResultName(), language);
 				}
@@ -67,18 +67,18 @@ public final class AnalyzeMode implements IOperationMode {
 		
 
 		try {
-			for(Language language:dataset.getLanguages()){
+			for(Language language:ds.getLanguages()){
 				List<String> chains = new ArrayList<String>();
-				for(FilterChain chain: dataset.getFilterChain()){
+				for(FilterChain chain: ds.getFilterChain()){
 					for(String languageInChain: chain.getLanguageNames()){
 						if(language.getName().equals(languageInChain)){
 							chains.add(chain.getResultName());
 						}
 					}
 				}
-				db.dropTableIfExists(dataset.getRANK()+language.getName());		
-				db.summarizeRanks(language.getName(), chains);
-				db.summarizeTest(language.getName());
+				db.dropTableIfExists(ds.getRANK()+language.getName());		
+				db.createRanksSummaryTable(language.getName(), chains);
+				db.createSummaryOfDatasetStatistics(language.getName());
 			}
 		} catch (SQLException e) {
 			logger.error("Database access error in summarize AnalyzeMode 2");
@@ -89,19 +89,19 @@ public final class AnalyzeMode implements IOperationMode {
 	private void analyzeDataSet() {
 		//clear resulttable
 		try {
-			db.newAnalyzeLanguage();
-			db.dropTableIfExists(dataset.getRESULTTABLE());
+			db.newAnalyseDatasetOfLanguage();
+			db.dropTableIfExists(ds.getRESULTTABLE());
 			db.createResulttable();
-			db.analyzeLanguageFinished();
+			db.analyseDatasetOfLanguageFinished();
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
 		
-		for(FilterChain filterChain: dataset.getFilterChain()){
+		for(FilterChain filterChain: ds.getFilterChain()){
 			try {
-				db.newAnalyzeLanguage();
+				db.newAnalyseDatasetOfLanguage();
 				filterChain.execute(db);
-				db.analyzeLanguageFinished();
+				db.analyseDatasetOfLanguageFinished();
 			} catch (ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
 			}
@@ -109,15 +109,15 @@ public final class AnalyzeMode implements IOperationMode {
 	}
 	
 	private void loadActualTokens() {
-		DefaultTokenHandler th = new DefaultTokenHandler(db,dataset.getDEFAULT_MAX_TOKEN_LENGTH(),dataset.getDEFAULT_MIN_TOKEN_LENGTH());
-		Tokenizer tk = new Tokenizer(th, dataset);
+		DefaultTokenHandler th = new DefaultTokenHandler(db,ds.getDEFAULT_MAX_TOKEN_LENGTH(),ds.getDEFAULT_MIN_TOKEN_LENGTH());
+		Tokenizer tk = new Tokenizer(th, ds);
 		tk.loadDefaults();
 		
-		for(Language language:dataset.getLanguages()){
+		for(Language language:ds.getLanguages()){
 			try {
-				db.newActualTokenFile();
+				db.newLanguagesActualTokenFile();
 				tk.tokenize(language.getTokenPath().toFile());
-				db.actualTokenFileFinished(language.getName());
+				db.languagesActualTokenFileFinished(language.getName());
 			} catch (ClassNotFoundException | SQLException e) {
 				logger.info("Couldnt load actual Token of: " + language.getName(), e);
 			}

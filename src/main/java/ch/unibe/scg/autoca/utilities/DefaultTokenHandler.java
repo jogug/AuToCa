@@ -1,19 +1,20 @@
-package ch.unibe.scg.autoca.db;
+package ch.unibe.scg.autoca.utilities;
 
 import java.sql.SQLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.database.Database;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
-import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
+import ch.unibe.scg.autoca.tokenizer.ITokenizerHandler;
 
-public class DefaultTokenHandler implements TokenizerHandler {
+public class DefaultTokenHandler implements ITokenizerHandler {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultTokenHandler.class);
-	private DB db;
+	private Database db;
 	private final int maxTokenLength, minTokenLength;
 
-	public DefaultTokenHandler(DB db, int maxTokenLength, int minTokenLength) {
+	public DefaultTokenHandler(Database db, int maxTokenLength, int minTokenLength) {
 		this.db = db;
 		this.maxTokenLength = maxTokenLength;
 		this.minTokenLength = minTokenLength;
@@ -28,7 +29,7 @@ public class DefaultTokenHandler implements TokenizerHandler {
 		case WORD:
 			if (token.length() > minTokenLength && token.length() < maxTokenLength) {
 				try {
-					db.newToken(token);
+					db.insertToken(token);
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}

@@ -1,4 +1,4 @@
-package ch.unibe.scg.autoca.structure;
+package ch.unibe.scg.autoca.datastructure;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,14 +15,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.config.JSONInterface;
-
 /**
  * Holds the name of the projects and the paths to its files 
  * @author Joel
  */
 public class Project {
-    private static final Logger logger = LoggerFactory.getLogger(JSONInterface.class);	
+    private static final Logger logger = LoggerFactory.getLogger(Dataset.class);	
 	
 	private int id;
 	private Path projectPath;

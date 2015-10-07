@@ -13,15 +13,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.config.Configuration;
-import ch.unibe.scg.autoca.config.JSONInterface;
-import ch.unibe.scg.autoca.structure.Language;
-import ch.unibe.scg.autoca.structure.Project;
+import ch.unibe.scg.autoca.configuration.Configuration;
+import ch.unibe.scg.autoca.database.Database;
+import ch.unibe.scg.autoca.datastructure.Dataset;
+import ch.unibe.scg.autoca.datastructure.Language;
+import ch.unibe.scg.autoca.datastructure.Project;
 
 public class TestDB {
-	private DB db;
+	private Database db;
 	private Connection conn;
-	private JSONInterface dataset;
+	private Dataset dataset;
 	private PreparedStatement stmt;
 	private ResultSet res;
 	
@@ -29,8 +30,8 @@ public class TestDB {
 	public void setUp() throws ClassNotFoundException, SQLException {
 		Configuration config = new Configuration();
 		dataset = config.testDataSet("resources/testing/configuration/test1.cfg");
-    	db = new DB(dataset.getOutputLocation(), dataset);
-		db.initialize();
+    	db = new Database(dataset.getOutputLocation(), dataset);
+		db.initialise();
 		
 		openConnection();
 	}
@@ -58,7 +59,7 @@ public class TestDB {
 		db.newProject(project);
 		db.newFile("File1",11);
 		
-		db.newToken("FOO");
+		db.insertToken("FOO");
 		
 		
 		res = getTempTokens();
@@ -91,11 +92,11 @@ public class TestDB {
 		db.newProject(project);
 		db.newFile("File1",11);
 		
-		db.newToken("FOO");
-		db.newToken("FOO2");
-		db.newToken("FOO3");
-		db.newToken("FOO4");
-		db.newToken("FOO");
+		db.insertToken("FOO");
+		db.insertToken("FOO2");
+		db.insertToken("FOO3");
+		db.insertToken("FOO4");
+		db.insertToken("FOO");
 		
 		
 		res = getTempTokens();
@@ -152,8 +153,8 @@ public class TestDB {
 		db.newProject(project);
 		db.newFile("File1",11);
 		
-		db.newToken("FOO");
-		db.newToken("FOO2");
+		db.insertToken("FOO");
+		db.insertToken("FOO2");
 		
 		
 		res = getTempTokens();
@@ -170,8 +171,8 @@ public class TestDB {
 		
 		
 		db.newFile("File2", 11);
-		db.newToken("FOO2");
-		db.newToken("FOO");
+		db.insertToken("FOO2");
+		db.insertToken("FOO");
 		
 		db.fileFinished();
 		
@@ -202,7 +203,7 @@ public class TestDB {
 	}		
 	
 	private ResultSet getOccurences() throws SQLException {
-		stmt = conn.prepareStatement("SELECT * FROM \"" + dataset.getOCCURENCE() + "\"");
+		stmt = conn.prepareStatement("SELECT * FROM \"" + dataset.getOCCURRENCE() + "\"");
 		return stmt.executeQuery();
 	}	
 
@@ -214,7 +215,7 @@ public class TestDB {
 	private void openConnection() throws ClassNotFoundException, SQLException {
 		if (conn == null) {
 			Class.forName("org.h2.Driver");
-			conn = DriverManager.getConnection("jdbc:h2:" + dataset.getOutputLocation().resolve(dataset.getFilename()).toString(), "sa", "");
+			conn = DriverManager.getConnection("jdbc:h2:" + dataset.getOutputLocation().resolve(dataset.getServerFilename()).toString(), "sa", "");
 		}
 	}
 }

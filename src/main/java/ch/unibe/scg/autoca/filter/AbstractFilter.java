@@ -1,6 +1,6 @@
 package ch.unibe.scg.autoca.filter;
 
-import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.database.Database;
 
 /**
  * Filter, register in J
@@ -18,5 +18,5 @@ public abstract class AbstractFilter {
 		return next;
 	}
 	
-	abstract void execute(DB db, String languageName, String resultTable);
+	abstract void execute(Database db, String languageName, String resultTable);
 }

@@ -1,7 +1,7 @@
 /*
 ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
 */
-package ch.unibe.scg.autoca.config;
+package ch.unibe.scg.autoca.configuration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,16 +18,17 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.datastructure.Dataset;
+import ch.unibe.scg.autoca.datastructure.Language;
+import ch.unibe.scg.autoca.executionmode.AnalyzeMode;
+import ch.unibe.scg.autoca.executionmode.TokenizeMode;
 import ch.unibe.scg.autoca.filter.*;
-import ch.unibe.scg.autoca.mode.AnalyzeMode;
-import ch.unibe.scg.autoca.mode.ScanMode;
-import ch.unibe.scg.autoca.srcUtilities.SourceExtractor;
-import ch.unibe.scg.autoca.structure.Language;
+import ch.unibe.scg.autoca.utilities.SourceExtractor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 /**
- * Gets the execution settings from the cmd arguments
+ * Parses the execution settings from the cmd arguments
  * @author Joel
  *
  */
@@ -78,46 +79,46 @@ public final class Configuration {
     }
     
     private void execute(){
-    	JSONObject plainData;
-    	JSONInterface dataset;
-    	ScanMode scanMode;
+    	JSONObject jsonObject;
+    	Dataset ds;
+    	TokenizeMode tokenizeMode;
     	AnalyzeMode analyzeMode;
     	
     	//Load config file from default path or arg
 		switch(cfMode){
 		case DEF:
-			plainData = loadJSON(defaultConfig);
+			jsonObject = loadJSON(defaultConfig);
 	     	break;
 	    case PATH:
-	    	plainData = loadJSON(path);
+	    	jsonObject = loadJSON(path);
 	    	 break;   
 	    default: 
-			plainData = loadJSON(defaultConfig);
+			jsonObject = loadJSON(defaultConfig);
 		}
 		
 		//Switch between different operations modes
         switch(opMode){
     	case SCAN:   		
-    		dataset = new JSONInterface(plainData, processLanguages(plainData), null);	        		
-    		scanMode = new ScanMode(dataset);
-    		scanMode.execute();
+    		ds = new Dataset(jsonObject, processLanguages(jsonObject), null);	        		
+    		tokenizeMode = new TokenizeMode(ds);
+    		tokenizeMode.execute();
     		break;
     	case ANALYZE:  
-    		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));	        		
-    		analyzeMode = new AnalyzeMode(dataset);
+    		ds = new Dataset(jsonObject, processLanguages(jsonObject), processFilterChain(jsonObject));	        		
+    		analyzeMode = new AnalyzeMode(ds);
     		analyzeMode.execute();
     		break;
     	case BOTH:
-    		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
-    		scanMode = new ScanMode(dataset);
-    		scanMode.execute();
-    		analyzeMode = new AnalyzeMode(dataset);
+    		ds = new Dataset(jsonObject, processLanguages(jsonObject), processFilterChain(jsonObject));
+    		tokenizeMode = new TokenizeMode(ds);
+    		tokenizeMode.execute();
+    		analyzeMode = new AnalyzeMode(ds);
     		analyzeMode.execute();
     		break;
     	case EXTRACT:
-    		dataset = new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
+    		ds = new Dataset(jsonObject, processLanguages(jsonObject), processFilterChain(jsonObject));
     		SourceExtractor se = new SourceExtractor();
-    		se.extractSourceFiles(dataset);
+    		se.extractSourceFiles(ds);
     		break;
         }
     }
@@ -178,19 +179,19 @@ public final class Configuration {
 		for(int i=0; i<plainFilters.length();i++){
 			switch(plainFilters.getJSONObject(i).getString("name")){
 				case "Output":			boolean out = plainFilters.getJSONObject(i).getBoolean("save");
-										active.add(new Output(out, PREFIXSTAT));
+										active.add(new OutputFilter(out, PREFIXSTAT));
 										break;
 				case "UpCaseFilter": 	active.add(new UpCaseFilter());
 										break;
 				case "IntersectFilter": active.add(new IntersectFilter(plainFilters.getJSONObject(i).getInt("minOccInProject")));
 										break;
-				case "GlobalFilter": 	active.add(new GlobalFilter());
+				case "GlobalFilter": 	active.add(new GlobalMethodFilter());
 										break;
-				case "CoverageFilter":	active.add(new CoverageFilter());
+				case "CoverageFilter":	active.add(new CoverageMethodFilter());
 										break;
-				case "IndentFilter": 	active.add(new IndentFilter());
+				case "IndentFilter": 	active.add(new IndentSMethodFilter());
 										break;
-				case "RealIndentFilter":active.add(new RealIndentFilter());
+				case "RealIndentFilter":active.add(new IndentMethodFilter());
 										break;						
 				case "NewlineFilter":	active.add(new NewlineFilter());
 										break;
@@ -210,8 +211,8 @@ public final class Configuration {
 		    return s.hasNext() ? s.next() : "";
 	}
 	
-	public JSONInterface testDataSet(String path){
+	public Dataset testDataSet(String path){
     	JSONObject plainData = loadJSON(path);
-    	return new JSONInterface(plainData, processLanguages(plainData), processFilterChain(plainData));
+    	return new Dataset(plainData, processLanguages(plainData), processFilterChain(plainData));
 	}	
 }

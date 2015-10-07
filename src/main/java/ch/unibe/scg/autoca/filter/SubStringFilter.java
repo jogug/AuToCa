@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.database.Database;
 
 public class SubStringFilter extends AbstractFilter {
 	private String subString;
@@ -16,11 +16,11 @@ public class SubStringFilter extends AbstractFilter {
 	}
 
 	@Override
-	void execute(DB db, String languageName, String resultTable) {
+	void execute(Database db, String languageName, String resultTable) {
 		logger.info("SubString Filter");
 		try {
 			db.newFilterTable();
-			db.specialSubRemoval(languageName, resultTable, subString);
+			db.removeTokenWithSpecialCharInSubStringFromResulttable(languageName, resultTable, subString);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();

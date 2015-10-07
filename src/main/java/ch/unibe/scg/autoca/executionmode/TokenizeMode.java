@@ -1,7 +1,7 @@
 /*
  ** Copyright 2013 Software Composition Group, University of Bern. All rights reserved.
  */
-package ch.unibe.scg.autoca.mode;
+package ch.unibe.scg.autoca.executionmode;
 
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -9,42 +9,42 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.config.JSONInterface;
-import ch.unibe.scg.autoca.db.DB;
-import ch.unibe.scg.autoca.db.DBTokenHandler;
-import ch.unibe.scg.autoca.structure.Language;
-import ch.unibe.scg.autoca.structure.Project;
+import ch.unibe.scg.autoca.database.Database;
+import ch.unibe.scg.autoca.database.DatabaseTokenizerHandler;
+import ch.unibe.scg.autoca.datastructure.Dataset;
+import ch.unibe.scg.autoca.datastructure.Language;
+import ch.unibe.scg.autoca.datastructure.Project;
 import ch.unibe.scg.autoca.tokenizer.Tokenizer;
 
 /**
- * A scanmode of a dataSet extracts all possible tokens into a database at the 
+ * A tokenizeMode of a dataSet extracts all possible tokens into a database at the 
  * output location
  * 
  * @author Joel
  */
-public final class ScanMode implements IOperationMode {
-	private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
+public final class TokenizeMode implements IOperationMode {
+	private static final Logger logger = LoggerFactory.getLogger(TokenizeMode.class);
 
-	private DB db;
-	private DBTokenHandler th;
+	private Database db;
+	private DatabaseTokenizerHandler th;
 	private Tokenizer tk;
 
-	private JSONInterface dataset;
+	private Dataset ds;
 
-	public ScanMode(JSONInterface dataset) {
-		this.dataset = dataset;
-		initializeScanMode(dataset);
+	public TokenizeMode(Dataset ds) {
+		this.ds = ds;
+		initialise(ds);
 	}
 
-	public void initializeScanMode(JSONInterface dataset) {
-		logger.info("ScanMode Initialization");
+	public void initialise(Dataset dataset) {
+		logger.info("TokenizeMode Initialization");
 		try {
 			//open and clear Database
-			db = new DB(dataset.getOutputLocation(), dataset);
-			db.initialize();
+			db = new Database(dataset.getOutputLocation(), dataset);
+			db.initialise();
 
 			//Set tokenizier and tokenhandler properties
-			th = new DBTokenHandler(db, dataset);
+			th = new DatabaseTokenizerHandler(db, dataset);
 			tk = new Tokenizer(th, dataset);
 			tk.loadDefaults();
 
@@ -52,17 +52,17 @@ public final class ScanMode implements IOperationMode {
 		} catch (ClassNotFoundException | SQLException e) {
 			logger.error("Something went wrong: ", e);
 		}
-		logger.info("Finished ScanMode Initialization");
+		logger.info("Finished TokenizeMode Initialization");
 	}
 
 	@Override
 	public void execute() {
-		logger.info("Starting Scan on dataset");
+		logger.info("Tokenizing dataset");
 
-		for (Language language : dataset.getLanguages()) {
+		for (Language language : ds.getLanguages()) {
 			processLanguages(language);
 		}
-		logger.info("\nFinished Scan on dataset");
+		logger.info("\nFinished tokenizing on dataset");
 	}
 	
 	private void processLanguages(Language language) {
@@ -77,7 +77,7 @@ public final class ScanMode implements IOperationMode {
 
 			db.languageFinished();
 		} catch (ClassNotFoundException | SQLException e) {
-			logger.error("Couldnt scan langauge " + language.getName() + " because: " + e.toString(), e);
+			logger.error("Couldnt tokenize langauge " + language.getName() + " because: " + e.toString(), e);
 		}
 
 	}
@@ -133,8 +133,8 @@ public final class ScanMode implements IOperationMode {
 	}
 
 	private int calcOutputProjectProgressStep(Project project) {
-		int result = (project.getProjectFilePaths().size()) / dataset.getDEFAULT_PROGRESS_STEPS();
-		if (project.getProjectFilePaths().size() < dataset.getDEFAULT_PROGRESS_STEPS()) {
+		int result = (project.getProjectFilePaths().size()) / ds.getDEFAULT_PROGRESS_STEPS();
+		if (project.getProjectFilePaths().size() < ds.getDEFAULT_PROGRESS_STEPS()) {
 			result = 1;
 		}
 		return result;

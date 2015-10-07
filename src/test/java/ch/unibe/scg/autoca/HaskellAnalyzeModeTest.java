@@ -12,16 +12,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.unibe.scg.autoca.config.Configuration;
-import ch.unibe.scg.autoca.config.JSONInterface;
-import ch.unibe.scg.autoca.db.DB;
-import ch.unibe.scg.autoca.mode.AnalyzeMode;
-import ch.unibe.scg.autoca.mode.ScanMode;
+import ch.unibe.scg.autoca.configuration.Configuration;
+import ch.unibe.scg.autoca.database.Database;
+import ch.unibe.scg.autoca.datastructure.Dataset;
+import ch.unibe.scg.autoca.executionmode.AnalyzeMode;
+import ch.unibe.scg.autoca.executionmode.TokenizeMode;
 
 public class HaskellAnalyzeModeTest {
-	private DB db;
+	private Database db;
 	private Connection conn;
-	private JSONInterface dataset;
+	private Dataset dataset;
 	private PreparedStatement stmt;
 	private ResultSet res;
 	private Configuration config;
@@ -30,10 +30,10 @@ public class HaskellAnalyzeModeTest {
 	public void setUp() throws ClassNotFoundException, SQLException {
 		config = new Configuration();
 		dataset = config.testDataSet("resources/testing/configuration/testHaskell.cfg");
-    	db = new DB(dataset.getOutputLocation(), dataset);
-		db.initialize();		
+    	db = new Database(dataset.getOutputLocation(), dataset);
+		db.initialise();		
 
-		ScanMode scanmode = new ScanMode(dataset);
+		TokenizeMode scanmode = new TokenizeMode(dataset);
 		scanmode.execute();
 		AnalyzeMode analyzemode = new AnalyzeMode(dataset);
 		analyzemode.execute();
@@ -118,7 +118,7 @@ public class HaskellAnalyzeModeTest {
 	private void openConnection() throws ClassNotFoundException, SQLException {
 		if (conn == null) {
 			Class.forName("org.h2.Driver");
-			conn = DriverManager.getConnection("jdbc:h2:" + dataset.getOutputLocation().resolve(dataset.getFilename()).toString(), "sa", "");
+			conn = DriverManager.getConnection("jdbc:h2:" + dataset.getOutputLocation().resolve(dataset.getServerFilename()).toString(), "sa", "");
 		}
 	}
 }

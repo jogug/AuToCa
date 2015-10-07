@@ -1,4 +1,4 @@
-package ch.unibe.scg.autoca.srcUtilities;
+package ch.unibe.scg.autoca.utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,26 +9,31 @@ import java.nio.file.Paths;
 
 
 
+
+
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.config.JSONInterface;
-import ch.unibe.scg.autoca.mode.ScanMode;
-import ch.unibe.scg.autoca.structure.Language;
-import ch.unibe.scg.autoca.structure.Project;
+import ch.unibe.scg.autoca.datastructure.Dataset;
+import ch.unibe.scg.autoca.datastructure.Language;
+import ch.unibe.scg.autoca.datastructure.Project;
+import ch.unibe.scg.autoca.executionmode.TokenizeMode;
 
 public class SourceExtractor {
-	private static final Logger logger = LoggerFactory.getLogger(ScanMode.class);
+	private static final Logger logger = LoggerFactory.getLogger(TokenizeMode.class);
 
 	private String outputExtractedSource;
 	private static String DEFAULT_OUTPUT = "\\Extracted";
 	
 	/**
-	 * Extracts only the files affected by a scan from all the project
-	 * directories into "\\Extracted"+sourceName directories. Files with the
+	 * Extracts only the source code files from a folder and its subfolders 
+	 * into "\\Extracted"+sourceName directories. Files with the
 	 * same name are copied in ascending numbered sub folders.
 	 */
-	public void extractSourceFiles(JSONInterface data) {
+	
+	public void extractSourceFiles(Dataset data) {
 		logger.info("Starting extraction of source files from: " + data.getOutputLocation().toString());
 
 		outputExtractedSource = createExtractFolder(data);
@@ -47,7 +52,11 @@ public class SourceExtractor {
 
 		logger.info("Finished extraction to: " + outputExtractedSource);
 	}
-
+	
+	/**
+	 * Extracts the source code files for a whole language folder.
+	 * @param language
+	 */
 	private void processLanguage(Language language) {
 		String languagePath = outputExtractedSource + "\\" + language.getName().toString();
 		createFileIfNotExists(languagePath);
@@ -60,6 +69,12 @@ public class SourceExtractor {
 		}
 	}
 
+	/**
+	 * Extracts the source code files only for one project.
+	 * @param language
+	 * @param project
+	 * @param projectPath
+	 */
 	private void processProject(Language language, Project project, String projectPath) {
 		for (Path path : project.getProjectFilePaths()) {
 			int count = 0;
@@ -79,7 +94,7 @@ public class SourceExtractor {
 		}
 	}
 
-	private static String createExtractFolder(JSONInterface data) {
+	private static String createExtractFolder(Dataset data) {
 		String outputExtractedSource = data.getOutputLocation().toString() + DEFAULT_OUTPUT
 				+ data.getOutputLocation().getFileName().toString();
 		return outputExtractedSource;

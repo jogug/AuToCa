@@ -9,12 +9,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.config.JSONInterface;
-import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.database.Database;
+import ch.unibe.scg.autoca.datastructure.Dataset;
 
 public class Tokenizer {
 	public final String DEFAULT_LS;
-	public final String DEFAULT_WORD;
+	public final String DEFAULT_KEYWORD;
 	public final String DEFAULT_STRING;
 	public final String DEFAULT_MULTI_COMMENT;
 	public final String DEFAULT_SINGLE_COMMENT;
@@ -25,7 +25,7 @@ public class Tokenizer {
 	private final String EMPTYLINE;
 	private final String TABSPACE;
 
-	private TokenizerHandler th;
+	private ITokenizerHandler th;
 	private String ls;
 
 	private List<String> words = new ArrayList<String>();
@@ -46,10 +46,10 @@ public class Tokenizer {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Tokenizer.class);
 	
-	public Tokenizer(TokenizerHandler th, JSONInterface dataset) {
+	public Tokenizer(ITokenizerHandler th, Dataset dataset) {
 		this.th = th;
 		DEFAULT_LS = dataset.getDEFAULT_LS();
-		DEFAULT_WORD = dataset.getDEFAULT_WORD();
+		DEFAULT_KEYWORD = dataset.getDEFAULT_KEYWORD();
 		DEFAULT_STRING = dataset.getDEFAULT_STRING();
 		DEFAULT_MULTI_COMMENT = dataset.getDEFAULT_MULTI_COMMENT();
 		DEFAULT_SINGLE_COMMENT = dataset.getDEFAULT_SINGLE_COMMENT();
@@ -65,7 +65,7 @@ public class Tokenizer {
 	}
 
 	public void loadDefaults() {
-		addWord(DEFAULT_WORD);
+		addWord(DEFAULT_KEYWORD);
 		addString(DEFAULT_STRING);
 		addComment(DEFAULT_MULTI_COMMENT);
 		addComment(DEFAULT_SINGLE_COMMENT);

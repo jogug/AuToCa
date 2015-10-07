@@ -6,7 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.database.Database;
 
 public class FilterChain {
 	
@@ -22,7 +22,7 @@ public class FilterChain {
 		this.languageNames = languageNames;
 	}
 	
-	public void execute(DB db){
+	public void execute(Database db){
 		logger.info("Start FilterChain: " + resultName);
 		for(String languageName: languageNames){
 			logger.info("Start on " + languageName+resultName);

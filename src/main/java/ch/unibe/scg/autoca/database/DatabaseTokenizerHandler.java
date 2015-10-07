@@ -1,12 +1,12 @@
-package ch.unibe.scg.autoca.db;
+package ch.unibe.scg.autoca.database;
 
 import java.sql.SQLException;
 
-import ch.unibe.scg.autoca.config.JSONInterface;
+import ch.unibe.scg.autoca.datastructure.Dataset;
 import ch.unibe.scg.autoca.tokenizer.TokenType;
-import ch.unibe.scg.autoca.tokenizer.TokenizerHandler;
+import ch.unibe.scg.autoca.tokenizer.ITokenizerHandler;
 
-public class DBTokenHandler implements TokenizerHandler {
+public class DatabaseTokenizerHandler implements ITokenizerHandler {
 	
 	private final String NEWLINE;
 	private final String DEDENT;
@@ -16,10 +16,10 @@ public class DBTokenHandler implements TokenizerHandler {
 	private final String DELIMITER;
 	private final String LONGWORD;
 	
-	private DB db;
+	private Database db;
 	private final int maxTokenLength, minTokenLength;
 
-	public DBTokenHandler(DB db, JSONInterface dataset) {
+	public DatabaseTokenizerHandler(Database db, Dataset dataset) {
 		this.db = db;
 		this.maxTokenLength = dataset.getDEFAULT_MAX_TOKEN_LENGTH();
 		this.minTokenLength = dataset.getDEFAULT_MIN_TOKEN_LENGTH();
@@ -41,14 +41,14 @@ public class DBTokenHandler implements TokenizerHandler {
 		switch (type) {
 		case DEDENT:
 			try {
-				db.newToken(DEDENT);
+				db.insertToken(DEDENT);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 			break;
 		case INDENT:
 			try {
-				db.newToken(INDENT);
+				db.insertToken(INDENT);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -57,13 +57,13 @@ public class DBTokenHandler implements TokenizerHandler {
 			//LENGTH FILTER
 			if (token.length() > minTokenLength && token.length() < maxTokenLength) {
 				try {
-					db.newToken(token);
+					db.insertToken(token);
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}else{
 				try {
-					db.newToken(LONGWORD);
+					db.insertToken(LONGWORD);
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -71,28 +71,28 @@ public class DBTokenHandler implements TokenizerHandler {
 			break;
 		case NEWLINE:
 			try {
-				db.newToken(NEWLINE);
+				db.insertToken(NEWLINE);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 			break;
 		case STRING:
 			try {
-				db.newToken(STRING);
+				db.insertToken(STRING);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 			break;
 		case COMMENT:
 			try {
-				db.newToken(COMMENT);
+				db.insertToken(COMMENT);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 			break;
 		case UNKNOWN:
 			try {
-				db.newToken(DELIMITER);
+				db.insertToken(DELIMITER);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

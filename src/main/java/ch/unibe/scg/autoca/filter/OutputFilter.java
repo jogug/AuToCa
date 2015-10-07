@@ -5,22 +5,22 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.database.Database;
 
-public class Output extends AbstractFilter {
+public class OutputFilter extends AbstractFilter {
 	
-    private static final Logger logger = LoggerFactory.getLogger(Output.class);	
+    private static final Logger logger = LoggerFactory.getLogger(OutputFilter.class);	
 	
 	private boolean save;
     private String PREFIXSTAT;
     
-	public Output(boolean save, String PREFIXSTAT) {
+	public OutputFilter(boolean save, String PREFIXSTAT) {
 		this.PREFIXSTAT = PREFIXSTAT;
 		this.save = save;
 	}
 	
 	@Override
-	void execute(DB db, String languageName, String resultTable) {
+	void execute(Database db, String languageName, String resultTable) {
 		try {
 			logger.info("Outputting Stats " + resultTable);
 			db.newFilterTable();
@@ -34,7 +34,7 @@ public class Output extends AbstractFilter {
 			try {
 				logger.info("Outputting " + resultTable);
 				db.newFilterTable();
-				db.nameOrderToken(languageName, resultTable);
+				db.orderByCountAndNameToken(languageName, resultTable);
 				db.filterTableFinished();
 			} catch (SQLException | ClassNotFoundException e) {
 				e.printStackTrace();

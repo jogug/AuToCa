@@ -5,23 +5,24 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.unibe.scg.autoca.db.DB;
+import ch.unibe.scg.autoca.database.Database;
 
-public class GlobalFilter extends AbstractFilter {
+public class CoverageMethodFilter extends AbstractFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalFilter.class);	
+    private static final Logger logger = LoggerFactory.getLogger(CoverageMethodFilter.class);	
 	
 	@Override
-	void execute(DB db, String languageName, String resultTable) {
-		logger.info("Global Method");
+	void execute(Database db, String languageName, String resultTable) {
+		logger.info("Coverage method");
 		try {
 			db.newFilterTable();
 			db.dropTableIfExists(resultTable);
-			db.globalKeywordMethod(languageName, resultTable);
+			db.coverageMethod(languageName, resultTable);
 			db.filterTableFinished();
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		getNext().execute(db, languageName, resultTable);
 	}
+
 }

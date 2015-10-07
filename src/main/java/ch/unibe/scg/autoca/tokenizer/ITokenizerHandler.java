@@ -4,7 +4,7 @@ package ch.unibe.scg.autoca.tokenizer;
  * 
  * @author kursjan
  */
-public interface TokenizerHandler {
+public interface ITokenizerHandler {
 
 	void token(String token, TokenType type);
 

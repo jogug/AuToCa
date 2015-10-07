@@ -4,7 +4,8 @@
 package ch.unibe.scg.autoca;
 import java.io.IOException;
 import java.sql.SQLException;
-import ch.unibe.scg.autoca.config.Configuration;
+
+import ch.unibe.scg.autoca.configuration.Configuration;
 
 public class AuToCa {
 
@@ -18,9 +19,9 @@ public class AuToCa {
 	}
 	
 	public static void main(String[] args) {	
-		//String[] x = {"analyze", "path", "resources/configuration/javaIntersection.cfg"};
+		String[] x = {"both", "path", "resources/configuration/thesisNon.cfg"};
 		AuToCa autoca = new AuToCa();
-		autoca.execute(args);
+		autoca.execute(x);
 	}
 
 }
