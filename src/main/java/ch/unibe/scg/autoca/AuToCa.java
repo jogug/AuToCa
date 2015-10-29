@@ -19,9 +19,8 @@ public class AuToCa {
 	}
 	
 	public static void main(String[] args) {	
-		String[] x = {"both", "path", "resources/configuration/thesisNon.cfg"};
+		String[] x = {"both", "path", "resources/configuration/thesisUnfit.cfg"};
 		AuToCa autoca = new AuToCa();
 		autoca.execute(x);
 	}
-
 }

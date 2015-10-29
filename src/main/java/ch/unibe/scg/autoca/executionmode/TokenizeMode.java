@@ -131,10 +131,12 @@ public final class TokenizeMode implements IOperationMode {
 			System.out.print("100%,");
 		}
 	}
+	
+	private int DEFAULT_NR_STEPS = 20;
 
 	private int calcOutputProjectProgressStep(Project project) {
-		int result = (project.getProjectFilePaths().size()) / ds.getDEFAULT_PROGRESS_STEPS();
-		if (project.getProjectFilePaths().size() < ds.getDEFAULT_PROGRESS_STEPS()) {
+		int result = (project.getProjectFilePaths().size()) / DEFAULT_NR_STEPS;
+		if (project.getProjectFilePaths().size() < DEFAULT_NR_STEPS) {
 			result = 1;
 		}
 		return result;

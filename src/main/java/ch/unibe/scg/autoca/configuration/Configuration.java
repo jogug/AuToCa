@@ -37,7 +37,7 @@ public final class Configuration {
 	
     private final String defaultConfig = "resources/configuration/default.cfg";
     
-	private enum OperationMode {SCAN, ANALYZE, BOTH, EXTRACT};
+	private enum OperationMode {TOKENIZE, ANALYZE, BOTH, EXTRACT};
 	private enum ConfigurationMode {DEF, PATH};
 	private String path;
 	
@@ -64,7 +64,7 @@ public final class Configuration {
         
         // Get the operation mode
         if (nonOptionArgs.get(0).equalsIgnoreCase("scan")) {
-        	opMode = OperationMode.SCAN;
+        	opMode = OperationMode.TOKENIZE;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("analyze")) {
             opMode = OperationMode.ANALYZE;
         } else if (nonOptionArgs.get(0).equalsIgnoreCase("both")) {
@@ -98,7 +98,7 @@ public final class Configuration {
 		
 		//Switch between different operations modes
         switch(opMode){
-    	case SCAN:   		
+    	case TOKENIZE:   		
     		ds = new Dataset(jsonObject, processLanguages(jsonObject), null);	        		
     		tokenizeMode = new TokenizeMode(ds);
     		tokenizeMode.execute();
@@ -139,7 +139,7 @@ public final class Configuration {
 	private List<Language> processLanguages(JSONObject plainData){
 		List<Language> languages = new ArrayList<>();
 		
-		JSONArray plainLang = plainData.getJSONArray("DefaultLanguages");
+		JSONArray plainLang = plainData.getJSONArray("language");
 		for(int i=0; i<plainLang.length();i++){
 			Language language = new Language(plainLang.getJSONObject(i).getString("name"),
 											plainLang.getJSONObject(i).getString("filePattern"), 
@@ -153,10 +153,10 @@ public final class Configuration {
 	}
 	
 	private List<FilterChain> processFilterChain(JSONObject plainData){
-		if (!plainData.has("FilterChains")) return null;
+		if (!plainData.has("filterchains")) return null;
 		List<FilterChain> filterChains = new ArrayList<>();
 		
-		JSONArray plainChains = plainData.getJSONArray("FilterChains");
+		JSONArray plainChains = plainData.getJSONArray("filterchains");
 		for(int i=0; i<plainChains.length();i++){
 			String resultName = plainChains.getJSONObject(i).getString("resultName");
 			
@@ -167,7 +167,7 @@ public final class Configuration {
 			}
 			
 			JSONArray plainFilters = plainChains.getJSONObject(i).getJSONArray("filters");
-			AbstractFilter start = processFilters(plainFilters, plainData.getJSONObject("Tables").getString("PREFIXSTAT"));
+			AbstractFilter start = processFilters(plainFilters, plainData.getJSONObject("database").getString("PREFIXSTAT"));
 			
 			filterChains.add(new FilterChain(resultName, languageNames, start));
 		}

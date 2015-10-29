@@ -38,165 +38,157 @@ public class Dataset {
 	}
 	
 	public Path getOutputLocation() {
-		return Paths.get(jsonObject.getJSONObject("DataSet").getString("outputLocation"));
+		return Paths.get(jsonObject.getJSONObject("database").getString("outputLocation"));
 	}
 	
 	public String getServerFilename() {		
-		return jsonObject.getJSONObject("DB").getString("FILENAME");
+		return jsonObject.getJSONObject("database").getString("FILENAME");
 	}
 
 	public String getDriver() {
-		return jsonObject.getJSONObject("DB").getString("DRIVER");
+		return jsonObject.getJSONObject("database").getString("DRIVER");
 	}
 
 	public String getUser() {
-		return jsonObject.getJSONObject("DB").getString("USER");
+		return jsonObject.getJSONObject("database").getString("USER");
 	}
 
 	public String getPassword() {
-		return jsonObject.getJSONObject("DB").getString("PASSWORD");
+		return jsonObject.getJSONObject("database").getString("PASSWORD");
 	}
 	
 	public String getTEMPORARY() {
-		return jsonObject.getJSONObject("Tables").getString("TEMPORARY");
+		return jsonObject.getJSONObject("database").getString("TEMPORARY");
 	}
 
 	public String getTEMPFILTER() {
-		return jsonObject.getJSONObject("Tables").getString("TEMPFILTER");
+		return jsonObject.getJSONObject("database").getString("TEMPFILTER");
 	}
 
 	public String getOCCURRENCE() {
-		return jsonObject.getJSONObject("Tables").getString("OCCURENCE");
+		return jsonObject.getJSONObject("database").getString("OCCURENCE");
 	}
 
 	public String getTOKEN() {
-		return jsonObject.getJSONObject("Tables").getString("TOKEN");
+		return jsonObject.getJSONObject("database").getString("TOKEN");
 	}
 
 	public String getFILE() {
-		return jsonObject.getJSONObject("Tables").getString("FILE");
+		return jsonObject.getJSONObject("database").getString("FILE");
 	}
 
 	public String getPROJECT() {
-		return jsonObject.getJSONObject("Tables").getString("PROJECT");
+		return jsonObject.getJSONObject("database").getString("PROJECT");
 	}
 
 	public String getLANGUAGE() {
-		return jsonObject.getJSONObject("Tables").getString("LANGUAGE");
+		return jsonObject.getJSONObject("database").getString("LANGUAGE");
 	}
 	
 	public String getRESULTTABLE() {
-		return jsonObject.getJSONObject("Tables").getString("RESULTTABLE");
+		return jsonObject.getJSONObject("database").getString("RESULTTABLE");
 	}
 	
 
 	public String getPREFIXSTAT() {
-		return jsonObject.getJSONObject("Tables").getString("PREFIXSTAT");
+		return jsonObject.getJSONObject("database").getString("PREFIXSTAT");
 	}
 	
 
 	public String getPRECISION() {
-		return jsonObject.getJSONObject("Tables").getString("PRECISION");
+		return jsonObject.getJSONObject("database").getString("PRECISION");
 	}
 	
 	public String getRANK() {
-		return jsonObject.getJSONObject("Tables").getString("RANK");
+		return jsonObject.getJSONObject("database").getString("RANK");
 	}	
 
 	public String getSUMMARY() {
-		return jsonObject.getJSONObject("Tables").getString("SUMMARY");
+		return jsonObject.getJSONObject("database").getString("SUMMARY");
 	}
 
 	
 	public String getLoginprefix() {
-		return jsonObject.getJSONObject("DB").getString("LOGINPREFIX");
+		return jsonObject.getJSONObject("database").getString("LOGINPREFIX");
 	}
-
-	public int getDEFAULT_MAX_TOKEN_LENGTH() {
-		return jsonObject.getJSONObject("DBTokenHandler").getInt("DEFAULT_MAX_TOKEN_LENGTH");
-	}
-
-	public int getDEFAULT_MIN_TOKEN_LENGTH() {
-		return jsonObject.getJSONObject("DBTokenHandler").getInt("DEFAULT_MIN_TOKEN_LENGTH");
-	}
-
-	public int getDEFAULT_PROGRESS_STEPS() {
-		return jsonObject.getJSONObject("ScanMode").getInt("DEFAULT_PROGRESS_STEPS");
-	}
-
 	public String getDEFAULT_LS() {
-		return jsonObject.getJSONObject("Tokenizer").getString("DEFAULT_LS");
+		return jsonObject.getJSONObject("tokenizer").getString("DEFAULT_LS");
 	}
 
 	public String getDEFAULT_KEYWORD() {
-		return jsonObject.getJSONObject("Tokenizer").getString("DEFAULT_WORD");
+		return jsonObject.getJSONObject("tokenizer").getString("DEFAULT_WORD");
 	}
 
 	public String getDEFAULT_STRING() {
-		return jsonObject.getJSONObject("Tokenizer").getString("DEFAULT_STRING");
+		return jsonObject.getJSONObject("tokenizer").getString("DEFAULT_STRING");
 	}
 
 	public String getDEFAULT_MULTI_COMMENT() {
-		return jsonObject.getJSONObject("Tokenizer").getString("DEFAULT_MULTI_COMMENT");
+		return jsonObject.getJSONObject("tokenizer").getString("DEFAULT_MULTI_COMMENT");
 	}
 
 	public String getDEFAULT_SINGLE_COMMENT() {
-		return jsonObject.getJSONObject("Tokenizer").getString("DEFAULT_SINGLE_COMMENT");
+		return jsonObject.getJSONObject("tokenizer").getString("DEFAULT_SINGLE_COMMENT");
 	}
 
 	public String getPYTHON_LIKE_COMMENT() {
-		return jsonObject.getJSONObject("Tokenizer").getString("PYTHON_LIKE_COMMENT");
+		return jsonObject.getJSONObject("tokenizer").getString("PYTHON_LIKE_COMMENT");
 	}
 
 	public String getWHITESPACE() {
-		return jsonObject.getJSONObject("Tokenizer").getString("WHITESPACE");
+		return jsonObject.getJSONObject("tokenizer").getString("WHITESPACE");
 	}
 
 	public String getSTART_OF_LINE() {
-		return jsonObject.getJSONObject("Tokenizer").getString("START_OF_LINE");
+		return jsonObject.getJSONObject("tokenizer").getString("START_OF_LINE");
 	}
 
 	public String getEMPTYLINE() {
-		return jsonObject.getJSONObject("Tokenizer").getString("EMPTYLINE");
+		return jsonObject.getJSONObject("tokenizer").getString("EMPTYLINE");
 	}
 	
 	public String getNEWLINE() {
-		return jsonObject.getJSONObject("Tokenizer").getString("NEWLINE");
+		return jsonObject.getJSONObject("tokenizer").getString("NEWLINE");
 	}
 	
 	public String getTABSPACE() {
-		return jsonObject.getJSONObject("Tokenizer").getString("TABSPACE");
+		return jsonObject.getJSONObject("tokenizer").getString("TABSPACE");
+	}
+	
+	public int getDEFAULT_MAX_TOKEN_LENGTH() {
+		return jsonObject.getJSONObject("tokenhandler").getInt("DEFAULT_MAX_TOKEN_LENGTH");
+	}
+
+	public int getDEFAULT_MIN_TOKEN_LENGTH() {
+		return jsonObject.getJSONObject("tokenhandler").getInt("DEFAULT_MIN_TOKEN_LENGTH");
 	}
 	
 	public String getDBNEWLINE() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("DBNEWLINE");
+		return jsonObject.getJSONObject("tokenhandler").getString("DBNEWLINE");
 	}
 
 	public String getDEDENT() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("DEDENT");
+		return jsonObject.getJSONObject("tokenhandler").getString("DEDENT");
 	}
 
 	public String getINDENT() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("INDENT");
+		return jsonObject.getJSONObject("tokenhandler").getString("INDENT");
 	}
 
 	public String getSTRING() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("STRING");
+		return jsonObject.getJSONObject("tokenhandler").getString("STRING");
 	}
-
 
 	public String getCOMMENT() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("COMMENT");
+		return jsonObject.getJSONObject("tokenhandler").getString("COMMENT");
 	}
-
 
 	public String getDELIMITER() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("DELIMITER");
+		return jsonObject.getJSONObject("tokenhandler").getString("DELIMITER");
 	}
 
-
 	public String getLONGWORD() {
-		return jsonObject.getJSONObject("DBTokenHandler").getString("LONGWORD");
+		return jsonObject.getJSONObject("tokenhandler").getString("LONGWORD");
 	}
 	
 	public int getFileCount(){
