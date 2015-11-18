@@ -31,7 +31,7 @@ public class TestDB {
 		Configuration config = new Configuration();
 		dataset = config.testDataSet("resources/testing/configuration/test1.cfg");
     	db = new Database(dataset.getOutputLocation(), dataset);
-		db.initialise();
+		db.initialize();
 		
 		openConnection();
 	}

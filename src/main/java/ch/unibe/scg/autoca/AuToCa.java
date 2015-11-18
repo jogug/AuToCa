@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import ch.unibe.scg.autoca.configuration.Configuration;
+import ch.unibe.scg.autoca.utilities.AuToCaUtils;
 
 public class AuToCa {
 
@@ -19,8 +20,8 @@ public class AuToCa {
 	}
 	
 	public static void main(String[] args) {	
-		String[] x = {"both", "path", "resources/configuration/thesisUnfit.cfg"};
-		AuToCa autoca = new AuToCa();
-		autoca.execute(x);
+		//		String[] x = {"both", "path", "resources/configuration/thesisUnfit.cfg"};
+//		AuToCa autoca = new AuToCa();
+//		autoca.execute(x);
 	}
 }

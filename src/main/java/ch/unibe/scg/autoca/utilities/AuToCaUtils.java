@@ -2,6 +2,7 @@ package ch.unibe.scg.autoca.utilities;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,15 +14,20 @@ import java.nio.file.Paths;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.unibe.scg.autoca.configuration.Configuration;
 import ch.unibe.scg.autoca.datastructure.Dataset;
 import ch.unibe.scg.autoca.datastructure.Language;
 import ch.unibe.scg.autoca.datastructure.Project;
 import ch.unibe.scg.autoca.executionmode.TokenizeMode;
 
-public class SourceExtractor {
+public class AuToCaUtils {
 	private static final Logger logger = LoggerFactory.getLogger(TokenizeMode.class);
 
 	private String outputExtractedSource;
@@ -105,6 +111,21 @@ public class SourceExtractor {
 			(new File(path)).mkdirs();
 		}
 	}
-
-
+	
+	/**
+	 * Allows to quickly check for spelling errors in some parts of configuration files
+	 */
+	public static void testConfigurationFilesForErrors(){
+	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("resources/configuration/"))) {    	
+	        for (Path path : stream) {
+	        	if(path.getFileName().toString().contains(".cfg")){	
+	        		logger.info("Testing configuration:" + path.getFileName().toString());
+	        		JSONObject jsonObject = Configuration.loadJSON(path.toString());
+	        		Dataset ds = new Dataset(jsonObject, Configuration.processLanguages(jsonObject), Configuration.processFilterChain(jsonObject));	  
+	        	}
+	        }
+	    } catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

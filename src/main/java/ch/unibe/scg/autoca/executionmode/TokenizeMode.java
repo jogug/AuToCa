@@ -41,7 +41,7 @@ public final class TokenizeMode implements IOperationMode {
 		try {
 			//open and clear Database
 			db = new Database(dataset.getOutputLocation(), dataset);
-			db.initialise();
+			db.initialize();
 
 			//Set tokenizier and tokenhandler properties
 			th = new DatabaseTokenizerHandler(db, dataset);

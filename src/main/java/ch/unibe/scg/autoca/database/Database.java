@@ -103,7 +103,7 @@ public class Database {
 		pathDb = path.resolve(SERVERFILENAME);
 	}
 
-	public void initialise() throws SQLException, ClassNotFoundException {
+	public void initialize() throws SQLException, ClassNotFoundException {
 		openConnection();
 		
 		Statement stmt = connection.createStatement();

@@ -31,7 +31,7 @@ public class ClojureAnalyzeModeTest {
 		config = new Configuration();
 		dataset = config.testDataSet("resources/testing/configuration/testClojure.cfg");
     	db = new Database(dataset.getOutputLocation(), dataset);
-		db.initialise();		
+		db.initialize();		
 
 		TokenizeMode scanmode = new TokenizeMode(dataset);
 		scanmode.execute();

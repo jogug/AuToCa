@@ -31,7 +31,7 @@ public class SchemeAnalyzeModeTest {
 		config = new Configuration();
 		dataset = config.testDataSet("resources/testing/configuration/testScheme.cfg");
     	db = new Database(dataset.getOutputLocation(), dataset);
-		db.initialise();		
+		db.initialize();		
 
 		TokenizeMode scanmode = new TokenizeMode(dataset);
 		scanmode.execute();

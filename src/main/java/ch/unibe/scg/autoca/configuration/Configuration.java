@@ -7,6 +7,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,7 +26,7 @@ import ch.unibe.scg.autoca.datastructure.Language;
 import ch.unibe.scg.autoca.executionmode.AnalyzeMode;
 import ch.unibe.scg.autoca.executionmode.TokenizeMode;
 import ch.unibe.scg.autoca.filter.*;
-import ch.unibe.scg.autoca.utilities.SourceExtractor;
+import ch.unibe.scg.autoca.utilities.AuToCaUtils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -117,13 +120,13 @@ public final class Configuration {
     		break;
     	case EXTRACT:
     		ds = new Dataset(jsonObject, processLanguages(jsonObject), processFilterChain(jsonObject));
-    		SourceExtractor se = new SourceExtractor();
+    		AuToCaUtils se = new AuToCaUtils();
     		se.extractSourceFiles(ds);
     		break;
         }
     }
 
-	private JSONObject loadJSON(String path) {
+	public static JSONObject loadJSON(String path) {
 		logger.info("Loading configuration from JSON File");
 	    InputStream is = null;;
 		try {
@@ -136,7 +139,7 @@ public final class Configuration {
 		return new JSONObject(jsonTxt);
 	}
 	
-	private List<Language> processLanguages(JSONObject plainData){
+	public static List<Language> processLanguages(JSONObject plainData){
 		List<Language> languages = new ArrayList<>();
 		
 		JSONArray plainLang = plainData.getJSONArray("language");
@@ -152,7 +155,7 @@ public final class Configuration {
 		return languages;
 	}
 	
-	private List<FilterChain> processFilterChain(JSONObject plainData){
+	public static List<FilterChain> processFilterChain(JSONObject plainData){
 		if (!plainData.has("filterchains")) return null;
 		List<FilterChain> filterChains = new ArrayList<>();
 		
@@ -174,7 +177,7 @@ public final class Configuration {
 		return filterChains;
 	}
 	
-	private AbstractFilter processFilters(JSONArray plainFilters, String PREFIXSTAT){
+	private static AbstractFilter processFilters(JSONArray plainFilters, String PREFIXSTAT){
 		List<AbstractFilter> active = new ArrayList<>();
 		for(int i=0; i<plainFilters.length();i++){
 			switch(plainFilters.getJSONObject(i).getString("name")){
@@ -205,7 +208,7 @@ public final class Configuration {
 		return active.get(active.size()-1);
 	}
     
-	private String convertStreamToString(java.io.InputStream is) {
+	private static String convertStreamToString(java.io.InputStream is) {
 		    @SuppressWarnings("resource")
 			java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 		    return s.hasNext() ? s.next() : "";
@@ -215,4 +218,5 @@ public final class Configuration {
     	JSONObject plainData = loadJSON(path);
     	return new Dataset(plainData, processLanguages(plainData), processFilterChain(plainData));
 	}	
+	
 }
